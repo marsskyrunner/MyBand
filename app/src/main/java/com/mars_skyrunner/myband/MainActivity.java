@@ -70,8 +70,6 @@ import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-// GITHUB COMMIT TEST
-
 
 public class MainActivity extends AppCompatActivity {
 
