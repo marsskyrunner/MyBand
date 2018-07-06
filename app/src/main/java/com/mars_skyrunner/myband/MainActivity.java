@@ -71,6 +71,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 
+
+// GITHUB ANDROID STUDIO COMMUNICATION TEST COMMENT
 public class MainActivity extends AppCompatActivity {
 
     public static BandClient client = null;
