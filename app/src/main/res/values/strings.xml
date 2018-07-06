@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">MyBand</string>
+    <string name="steps">steps</string>
+    <string name="start">start</string>
+    <string name="stop">stop</string>
+    <string name="consent">consent</string>
+    <string name="heart_rate">heart rate</string>
+    <string name="rr_interval">rr interval</string>
+    <string name="select_option">Select option</string>
+    <string name="accelerometer">accelerometer</string>
+    <string name="altimeter">altimeter</string>
+    <string name="ambient_light">ambient light</string>
+    <string name="barometer">barometer</string>
+    <string name="gsr">GSR</string>
+    <string name="calories">calories</string>
+    <string name="distance">distance</string>
+    <string name="contact">band contact</string>
+    <string name="gyroscope">gyroscope</string>
+    <string name="pedometer">pedometer</string>
+    <string name="skin_temperature">skin temperature</string>
+    <string name="uv">uv level</string>
+    <string name="sensor_checkbox">sensor_checkbox</string>
+    <string name="conscent_msg">You have not given this application consent to access heart rate data yet.</string>
+    <string name="accept_label">accept</string>
+</resources>
