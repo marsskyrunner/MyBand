@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
     LinearLayout mListView;
     ArrayList<SensorReading> sensorReadings;
+    TextView githubTestTextview;
 
 
     @Override
