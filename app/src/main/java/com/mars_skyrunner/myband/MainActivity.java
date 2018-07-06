@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     public static BandClient client = null;
     final String LOG_TAG = "MainActivity";
     private TextView bandStatusTxt;
-    private Button btnStart, btnStop, GITHUBCOMMITTESTBUTTON;
+    private Button btnStart, btnStop;
     Toolbar toolbar;
     LinearLayout mListView;
     ArrayList<SensorReading> sensorReadings;
