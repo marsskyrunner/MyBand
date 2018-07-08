@@ -71,8 +71,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 
-
-// GITHUB ANDROID STUDIO COMMUNICATION TEST COMMENT
 public class MainActivity extends AppCompatActivity {
 
     public static BandClient client = null;
@@ -82,9 +80,6 @@ public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
     LinearLayout mListView;
     ArrayList<SensorReading> sensorReadings;
-    ImageButton gitHubTestButton;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
