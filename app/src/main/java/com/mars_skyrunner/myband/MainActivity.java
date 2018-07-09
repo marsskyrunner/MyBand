@@ -93,7 +93,17 @@ public class MainActivity extends AppCompatActivity {
         saveDataButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(MainActivity.this,"saveDataButton",Toast.LENGTH_SHORT).show();
+
+                String sensorReadingsStr = "";
+
+                for(SensorReading sr : sensorReadings){
+                    sensorReadingsStr += sr.getSensorName() + " : " + getSensorReadingViewValue(sr);
+                }
+
+                Log.w(LOG_TAG,"saveDataButton");
+                Log.w(LOG_TAG,"sensorReadingsStr" + sensorReadingsStr);
+
+
             }
         });
 
@@ -128,6 +138,94 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private String getSensorReadingViewValue(SensorReading sr) {
+
+        String value ;
+        int resourceID = 0 ;
+
+        Log.v(LOG_TAG,"getSensorReadingViewValue: sr.getSensorName(): " + sr.getSensorName());
+
+        switch (sr.getSensorName()){
+            case "heart rate":
+                resourceID = R.id.heart_rate_sensorview;
+                break;
+
+            case "rr interval":
+                resourceID = R.id.rr_interval_sensorview;
+                break;
+
+            case "accelerometer":
+                resourceID = R.id.accelerometer_sensorview;
+                break;
+
+            case "altimeter":
+                resourceID = R.id.altimeter_sensorview;
+                break;
+
+            case "ambient light":
+                resourceID = R.id.ambient_light_sensorview;
+                break;
+
+            case "barometer":
+                resourceID = R.id.barometer_sensorview;
+                break;
+
+            case "GSR":
+                resourceID = R.id.gsr_sensorview;
+                break;
+
+            case "calories":
+                resourceID = R.id.calories_sensorview;
+                break;
+
+            case "distance":
+                resourceID = R.id.distance_sensorview;
+                break;
+
+//            case "band contact":
+//                resourceID = R.id.band_contact_sensorview;
+//                break;
+
+            case "gyroscope":
+                resourceID = R.id.gyroscope_sensorview;
+                break;
+
+            case "pedometer":
+                resourceID = R.id.pedometer_sensorview;
+                break;
+
+            case "skin temperature":
+                resourceID = R.id.skin_temperature_sensorview;
+                break;
+
+            case "uv level":
+                resourceID = R.id.skin_temperature_sensorview;
+                break;
+
+                default:
+                    resourceID = 0;
+                    break;
+        }
+
+        SensorReadingView sensorReadingView = null;
+        TextView sensorValueTextView = null;
+
+        if(resourceID != 0){
+            sensorReadingView = (SensorReadingView) findViewById(resourceID);
+            sensorValueTextView =(TextView) sensorReadingView.findViewById(R.id.sensor_value);
+        }
+
+        if(sensorValueTextView != null){
+            value = sensorValueTextView.getText().toString();
+        }else{
+            value  = "sensorValueTextView == null";
+        }
+
+        Log.v(LOG_TAG,"getSensorReadingViewValue: " + value);
+
+        return value;
     }
 
     private void initSensorListView() {
