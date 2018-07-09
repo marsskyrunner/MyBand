@@ -40,8 +40,8 @@ public class SensorReadingsDbHelper extends SQLiteOpenHelper {
         // Create a String that contains the SQL statement to create the records table
         String SQL_CREATE_SENSOR_READING_TABLE =  "CREATE TABLE " + ReadingEntry.TABLE_NAME + " ("
                 + ReadingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + ReadingEntry.COLUMN_RECORD_DATE + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_RECORD_TIME + " TEXT, "
+                + ReadingEntry.COLUMN_READING_DATE + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_TIME + " TEXT, "
                 + ReadingEntry.COLUMN_SENSOR_ID + " INTEGER, "
                 + ReadingEntry.COLUMN_SENSOR_NAME + " TEXT, "
                 + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT )";
