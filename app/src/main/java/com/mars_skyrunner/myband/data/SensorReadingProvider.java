@@ -68,7 +68,7 @@ public class SensorReadingProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        mDbHelper = new SchoolDbHelper(getContext());
+        mDbHelper = new SensorReadingsDbHelper(getContext());
         return true;
     }
 
@@ -99,67 +99,41 @@ public class SensorReadingProvider extends ContentProvider {
         // Figure out if the URI matcher can match the URI to a specific code
         int match = sUriMatcher.match(uri);
         switch (match) {
-            case readings:
+            
+            case READINGS:
 
-                Log.w(LOG_TAG, "sUriMatcher:  readings");
+                Log.w(LOG_TAG, "sUriMatcher:  READINGS");
 
 
                 // For the readings code, query the readings table directly with the given
                 // projection, selection, selection arguments, and sort order. The cursor
                 // could contain multiple rows of the readings table.
-                cursor = database.query(ReadingEntry.TABLE_NAME, projection, selection, selectionArgs,
+                cursor = database.query(SensorReadingContract.ReadingEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
-            case RECORD_ID:
+                
+            case READING_ID:
 
 
-                Log.w(LOG_TAG, "sUriMatcher:  RECORD_ID");
+                Log.w(LOG_TAG, "sUriMatcher:  READING_ID");
 
                 // For the RECORD_ID code, extract out the ID from the URI.
-                // For an example URI such as "content://com.mars_skyrunner.lalalog.readings/readings/3",
+                // For an example URI such as "content://com.mars_skyrunner.myband/readings/3",
                 // the selection will be "_id=?" and the selection argument will be a
                 // String array containing the actual ID of 3 in this case.
                 //
                 // For every "?" in the selection, we need to have an element in the selection
                 // arguments that will fill in the "?". Since we have 1 question mark in the
                 // selection, we have 1 String in the selection arguments' String array.
-                selection = ReadingEntry._ID + "=?";
+                selection = SensorReadingContract.ReadingEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 // This will perform a query on the readings table where the _id equals 3 to return a
                 // Cursor containing that row of the table.
-                cursor = database.query(ReadingEntry.TABLE_NAME, projection, selection, selectionArgs,
+                cursor = database.query(SensorReadingContract.ReadingEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
 
-            case SUBJECTS:
-
-                Log.w(LOG_TAG, "sUriMatcher:  SUBJECTS");
-                // For the SUBJECTS code, query the SUBJECTS table directly with the given
-                // projection, selection, selection arguments, and sort order. The cursor
-                // could contain multiple rows of the SUBJECTS table.
-                cursor = database.query(SubjectContract.SubjectEntry.TABLE_NAME, projection, selection, selectionArgs,
-                        null, null, sortOrder);
-                break;
-            case SUBJECT_ID:
-
-                Log.w(LOG_TAG, "sUriMatcher:  SUBJECT_ID");
-                // For the SUBJECT_ID code, extract out the ID from the URI.
-                // For an example URI such as "content://com.mars_skyrunner.lalalog.SUBJECTS/SUBJECTS/3",
-                // the selection will be "_id=?" and the selection argument will be a
-                // String array containing the actual ID of 3 in this case.
-                //
-                // For every "?" in the selection, we need to have an element in the selection
-                // arguments that will fill in the "?". Since we have 1 question mark in the
-                // selection, we have 1 String in the selection arguments' String array.
-                selection = SubjectContract.SubjectEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-
-                // This will perform a query on the SUBJECTS table where the _id equals 3 to return a
-                // Cursor containing that row of the table.
-                cursor = database.query(SubjectContract.SubjectEntry.TABLE_NAME, projection, selection, selectionArgs,
-                        null, null, sortOrder);
-                break;
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
@@ -176,16 +150,12 @@ public class SensorReadingProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
         final int match = sUriMatcher.match(uri);
+        
         switch (match) {
-            case readings:
+            case READINGS:
                 Log.w(LOG_TAG,"insert readings");
-                return insertRecord(uri, contentValues);
-
-            case SUBJECTS:
-
-                Log.w(LOG_TAG,"insert SUBJECTS");
-                return insertSubject(uri, contentValues);
-
+                return insertReading(uri, contentValues);
+                
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }
@@ -195,49 +165,41 @@ public class SensorReadingProvider extends ContentProvider {
      * Insert a record into the database with the given content values. Return the new content URI
      * for that specific row in the database.
      */
-    private Uri insertRecord(Uri uri, ContentValues values) {
+    private Uri insertReading(Uri uri, ContentValues values) {
 
-        Log.w(LOG_TAG,"insertRecord : ContentValues: " + values.toString());
+        Log.w(LOG_TAG,"insertReading : ContentValues: " + values.toString());
 
         // Check that the date is not null
-        String date = values.getAsString(ReadingEntry.COLUMN_RECORD_DATE);
+        String date = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_READING_DATE);
         if (date == null) {
-            throw new IllegalArgumentException("Record requires a date");
+            throw new IllegalArgumentException("SensorReading requires a date");
         }
 
         // Check that the time is not null
-        String time = values.getAsString(ReadingEntry.COLUMN_RECORD_TIME);
+        String time = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_READING_TIME);
         if (time == null) {
-            throw new IllegalArgumentException("Record requires a time");
+            throw new IllegalArgumentException("SensorReading requires a time");
         }
 
 
-        // Check that the text is not null
-        String text = values.getAsString(ReadingEntry.COLUMN_RECORD_TEXT);
-        if (text == null) {
-            throw new IllegalArgumentException("Record requires a text");
+        // Check that the sensorName is not null
+        String sensorName = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_NAME);
+        if (sensorName == null) {
+            throw new IllegalArgumentException("SensorReading requires a sensor name");
         }
 
-
-        // Check that the subjectID is not null
-        String subjectID = values.getAsString(ReadingEntry.COLUMN_SUBJECT_ID);
-        if (subjectID == null || !ReadingEntry.isValidSubjectID(subjectID)) {
-            throw new IllegalArgumentException("Record requires valid subject id");
+        // Check that the sensorName is not null
+        String sensorValue = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE);
+        if (sensorName == null) {
+            throw new IllegalArgumentException("SensorReading requires a sensor value");
         }
 
-        // Check that the subjectID is not null
-        String subjectGroupID = values.getAsString(ReadingEntry.COLUMN_SUBJECT_GROUP_ID);
-        if (subjectGroupID == null) {
-            throw new IllegalArgumentException("Record requires valid subject group id");
-        }
-
-        Log.w(LOG_TAG,"subjectGroupID: " + subjectGroupID);
 
         // Get writeable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
         // Insert the new record with the given values
-        long id = database.insert(ReadingEntry.TABLE_NAME, null, values);
+        long id = database.insert(SensorReadingContract.ReadingEntry.TABLE_NAME, null, values);
         // If the ID is -1, then the insertion failed. Log an error and return null.
         if (id == -1) {
             Log.e(LOG_TAG, "Failed to insert row for " + uri);
@@ -257,93 +219,25 @@ public class SensorReadingProvider extends ContentProvider {
         return answer;
     }
 
-    /**
-     * Insert a subject into the database with the given content values. Return the new content URI
-     * for that specific row in the database.
-     */
-    private Uri insertSubject(Uri uri, ContentValues values) {
-        // Check that the name is not null
-        String name = values.getAsString(SubjectContract.SubjectEntry.COLUMN_SUBJECT_NAME);
-        if (name == null) {
-            throw new IllegalArgumentException("Subject requires a name");
-        }
-
-        // Check that the lastname1 is not null
-        String lastname1 = values.getAsString(SubjectContract.SubjectEntry.COLUMN_SUBJECT_LASTNAME1);
-        if (lastname1 == null) {
-            throw new IllegalArgumentException("Subject requires a lastname1");
-        }
-
-
-        // Check that the lastname2 is not null
-        String lastname2 = values.getAsString(SubjectContract.SubjectEntry.COLUMN_SUBJECT_LASTNAME2);
-        if (lastname2 == null) {
-            throw new IllegalArgumentException("Subject requires a lastname2");
-        }
-
-        // Check that the birthdate is not null
-        String birthdate = values.getAsString(SubjectContract.SubjectEntry.COLUMN_SUBJECT_BIRTHDATE);
-        if (birthdate == null) {
-            throw new IllegalArgumentException("Subject requires a birthdate");
-        }
-
-
-        // Check that the subjectID is not null
-//        String subjectGroup = values.getAsString(SubjectEntry.COLUMN_SUBJECT_GROUP);
-//        int intGroup = (int) Double.parseDouble(subjectGroup.trim());
-//        if (subjectGroup == null || !SubjectEntry.isValidGroup(intGroup)) {
-//            throw new IllegalArgumentException("Subject requires valid group");
-//        }
-
-
-        Log.w(LOG_TAG,"Insert values : " + values.toString());
-
-        // Get writeable database
-        SQLiteDatabase database = mDbHelper.getWritableDatabase();
-
-        // Insert the new pet with the given values
-        long id = database.insert(SubjectContract.SubjectEntry.TABLE_NAME, null, values);
-        // If the ID is -1, then the insertion failed. Log an error and return null.
-        if (id == -1) {
-            Log.e(LOG_TAG, "Failed to insert row for " + uri);
-            return null;
-        }
-
-        // Notify all listeners that the data has changed for the pet content URI
-        getContext().getContentResolver().notifyChange(uri, null);
-
-        // Return the new URI with the ID (of the newly inserted row) appended at the end
-
-        Uri answer = ContentUris.withAppendedId(uri, id);
-        Log.w(LOG_TAG,"Insert answer : " + answer.toString());
-
-        return answer;
-    }
-
     @Override
     public int update(Uri uri, ContentValues contentValues, String selection,
                       String[] selectionArgs) {
+        
         final int match = sUriMatcher.match(uri);
         switch (match) {
-            case readings:
-                return updateRecord(uri, contentValues, selection, selectionArgs);
-            case RECORD_ID:
-                // For the RECORD_ID code, extract out the ID from the URI,
+            
+            case READINGS:
+                return updateSensorReading(uri, contentValues, selection, selectionArgs);
+                
+            case READING_ID:
+                // For the READING_ID code, extract out the ID from the URI,
                 // so we know which row to update. Selection will be "_id=?" and selection
                 // arguments will be a String array containing the actual ID.
-                selection = ReadingEntry._ID + "=?";
+                selection = SensorReadingContract.ReadingEntry._ID + "=?";
+                
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return updateRecord(uri, contentValues, selection, selectionArgs);
+                return updateSensorReading(uri, contentValues, selection, selectionArgs);
 
-            case SUBJECTS:
-                return updateSubject(uri, contentValues, selection, selectionArgs);
-            case SUBJECT_ID:
-                // For the SUBJECT_ID code, extract out the ID from the URI,
-                // so we know which row to update. Selection will be "_id=?" and selection
-                // arguments will be a String array containing the actual ID.
-                selection = SubjectContract.SubjectEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return updateSubject(uri, contentValues, selection, selectionArgs);
             default:
                 throw new IllegalArgumentException("Update is not supported for " + uri);
         }
@@ -354,41 +248,40 @@ public class SensorReadingProvider extends ContentProvider {
      * specified in the selection and selection arguments (which could be 0 or 1 or more readings).
      * Return the number of rows that were successfully updated.
      */
-    private int updateRecord(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        // If the {@link ReadingEntry#COLUMN_RECORD_DATE} key is present,
+    private int updateSensorReading(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        // If the {@link ReadingEntry#COLUMN_READING_DATE} key is present,
         // check that the date value is not null.
-        if (values.containsKey(ReadingEntry.COLUMN_RECORD_DATE)) {
-            String date = values.getAsString(ReadingEntry.COLUMN_RECORD_DATE);
+        if (values.containsKey(SensorReadingContract.ReadingEntry.COLUMN_READING_DATE)) {
+            String date = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_READING_DATE);
             if (date == null) {
-                throw new IllegalArgumentException("Record requires a date");
+                throw new IllegalArgumentException("SensorReading requires a date");
             }
         }
 
-        // If the {@link ReadingEntry#COLUMN_RECORD_TIME} key is present,
+        // If the {@link ReadingEntry#COLUMN_READING_TIME} key is present,
         // check that the time value is not null.
-        if (values.containsKey(ReadingEntry.COLUMN_RECORD_TIME)) {
-            String time = values.getAsString(ReadingEntry.COLUMN_RECORD_TIME);
+        if (values.containsKey(SensorReadingContract.ReadingEntry.COLUMN_READING_TIME)) {
+            String time = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_READING_TIME);
             if (time == null) {
-                throw new IllegalArgumentException("Record requires a time");
+                throw new IllegalArgumentException("SensorReading requires a time");
             }
         }
 
-        // If the {@link ReadingEntry#COLUMN_RECORD_TEXT} key is present,
+        // If the {@link ReadingEntry#COLUMN_SENSOR_NAME} key is present,
         // check that the time text is not null.
-        if (values.containsKey(ReadingEntry.COLUMN_RECORD_TEXT)) {
-            String text = values.getAsString(ReadingEntry.COLUMN_RECORD_TEXT);
+        if (values.containsKey(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_NAME)) {
+            String text = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_NAME);
             if (text == null) {
-                throw new IllegalArgumentException("Record requires a text");
+                throw new IllegalArgumentException("SensorReading requires a sensor name");
             }
         }
 
-
-        // If the {@link ReadingEntry#COLUMN_SUBJECT_ID} key is present,
-        // check that the subject id is not null.
-        if (values.containsKey(ReadingEntry.COLUMN_SUBJECT_ID)) {
-            String subjectID = values.getAsString(ReadingEntry.COLUMN_SUBJECT_ID);
-            if (subjectID == null || !ReadingEntry.isValidSubjectID(subjectID)) {
-                throw new IllegalArgumentException("Record requires valid subject id");
+        // If the {@link ReadingEntry#COLUMN_SENSOR_VALUE} key is present,
+        // check that the time text is not null.
+        if (values.containsKey(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE)) {
+            String text = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE);
+            if (text == null) {
+                throw new IllegalArgumentException("SensorReading requires a sensor name");
             }
         }
 
@@ -402,82 +295,7 @@ public class SensorReadingProvider extends ContentProvider {
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
         // Perform the update on the database and get the number of rows affected
-        int rowsUpdated = database.update(ReadingEntry.TABLE_NAME, values, selection, selectionArgs);
-
-        // If 1 or more rows were updated, then notify all listeners that the data at the
-        // given URI has changed
-        if (rowsUpdated != 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
-        }
-
-        // Return the number of rows updated
-        return rowsUpdated;
-    }
-
-    /**
-     * Update SUBJECTS in the database with the given content values. Apply the changes to the rows
-     * specified in the selection and selection arguments (which could be 0 or 1 or more SUBJECTS).
-     * Return the number of rows that were successfully updated.
-     */
-    private int updateSubject(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        // If the {@link SubjectEntry#COLUMN_SUBJECT_NAME} key is present,
-        // check that the name value is not null.
-        if (values.containsKey(SubjectContract.SubjectEntry.COLUMN_SUBJECT_NAME)) {
-            String name = values.getAsString(SubjectContract.SubjectEntry.COLUMN_SUBJECT_NAME);
-            if (name == null) {
-                throw new IllegalArgumentException("Subject requires a name");
-            }
-        }
-
-        // If the {@link SubjectEntry#COLUMN_SUBJECT_LASTNAME1} key is present,
-        // check that the lastname1 value is not null.
-        if (values.containsKey(SubjectContract.SubjectEntry.COLUMN_SUBJECT_LASTNAME1)) {
-            String lastname1 = values.getAsString(SubjectContract.SubjectEntry.COLUMN_SUBJECT_LASTNAME1);
-            if (lastname1 == null) {
-                throw new IllegalArgumentException("Subject requires a lastname1");
-            }
-        }
-
-
-        // If the {@link SubjectEntry#COLUMN_SUBJECT_LASTNAME2} key is present,
-        // check that the lastname2 value is not null.
-        if (values.containsKey(SubjectContract.SubjectEntry.COLUMN_SUBJECT_LASTNAME2)) {
-            String lastname2 = values.getAsString(SubjectContract.SubjectEntry.COLUMN_SUBJECT_LASTNAME2);
-            if (lastname2 == null) {
-                throw new IllegalArgumentException("Subject requires a lastname2");
-            }
-        }
-
-        // If the {@link SubjectEntry#COLUMN_SUBJECT_BIRTHDATE} key is present,
-        // check that the birthdate value is not null.
-        if (values.containsKey(SubjectContract.SubjectEntry.COLUMN_SUBJECT_BIRTHDATE)) {
-            String birthdate = values.getAsString(SubjectContract.SubjectEntry.COLUMN_SUBJECT_BIRTHDATE);
-            if (birthdate == null) {
-                throw new IllegalArgumentException("Subject requires a birthdate");
-            }
-        }
-
-
-        // If the {@link SubjectEntry#COLUMN_SUBJECT_GROUP} key is present,
-        // check that the group value is not null.
-        if (values.containsKey(SubjectContract.SubjectEntry.COLUMN_SUBJECT_GROUP)) {
-            String subjectGroup = values.getAsString(SubjectContract.SubjectEntry.COLUMN_SUBJECT_GROUP);
-            int intGroup = (int) Double.parseDouble(subjectGroup.trim());
-            if (subjectGroup == null || !SubjectContract.SubjectEntry.isValidGroup(intGroup)) {
-                throw new IllegalArgumentException("Subject requires valid group");
-            }
-        }
-
-        // If there are no values to update, then don't try to update the database
-        if (values.size() == 0) {
-            return 0;
-        }
-
-        // Otherwise, get writeable database to update the data
-        SQLiteDatabase database = mDbHelper.getWritableDatabase();
-
-        // Perform the update on the database and get the number of rows affected
-        int rowsUpdated = database.update(SubjectContract.SubjectEntry.TABLE_NAME, values, selection, selectionArgs);
+        int rowsUpdated = database.update(SensorReadingContract.ReadingEntry.TABLE_NAME, values, selection, selectionArgs);
 
         // If 1 or more rows were updated, then notify all listeners that the data at the
         // given URI has changed
@@ -498,28 +316,21 @@ public class SensorReadingProvider extends ContentProvider {
         int rowsDeleted;
 
         final int match = sUriMatcher.match(uri);
+
         switch (match) {
-            case readings:
+
+            case READINGS:
                 // Delete all rows that match the selection and selection args
-                rowsDeleted = database.delete(ReadingEntry.TABLE_NAME, selection, selectionArgs);
-                break;
-            case RECORD_ID:
-                // Delete a single row given by the ID in the URI
-                selection = ReadingEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                rowsDeleted = database.delete(ReadingEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = database.delete(SensorReadingContract.ReadingEntry.TABLE_NAME, selection, selectionArgs);
                 break;
 
-            case SUBJECTS:
-                // Delete all rows that match the selection and selection args
-                rowsDeleted = database.delete(SubjectContract.SubjectEntry.TABLE_NAME, selection, selectionArgs);
-                break;
-            case SUBJECT_ID:
+            case READING_ID:
                 // Delete a single row given by the ID in the URI
-                selection = SubjectContract.SubjectEntry._ID + "=?";
+                selection = SensorReadingContract.ReadingEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                rowsDeleted = database.delete(SubjectContract.SubjectEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = database.delete(SensorReadingContract.ReadingEntry.TABLE_NAME, selection, selectionArgs);
                 break;
+
 
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
@@ -539,14 +350,13 @@ public class SensorReadingProvider extends ContentProvider {
     public String getType(Uri uri) {
         final int match = sUriMatcher.match(uri);
         switch (match) {
-            case readings:
-                return ReadingEntry.CONTENT_LIST_TYPE;
-            case RECORD_ID:
-                return ReadingEntry.CONTENT_ITEM_TYPE;
-            case SUBJECTS:
-                return SubjectContract.SubjectEntry.CONTENT_LIST_TYPE;
-            case SUBJECT_ID:
-                return SubjectContract.SubjectEntry.CONTENT_ITEM_TYPE;
+
+
+            case READINGS:
+                return SensorReadingContract.ReadingEntry.CONTENT_LIST_TYPE;
+            case READING_ID:
+                return SensorReadingContract.ReadingEntry.CONTENT_ITEM_TYPE;
+
             default:
                 throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
         }

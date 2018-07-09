@@ -74,7 +74,7 @@ public  final class SensorReadingContract {
          *
          * Type: TEXT
          */
-        public final static String COLUMN_RECORD_DATE ="date";
+        public final static String COLUMN_READING_DATE ="date";
 
 
         /**
@@ -82,7 +82,7 @@ public  final class SensorReadingContract {
          *
          * Type: TEXT
          */
-        public final static String COLUMN_RECORD_TIME = "time";
+        public final static String COLUMN_READING_TIME = "time";
 
         /**
          * Name of the Sensor from the SensorReading.
