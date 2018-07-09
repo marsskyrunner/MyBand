@@ -8,7 +8,7 @@ import android.provider.BaseColumns;
 /**
  * API Contract for SensorReading Database for MyBand app.
  */
-public final class SensorReadingContract {
+public  final class SensorReadingContract {
 
     // To prevent someone from accidentally instantiating the contract class,
     // give it an empty constructor.
@@ -38,7 +38,7 @@ public final class SensorReadingContract {
      * Each entry in the table represents a single SensorReading.
      */
 
-    public static final class ReadingsEntry implements BaseColumns {
+    public static final class ReadingEntry implements BaseColumns {
 
         /** The content URI to access the record data in the provider */
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_READINGS);
