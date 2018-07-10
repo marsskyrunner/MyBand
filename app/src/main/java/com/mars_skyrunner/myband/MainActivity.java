@@ -2,9 +2,11 @@ package com.mars_skyrunner.myband;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mars_skyrunner.myband.data.SensorReadingContract;
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandClientManager;
 import com.microsoft.band.BandException;
@@ -62,6 +65,7 @@ import com.microsoft.band.sensors.BandSkinTemperatureEvent;
 import com.microsoft.band.sensors.BandSkinTemperatureEventListener;
 import com.microsoft.band.sensors.BandUVEvent;
 import com.microsoft.band.sensors.BandUVEventListener;
+import com.microsoft.band.sensors.GsrSampleRate;
 import com.microsoft.band.sensors.HeartRateConsentListener;
 import com.microsoft.band.sensors.SampleRate;
 import com.microsoft.band.sensors.UVIndexLevel;
@@ -69,6 +73,8 @@ import com.microsoft.band.sensors.UVIndexLevel;
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+
+import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -97,7 +103,38 @@ public class MainActivity extends AppCompatActivity {
                 String sensorReadingsStr = "";
 
                 for(SensorReading sr : sensorReadings){
-                    sensorReadingsStr += sr.getSensorName() + " : " + getSensorReadingViewValue(sr);
+                    String sensorValue = getSensorReadingViewValue(sr);
+
+                    if(!sensorValue.equals("")){
+
+                        sensorReadingsStr += sr.getSensorName() + " : " + sensorValue + "\n";
+
+                        // Create a ContentValues object where column names are the keys,
+                        // and sensorReadings values are the values.
+
+                        ContentValues values = new ContentValues();
+                        values.put(ReadingEntry.COLUMN_READING_DATE,"9 / 07 /  2018");
+                        values.put(ReadingEntry.COLUMN_READING_TIME, "7 : 35 PM");
+                        values.put(ReadingEntry.COLUMN_SENSOR_NAME,sr.getSensorName() );
+                        values.put(ReadingEntry.COLUMN_SENSOR_VALUE,sensorValue );
+
+                        Uri newUri;
+
+                        // This is a NEW record, so insert a new record into the provider,
+                        // returning the content URI for the new record.
+                        newUri = getContentResolver().insert(ReadingEntry.CONTENT_URI, values);
+
+                        // Show a toast message depending on whether or not the insertion was successful.
+                        if (newUri == null) {
+                            // If the new content URI is null, then there was an error with insertion.
+                            Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_failed), Toast.LENGTH_SHORT).show();
+                        } else {
+                            // Otherwise, the insertion was successful and we can display a toast.
+                            Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
+
+                        }
+                    }
+
                 }
 
                 Log.w(LOG_TAG,"saveDataButton");
@@ -145,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
         String value ;
         int resourceID = 0 ;
 
-        Log.v(LOG_TAG,"getSensorReadingViewValue: sr.getSensorName(): " + sr.getSensorName());
+        //Log.v(LOG_TAG,"getSensorReadingViewValue: sr.getSensorName(): " + sr.getSensorName());
 
         switch (sr.getSensorName()){
             case "heart rate":
@@ -201,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case "uv level":
-                resourceID = R.id.skin_temperature_sensorview;
+                resourceID = R.id.uv_sensorview;
                 break;
 
                 default:
@@ -220,10 +257,10 @@ public class MainActivity extends AppCompatActivity {
         if(sensorValueTextView != null){
             value = sensorValueTextView.getText().toString();
         }else{
-            value  = "sensorValueTextView == null";
+            value  = "";
         }
 
-        Log.v(LOG_TAG,"getSensorReadingViewValue: " + value);
+        //Log.v(LOG_TAG,"getSensorReadingViewValue: " + value);
 
         return value;
     }
@@ -432,6 +469,7 @@ public class MainActivity extends AppCompatActivity {
                             try {
 
                                 client.getSensorManager().registerRRIntervalEventListener(mRRIntervalEventListener);
+
                             } catch (BandException e) {
                                 e.printStackTrace();
                                 appendToUI("Sensor reading error", Constants.RR_INTERVAL);
@@ -451,7 +489,15 @@ public class MainActivity extends AppCompatActivity {
 
                     if (accSensorCheckBox.isChecked()) {
                         try {
+
+                            /*
+                            *  MS128 : A value representing a sample rate of every 128 milliseconds
+                               MS16 : A value representing a sample rate of every 16 milliseconds
+                               MS32 : A value representing a sample rate of every 32 milliseconds
+                            * */
+
                             client.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS128);
+
                         } catch (BandIOException e) {
                             e.printStackTrace();
                             appendToUI("Sensor reading error", Constants.ACCELEROMETER);
@@ -504,7 +550,13 @@ public class MainActivity extends AppCompatActivity {
 
                     if (gsrSensorCheckBox.isChecked()) {
                         try {
-                            client.getSensorManager().registerGsrEventListener(mGsrEventListener);
+
+                            /*
+                            * MS200: A value representing a sample rate of every 200 milliseconds
+                              MS5000 : A value representing a sample rate of every 5000 milliseconds
+                            * */
+
+                            client.getSensorManager().registerGsrEventListener(mGsrEventListener, GsrSampleRate.MS5000);
                         } catch (BandIOException e) {
                             e.printStackTrace();
                             appendToUI("Sensor reading error", Constants.GSR);
@@ -557,6 +609,13 @@ public class MainActivity extends AppCompatActivity {
 
                     if (gyroSensorCheckBox.isChecked()) {
                         try {
+
+                                                        /*
+                            *  MS128 : A value representing a sample rate of every 128 milliseconds
+                               MS16 : A value representing a sample rate of every 16 milliseconds
+                               MS32 : A value representing a sample rate of every 32 milliseconds
+                            * */
+
                             client.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS128);
                         } catch (BandIOException e) {
                             e.printStackTrace();
@@ -650,6 +709,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBandUVChanged(BandUVEvent bandUVEvent) {
             if (bandUVEvent != null) {
+
                 UVIndexLevel level = bandUVEvent.getUVIndexLevel();
 
                 String event = new StringBuilder()
@@ -664,7 +724,8 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
-    private BandSkinTemperatureEventListener mSkinTemperatureListener = new BandSkinTemperatureEventListener() {
+    private BandSkinTemperatureEventListener mSkinTemperatureListener =
+              new BandSkinTemperatureEventListener() {
 
         @Override
         public void onBandSkinTemperatureChanged(BandSkinTemperatureEvent bandSkinTemperatureEvent) {
@@ -682,6 +743,8 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private BandPedometerEventListener mPedometerEventListener = new BandPedometerEventListener() {
+
+
         @Override
         public void onBandPedometerChanged(BandPedometerEvent bandPedometerEvent) {
             if (bandPedometerEvent != null) {
@@ -695,6 +758,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+
 
     private BandGyroscopeEventListener mGyroscopeEventListener = new BandGyroscopeEventListener() {
         @Override
@@ -746,6 +811,7 @@ public class MainActivity extends AppCompatActivity {
             if (bandContactEvent != null) {
                 String event = bandContactEvent.getContactState().toString();
                 appendToUI(event, Constants.BAND_CONTACT);
+
             }
         }
     };

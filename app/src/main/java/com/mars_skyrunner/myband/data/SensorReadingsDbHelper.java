@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
 
+
 /**
  * Database helper for MyBand app. Manages record database creation and version management.
  */
@@ -41,10 +42,10 @@ public class SensorReadingsDbHelper extends SQLiteOpenHelper {
         String SQL_CREATE_SENSOR_READING_TABLE =  "CREATE TABLE " + ReadingEntry.TABLE_NAME + " ("
                 + ReadingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + ReadingEntry.COLUMN_READING_DATE + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_READING_TIME + " TEXT, "
+                + ReadingEntry.COLUMN_READING_TIME + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_ID + " INTEGER, "
-                + ReadingEntry.COLUMN_SENSOR_NAME + " TEXT, "
-                + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT )";
+                + ReadingEntry.COLUMN_SENSOR_NAME + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT NOT NULL )";
 
         Log.w(LOG_TAG,"SQL_CREATE_SENSOR_READING_TABLE: " + SQL_CREATE_SENSOR_READING_TABLE);
 

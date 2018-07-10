@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
 
-import com.mars_skyrunner.myband.data.SensorReadingContract;
+import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
 
 /**
  * {@link ContentProvider} for MyBand app.
@@ -108,7 +108,7 @@ public class SensorReadingProvider extends ContentProvider {
                 // For the readings code, query the readings table directly with the given
                 // projection, selection, selection arguments, and sort order. The cursor
                 // could contain multiple rows of the readings table.
-                cursor = database.query(SensorReadingContract.ReadingEntry.TABLE_NAME, projection, selection, selectionArgs,
+                cursor = database.query(ReadingEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
                 
@@ -125,12 +125,12 @@ public class SensorReadingProvider extends ContentProvider {
                 // For every "?" in the selection, we need to have an element in the selection
                 // arguments that will fill in the "?". Since we have 1 question mark in the
                 // selection, we have 1 String in the selection arguments' String array.
-                selection = SensorReadingContract.ReadingEntry._ID + "=?";
+                selection = ReadingEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 // This will perform a query on the readings table where the _id equals 3 to return a
                 // Cursor containing that row of the table.
-                cursor = database.query(SensorReadingContract.ReadingEntry.TABLE_NAME, projection, selection, selectionArgs,
+                cursor = database.query(ReadingEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
 
@@ -170,26 +170,26 @@ public class SensorReadingProvider extends ContentProvider {
         Log.w(LOG_TAG,"insertReading : ContentValues: " + values.toString());
 
         // Check that the date is not null
-        String date = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_READING_DATE);
+        String date = values.getAsString(ReadingEntry.COLUMN_READING_DATE);
         if (date == null) {
             throw new IllegalArgumentException("SensorReading requires a date");
         }
 
         // Check that the time is not null
-        String time = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_READING_TIME);
+        String time = values.getAsString(ReadingEntry.COLUMN_READING_TIME);
         if (time == null) {
             throw new IllegalArgumentException("SensorReading requires a time");
         }
 
 
         // Check that the sensorName is not null
-        String sensorName = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_NAME);
+        String sensorName = values.getAsString(ReadingEntry.COLUMN_SENSOR_NAME);
         if (sensorName == null) {
             throw new IllegalArgumentException("SensorReading requires a sensor name");
         }
 
         // Check that the sensorName is not null
-        String sensorValue = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE);
+        String sensorValue = values.getAsString(ReadingEntry.COLUMN_SENSOR_VALUE);
         if (sensorName == null) {
             throw new IllegalArgumentException("SensorReading requires a sensor value");
         }
@@ -199,7 +199,7 @@ public class SensorReadingProvider extends ContentProvider {
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
         // Insert the new record with the given values
-        long id = database.insert(SensorReadingContract.ReadingEntry.TABLE_NAME, null, values);
+        long id = database.insert(ReadingEntry.TABLE_NAME, null, values);
         // If the ID is -1, then the insertion failed. Log an error and return null.
         if (id == -1) {
             Log.e(LOG_TAG, "Failed to insert row for " + uri);
@@ -233,7 +233,7 @@ public class SensorReadingProvider extends ContentProvider {
                 // For the READING_ID code, extract out the ID from the URI,
                 // so we know which row to update. Selection will be "_id=?" and selection
                 // arguments will be a String array containing the actual ID.
-                selection = SensorReadingContract.ReadingEntry._ID + "=?";
+                selection = ReadingEntry._ID + "=?";
                 
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 return updateSensorReading(uri, contentValues, selection, selectionArgs);
@@ -251,8 +251,8 @@ public class SensorReadingProvider extends ContentProvider {
     private int updateSensorReading(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         // If the {@link ReadingEntry#COLUMN_READING_DATE} key is present,
         // check that the date value is not null.
-        if (values.containsKey(SensorReadingContract.ReadingEntry.COLUMN_READING_DATE)) {
-            String date = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_READING_DATE);
+        if (values.containsKey(ReadingEntry.COLUMN_READING_DATE)) {
+            String date = values.getAsString(ReadingEntry.COLUMN_READING_DATE);
             if (date == null) {
                 throw new IllegalArgumentException("SensorReading requires a date");
             }
@@ -260,8 +260,8 @@ public class SensorReadingProvider extends ContentProvider {
 
         // If the {@link ReadingEntry#COLUMN_READING_TIME} key is present,
         // check that the time value is not null.
-        if (values.containsKey(SensorReadingContract.ReadingEntry.COLUMN_READING_TIME)) {
-            String time = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_READING_TIME);
+        if (values.containsKey(ReadingEntry.COLUMN_READING_TIME)) {
+            String time = values.getAsString(ReadingEntry.COLUMN_READING_TIME);
             if (time == null) {
                 throw new IllegalArgumentException("SensorReading requires a time");
             }
@@ -269,8 +269,8 @@ public class SensorReadingProvider extends ContentProvider {
 
         // If the {@link ReadingEntry#COLUMN_SENSOR_NAME} key is present,
         // check that the time text is not null.
-        if (values.containsKey(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_NAME)) {
-            String text = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_NAME);
+        if (values.containsKey(ReadingEntry.COLUMN_SENSOR_NAME)) {
+            String text = values.getAsString(ReadingEntry.COLUMN_SENSOR_NAME);
             if (text == null) {
                 throw new IllegalArgumentException("SensorReading requires a sensor name");
             }
@@ -278,8 +278,8 @@ public class SensorReadingProvider extends ContentProvider {
 
         // If the {@link ReadingEntry#COLUMN_SENSOR_VALUE} key is present,
         // check that the time text is not null.
-        if (values.containsKey(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE)) {
-            String text = values.getAsString(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE);
+        if (values.containsKey(ReadingEntry.COLUMN_SENSOR_VALUE)) {
+            String text = values.getAsString(ReadingEntry.COLUMN_SENSOR_VALUE);
             if (text == null) {
                 throw new IllegalArgumentException("SensorReading requires a sensor name");
             }
@@ -295,7 +295,7 @@ public class SensorReadingProvider extends ContentProvider {
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
         // Perform the update on the database and get the number of rows affected
-        int rowsUpdated = database.update(SensorReadingContract.ReadingEntry.TABLE_NAME, values, selection, selectionArgs);
+        int rowsUpdated = database.update(ReadingEntry.TABLE_NAME, values, selection, selectionArgs);
 
         // If 1 or more rows were updated, then notify all listeners that the data at the
         // given URI has changed
@@ -321,14 +321,14 @@ public class SensorReadingProvider extends ContentProvider {
 
             case READINGS:
                 // Delete all rows that match the selection and selection args
-                rowsDeleted = database.delete(SensorReadingContract.ReadingEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = database.delete(ReadingEntry.TABLE_NAME, selection, selectionArgs);
                 break;
 
             case READING_ID:
                 // Delete a single row given by the ID in the URI
-                selection = SensorReadingContract.ReadingEntry._ID + "=?";
+                selection = ReadingEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                rowsDeleted = database.delete(SensorReadingContract.ReadingEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = database.delete(ReadingEntry.TABLE_NAME, selection, selectionArgs);
                 break;
 
 
@@ -353,9 +353,9 @@ public class SensorReadingProvider extends ContentProvider {
 
 
             case READINGS:
-                return SensorReadingContract.ReadingEntry.CONTENT_LIST_TYPE;
+                return ReadingEntry.CONTENT_LIST_TYPE;
             case READING_ID:
-                return SensorReadingContract.ReadingEntry.CONTENT_ITEM_TYPE;
+                return ReadingEntry.CONTENT_ITEM_TYPE;
 
             default:
                 throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
