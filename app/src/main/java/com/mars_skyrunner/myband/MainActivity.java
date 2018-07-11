@@ -1,11 +1,15 @@
 package com.mars_skyrunner.myband;
 
 import android.app.Activity;
+import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.Loader;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -72,7 +76,10 @@ import com.microsoft.band.sensors.HeartRateConsentListener;
 import com.microsoft.band.sensors.SampleRate;
 import com.microsoft.band.sensors.UVIndexLevel;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -82,23 +89,23 @@ import java.util.Date;
 import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
 
 
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     public static BandClient client = null;
     final String LOG_TAG = "MainActivity";
     private TextView bandStatusTxt;
     private Button btnStart, btnStop;
     Toolbar toolbar;
-    LinearLayout mListView,mLoadingView;
+    LinearLayout mListView, mLoadingView, mMainLayout;
     ArrayList<SensorReading> sensorReadings;
     File saveFile;
+    Date date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -106,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
         mListView = (LinearLayout) findViewById(R.id.sensor_list);
         initSensorListView();
 
+        mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
         showLoadingView(false);
 
@@ -114,16 +122,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+                Log.w(LOG_TAG, "saveDataButton");
+
                 showLoadingView(true);
 
                 String sensorReadingsStr = "";
 
-                Date date = new Date();
+                date = new Date();
 
-                for(SensorReading sr : sensorReadings){
+                for (SensorReading sr : sensorReadings) {
                     String sensorValue = getSensorReadingViewValue(sr);
 
-                    if(!sensorValue.equals("")){
+                    if (!sensorValue.equals("")) {
 
                         sensorReadingsStr += sr.getSensorName() + " : " + sensorValue + "\n";
 
@@ -131,10 +141,10 @@ public class MainActivity extends AppCompatActivity {
                         // and sensorReadings values are the values.
 
                         ContentValues values = new ContentValues();
-                        values.put(ReadingEntry.COLUMN_READING_DATE,new SimpleDateFormat("d MMM yyyy").format(date));
-                        values.put(ReadingEntry.COLUMN_READING_TIME,new SimpleDateFormat("HH:mm:ss").format(date));
-                        values.put(ReadingEntry.COLUMN_SENSOR_NAME,sr.getSensorName() );
-                        values.put(ReadingEntry.COLUMN_SENSOR_VALUE,sensorValue );
+                        values.put(ReadingEntry.COLUMN_READING_DATE, new SimpleDateFormat("d MMM yyyy").format(date));
+                        values.put(ReadingEntry.COLUMN_READING_TIME, new SimpleDateFormat("HH:mm:ss").format(date));
+                        values.put(ReadingEntry.COLUMN_SENSOR_NAME, sr.getSensorName());
+                        values.put(ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
 
                         Uri newUri;
 
@@ -155,16 +165,12 @@ public class MainActivity extends AppCompatActivity {
 
                 }
 
-                Log.w(LOG_TAG,"saveDataButton");
-                Log.w(LOG_TAG,"sensorReadingsStr" + sensorReadingsStr);
 
-                Log.v(LOG_TAG, "SDK_INT: " + android.os.Build.VERSION.SDK_INT);
-
-                File dir = getOutputDirectory();
-
-                saveFile = getCsvOutputFile(dir,date);
+                Log.w(LOG_TAG, "sensorReadingsStr" + sensorReadingsStr);
 
 
+                // Kick off the record loader
+                getLoaderManager().initLoader(Constants.SAVE_DATAPOINT_LOADER, null, MainActivity.this);
 
             }
         });
@@ -174,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
 
         btnStart = (Button) findViewById(R.id.btnStart);
         btnStop = (Button) findViewById(R.id.btnStop);
-
 
 
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
@@ -203,11 +208,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void showLoadingView(boolean loadingState) {
 
-        if(loadingState){
-            mLoadingView.setVisibility(View.GONE);
+        if (loadingState) {
+            mMainLayout.setVisibility(View.GONE);
             mLoadingView.setVisibility(View.VISIBLE);
-        }else{
-            mLoadingView.setVisibility(View.VISIBLE);
+        } else {
+            mMainLayout.setVisibility(View.VISIBLE);
             mLoadingView.setVisibility(View.GONE);
         }
 
@@ -216,14 +221,13 @@ public class MainActivity extends AppCompatActivity {
     private File getCsvOutputFile(File dir, Date date) {
 
 
-
         String timeStamp = new SimpleDateFormat("yyMMddHHmmss").format(date);
 
         // the name of the file to export with
-        String filename = "dp_" +  timeStamp + ".csv";
+        String filename = "dp_" + timeStamp + ".csv";
         Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
 
-         return new File(dir, filename);
+        return new File(dir, filename);
     }
 
 
@@ -232,34 +236,34 @@ public class MainActivity extends AppCompatActivity {
      */
     private File getOutputDirectory() {
 
-        Log.v(LOG_TAG,"getOutputDirectory");
+        Log.v(LOG_TAG, "getOutputDirectory");
 
         File directory = null;
 
         if (Environment.getExternalStorageState() == null) {
             //create new file directory object
 
-            Log.v(LOG_TAG,"getExternalStorageState() == null");
+            Log.v(LOG_TAG, "getExternalStorageState() == null");
 
             directory = new File(Environment.getDataDirectory()
                     + "/MyBand/");
 
-            Log.v(LOG_TAG,"directory path: " +  Environment.getDataDirectory()
+            Log.v(LOG_TAG, "directory path: " + Environment.getDataDirectory()
                     + "/MyBand/");
 
             // if no directory exists, create new directory
             if (!directory.exists()) {
-                Log.v(LOG_TAG,"directory dont exist");
+                Log.v(LOG_TAG, "directory dont exist");
                 directory.mkdir();
-            }else{
-                Log.v(LOG_TAG,"directory exist");
+            } else {
+                Log.v(LOG_TAG, "directory exist");
             }
 
 
             // if phone DOES have sd card
         } else if (Environment.getExternalStorageState() != null) {
 
-            Log.v(LOG_TAG,"getExternalStorageState() != null");
+            Log.v(LOG_TAG, "getExternalStorageState() != null");
 
 
             // search for directory on SD card
@@ -267,10 +271,10 @@ public class MainActivity extends AppCompatActivity {
                     + "/Myband/");
             // if no directory exists, create new directory
             if (!directory.exists()) {
-                Log.v(LOG_TAG,"directory dont exist");
+                Log.v(LOG_TAG, "directory dont exist");
                 directory.mkdir();
-            }else{
-                Log.v(LOG_TAG,"directory exist");
+            } else {
+                Log.v(LOG_TAG, "directory exist");
             }
         }// end of SD card checking
 
@@ -281,12 +285,12 @@ public class MainActivity extends AppCompatActivity {
 
     private String getSensorReadingViewValue(SensorReading sr) {
 
-        String value ;
-        int resourceID = 0 ;
+        String value;
+        int resourceID = 0;
 
         //Log.v(LOG_TAG,"getSensorReadingViewValue: sr.getSensorName(): " + sr.getSensorName());
 
-        switch (sr.getSensorName()){
+        switch (sr.getSensorName()) {
             case "heart rate":
                 resourceID = R.id.heart_rate_sensorview;
                 break;
@@ -343,23 +347,23 @@ public class MainActivity extends AppCompatActivity {
                 resourceID = R.id.uv_sensorview;
                 break;
 
-                default:
-                    resourceID = 0;
-                    break;
+            default:
+                resourceID = 0;
+                break;
         }
 
         SensorReadingView sensorReadingView = null;
         TextView sensorValueTextView = null;
 
-        if(resourceID != 0){
+        if (resourceID != 0) {
             sensorReadingView = (SensorReadingView) findViewById(resourceID);
-            sensorValueTextView =(TextView) sensorReadingView.findViewById(R.id.sensor_value);
+            sensorValueTextView = (TextView) sensorReadingView.findViewById(R.id.sensor_value);
         }
 
-        if(sensorValueTextView != null){
+        if (sensorValueTextView != null) {
             value = sensorValueTextView.getText().toString();
-        }else{
-            value  = "";
+        } else {
+            value = "";
         }
 
         //Log.v(LOG_TAG,"getSensorReadingViewValue: " + value);
@@ -465,10 +469,115 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void stopButtonClicked()  {
+    private void stopButtonClicked() {
         Log.v(LOG_TAG, "btnStop onClick");
         clearSensorTextViews();
         disconnectBand();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
+
+        switch (id) {
+            case Constants.SAVE_DATAPOINT_LOADER:
+
+                // Define a projection that specifies the columns from the table we care about.
+                String[] projection = {
+                        ReadingEntry._ID,
+                        ReadingEntry.COLUMN_READING_DATE,
+                        ReadingEntry.COLUMN_READING_TIME,
+                        ReadingEntry.COLUMN_SENSOR_NAME};
+
+                String sortOrder = ReadingEntry._ID;
+
+                // This loader will execute the ContentProvider's query method on a background thread
+
+                return new CursorLoader(this,   // Parent activity context
+                        ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                        projection,             // Columns to include in the resulting Cursor
+                        null,                   //  selection clause
+                        null,                   //  selection arguments
+                        sortOrder);                  //  sort order
+
+        }
+
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
+
+
+        switch (loader.getId()) {
+            case Constants.SAVE_DATAPOINT_LOADER:
+
+                File dir = getOutputDirectory();
+                saveFile = getCsvOutputFile(dir, date);
+
+                FileWriter fw = null;
+
+                try {
+
+                    fw = new FileWriter(saveFile);
+
+                    BufferedWriter bw = new BufferedWriter(fw);
+
+                    int rowcount = c.getCount();
+                    int colcount = c.getColumnCount();
+
+                    if (rowcount > 0) {
+
+                        c.moveToFirst();
+
+                        for (int i = 0; i < colcount; i++) {
+
+                            if (i != colcount - 1) {
+
+                                bw.write(c.getColumnName(i) + ",");
+
+                            } else {
+
+                                bw.write(c.getColumnName(i));
+
+                            }
+                        }
+
+                        bw.newLine();
+
+                        for (int i = 0; i < rowcount; i++) {
+
+                            c.moveToPosition(i);
+
+                            for (int j = 0; j < colcount; j++) {
+
+                                if (j != colcount - 1)
+                                    bw.write(c.getString(j) + ",");
+                                else
+                                    bw.write(c.getString(j));
+                            }
+
+                            bw.newLine();
+                        }
+
+                        bw.flush();
+
+                        Log.w(LOG_TAG,"Datapoint Exported Successfully.");
+
+                        showLoadingView(false);
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+                }
+                break;
+        }
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 
 
@@ -514,11 +623,12 @@ public class MainActivity extends AppCompatActivity {
     private class BandSensorsSubscriptionTask extends AsyncTask<Void, Void, Void> {
 
         boolean consent = true;
+
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            if(!consent){
+            if (!consent) {
                 showConsentDialog();
             }
 
@@ -551,7 +661,7 @@ public class MainActivity extends AppCompatActivity {
                                 appendToUI("Sensor reading error", Constants.HEART_RATE);
                             }
                             consent = true;
-                        }else{
+                        } else {
                             Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() =! UserConsent.GRANTED");
                             consent = false;
                         }
@@ -803,7 +913,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showConsentDialog() {
 
-        ConsentDialog dialog =  new ConsentDialog(MainActivity.this);
+        ConsentDialog dialog = new ConsentDialog(MainActivity.this);
         dialog.show();
     }
 
@@ -827,22 +937,22 @@ public class MainActivity extends AppCompatActivity {
 
 
     private BandSkinTemperatureEventListener mSkinTemperatureListener =
-              new BandSkinTemperatureEventListener() {
+            new BandSkinTemperatureEventListener() {
 
-        @Override
-        public void onBandSkinTemperatureChanged(BandSkinTemperatureEvent bandSkinTemperatureEvent) {
-            if (bandSkinTemperatureEvent != null) {
+                @Override
+                public void onBandSkinTemperatureChanged(BandSkinTemperatureEvent bandSkinTemperatureEvent) {
+                    if (bandSkinTemperatureEvent != null) {
 
-                double temp = bandSkinTemperatureEvent.getTemperature();
-                DecimalFormat df = new DecimalFormat("0.00");
+                        double temp = bandSkinTemperatureEvent.getTemperature();
+                        DecimalFormat df = new DecimalFormat("0.00");
 
-                String event = new StringBuilder()
-                        .append(df.format(temp) + " °C").toString();
+                        String event = new StringBuilder()
+                                .append(df.format(temp) + " °C").toString();
 
-                appendToUI(event, Constants.SKIN_TEMPERATURE);
-            }
-        }
-    };
+                        appendToUI(event, Constants.SKIN_TEMPERATURE);
+                    }
+                }
+            };
 
     private BandPedometerEventListener mPedometerEventListener = new BandPedometerEventListener() {
 
@@ -860,7 +970,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-
 
 
     private BandGyroscopeEventListener mGyroscopeEventListener = new BandGyroscopeEventListener() {
@@ -1133,7 +1242,7 @@ public class MainActivity extends AppCompatActivity {
 
         bandStatusTxt.setText(getResources().getString(R.string.select_option));
 
-        for(int i = 0; i < mListView.getChildCount(); i++){
+        for (int i = 0; i < mListView.getChildCount(); i++) {
             TextView sensorTextView = (TextView) mListView.getChildAt(i).findViewById(R.id.sensor_value);
             sensorTextView.setText("");
         }
@@ -1218,10 +1327,10 @@ public class MainActivity extends AppCompatActivity {
                 client.disconnect().await();
             } catch (InterruptedException e) {
                 // Do nothing as this is happening during destroy
-                Log.e(LOG_TAG,"disconnectBand: InterruptedException: " + e.toString());
+                Log.e(LOG_TAG, "disconnectBand: InterruptedException: " + e.toString());
             } catch (BandException e) {
                 // Do nothing as this is happening during destroy
-                Log.e(LOG_TAG,"disconnectBand: BandException: " + e.toString());
+                Log.e(LOG_TAG, "disconnectBand: BandException: " + e.toString());
             }
         }
     }
