@@ -90,8 +90,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView bandStatusTxt;
     private Button btnStart, btnStop;
     Toolbar toolbar;
-    LinearLayout mListView;
+    LinearLayout mListView,mLoadingView;
     ArrayList<SensorReading> sensorReadings;
+    File saveFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,10 +103,18 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mListView = (LinearLayout) findViewById(R.id.sensor_list);
+        initSensorListView();
+
+        mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
+        showLoadingView(false);
+
         ImageButton saveDataButton = (ImageButton) toolbar.findViewById(R.id.save_data_imagebutton);
         saveDataButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                showLoadingView(true);
 
                 String sensorReadingsStr = "";
 
@@ -149,13 +158,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.w(LOG_TAG,"saveDataButton");
                 Log.w(LOG_TAG,"sensorReadingsStr" + sensorReadingsStr);
 
-
                 Log.v(LOG_TAG, "SDK_INT: " + android.os.Build.VERSION.SDK_INT);
-
 
                 File dir = getOutputDirectory();
 
-                File saveFile = getCsvOutputFile(dir,date);
+                saveFile = getCsvOutputFile(dir,date);
 
 
 
@@ -168,8 +175,7 @@ public class MainActivity extends AppCompatActivity {
         btnStart = (Button) findViewById(R.id.btnStart);
         btnStop = (Button) findViewById(R.id.btnStop);
 
-        mListView = (LinearLayout) findViewById(R.id.sensor_list);
-        initSensorListView();
+
 
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
 
@@ -192,6 +198,18 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+    }
+
+    private void showLoadingView(boolean loadingState) {
+
+        if(loadingState){
+            mLoadingView.setVisibility(View.GONE);
+            mLoadingView.setVisibility(View.VISIBLE);
+        }else{
+            mLoadingView.setVisibility(View.VISIBLE);
+            mLoadingView.setVisibility(View.GONE);
+        }
 
     }
 
@@ -224,7 +242,10 @@ public class MainActivity extends AppCompatActivity {
             Log.v(LOG_TAG,"getExternalStorageState() == null");
 
             directory = new File(Environment.getDataDirectory()
-                    + "/Myband/");
+                    + "/MyBand/");
+
+            Log.v(LOG_TAG,"directory path: " +  Environment.getDataDirectory()
+                    + "/MyBand/");
 
             // if no directory exists, create new directory
             if (!directory.exists()) {

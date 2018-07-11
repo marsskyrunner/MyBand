@@ -24,4 +24,5 @@
     <string name="accept_label">accept</string>
     <string name="sensor_data_saving_failed">Error al guardar la informacion.</string>
     <string name="sensor_data_saving_success">Informacion guardada</string>
+    <string name="processing">procesando</string>
 </resources>
