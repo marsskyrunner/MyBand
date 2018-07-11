@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatDialog;
@@ -70,11 +72,15 @@ import com.microsoft.band.sensors.HeartRateConsentListener;
 import com.microsoft.band.sensors.SampleRate;
 import com.microsoft.band.sensors.UVIndexLevel;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -92,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -101,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 String sensorReadingsStr = "";
+
+                Date date = new Date();
 
                 for(SensorReading sr : sensorReadings){
                     String sensorValue = getSensorReadingViewValue(sr);
@@ -113,8 +122,8 @@ public class MainActivity extends AppCompatActivity {
                         // and sensorReadings values are the values.
 
                         ContentValues values = new ContentValues();
-                        values.put(ReadingEntry.COLUMN_READING_DATE,"9 / 07 /  2018");
-                        values.put(ReadingEntry.COLUMN_READING_TIME, "7 : 35 PM");
+                        values.put(ReadingEntry.COLUMN_READING_DATE,new SimpleDateFormat("d MMM yyyy").format(date));
+                        values.put(ReadingEntry.COLUMN_READING_TIME,new SimpleDateFormat("HH:mm:ss").format(date));
                         values.put(ReadingEntry.COLUMN_SENSOR_NAME,sr.getSensorName() );
                         values.put(ReadingEntry.COLUMN_SENSOR_VALUE,sensorValue );
 
@@ -139,6 +148,15 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.w(LOG_TAG,"saveDataButton");
                 Log.w(LOG_TAG,"sensorReadingsStr" + sensorReadingsStr);
+
+
+                Log.v(LOG_TAG, "SDK_INT: " + android.os.Build.VERSION.SDK_INT);
+
+
+                File dir = getOutputDirectory();
+
+                File saveFile = getCsvOutputFile(dir,date);
+
 
 
             }
@@ -176,6 +194,69 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+    private File getCsvOutputFile(File dir, Date date) {
+
+
+
+        String timeStamp = new SimpleDateFormat("yyMMddHHmmss").format(date);
+
+        // the name of the file to export with
+        String filename = "dp_" +  timeStamp + ".csv";
+        Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
+
+         return new File(dir, filename);
+    }
+
+
+    /**
+     * if there is no SD card, create new directory objects to make directory on device
+     */
+    private File getOutputDirectory() {
+
+        Log.v(LOG_TAG,"getOutputDirectory");
+
+        File directory = null;
+
+        if (Environment.getExternalStorageState() == null) {
+            //create new file directory object
+
+            Log.v(LOG_TAG,"getExternalStorageState() == null");
+
+            directory = new File(Environment.getDataDirectory()
+                    + "/Myband/");
+
+            // if no directory exists, create new directory
+            if (!directory.exists()) {
+                Log.v(LOG_TAG,"directory dont exist");
+                directory.mkdir();
+            }else{
+                Log.v(LOG_TAG,"directory exist");
+            }
+
+
+            // if phone DOES have sd card
+        } else if (Environment.getExternalStorageState() != null) {
+
+            Log.v(LOG_TAG,"getExternalStorageState() != null");
+
+
+            // search for directory on SD card
+            directory = new File(Environment.getExternalStorageDirectory()
+                    + "/Myband/");
+            // if no directory exists, create new directory
+            if (!directory.exists()) {
+                Log.v(LOG_TAG,"directory dont exist");
+                directory.mkdir();
+            }else{
+                Log.v(LOG_TAG,"directory exist");
+            }
+        }// end of SD card checking
+
+        return directory;
+
+    }
+
 
     private String getSensorReadingViewValue(SensorReading sr) {
 
