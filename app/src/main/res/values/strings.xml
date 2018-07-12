@@ -22,7 +22,11 @@
     <string name="sensor_checkbox">sensor_checkbox</string>
     <string name="conscent_msg">You have not given this application consent to access heart rate data yet.</string>
     <string name="accept_label">accept</string>
-    <string name="sensor_data_saving_failed">Error al guardar la informacion.</string>
-    <string name="sensor_data_saving_success">Informacion guardada</string>
-    <string name="processing">procesando</string>
+    <string name="sensor_data_saving_failed">Save data failed.</string>
+    <string name="sensor_data_saving_success">Data succesfuly saved.</string>
+    <string name="processing">processing..</string>
+    <string name="open_csv_file">Open CSV</string>
+    <string name="open">open</string>
+    <string name="no_data_point">No data to save.</string>
+    <string name="file_not_found">File not found.</string>
 </resources>

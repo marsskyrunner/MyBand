@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -78,6 +80,7 @@ import com.microsoft.band.sensors.UVIndexLevel;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -101,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements
     ArrayList<SensorReading> sensorReadings;
     File saveFile;
     Date date;
+    boolean bandSubscriptionTaskRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,53 +128,60 @@ public class MainActivity extends AppCompatActivity implements
 
                 Log.w(LOG_TAG, "saveDataButton");
 
-                showLoadingView(true);
+                if(bandSubscriptionTaskRunning){
 
-                String sensorReadingsStr = "";
 
-                date = new Date();
+                    showLoadingView(true);
 
-                for (SensorReading sr : sensorReadings) {
-                    String sensorValue = getSensorReadingViewValue(sr);
+                    String sensorReadingsStr = "";
 
-                    if (!sensorValue.equals("")) {
+                    date = new Date();
 
-                        sensorReadingsStr += sr.getSensorName() + " : " + sensorValue + "\n";
+                    for (SensorReading sr : sensorReadings) {
+                        String sensorValue = getSensorReadingViewValue(sr);
 
-                        // Create a ContentValues object where column names are the keys,
-                        // and sensorReadings values are the values.
+                        if (!sensorValue.equals("")) {
 
-                        ContentValues values = new ContentValues();
-                        values.put(ReadingEntry.COLUMN_READING_DATE, new SimpleDateFormat("d MMM yyyy").format(date));
-                        values.put(ReadingEntry.COLUMN_READING_TIME, new SimpleDateFormat("HH:mm:ss").format(date));
-                        values.put(ReadingEntry.COLUMN_SENSOR_NAME, sr.getSensorName());
-                        values.put(ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
+                            sensorReadingsStr += sr.getSensorName() + " : " + sensorValue + "\n";
 
-                        Uri newUri;
+                            // Create a ContentValues object where column names are the keys,
+                            // and sensorReadings values are the values.
 
-                        // This is a NEW record, so insert a new record into the provider,
-                        // returning the content URI for the new record.
-                        newUri = getContentResolver().insert(ReadingEntry.CONTENT_URI, values);
+                            ContentValues values = new ContentValues();
+                            values.put(ReadingEntry.COLUMN_READING_DATE, new SimpleDateFormat("d MMM yyyy").format(date));
+                            values.put(ReadingEntry.COLUMN_READING_TIME, new SimpleDateFormat("HH:mm:ss").format(date));
+                            values.put(ReadingEntry.COLUMN_SENSOR_NAME, sr.getSensorName());
+                            values.put(ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
 
-                        // Show a toast message depending on whether or not the insertion was successful.
-                        if (newUri == null) {
-                            // If the new content URI is null, then there was an error with insertion.
-                            Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_failed), Toast.LENGTH_SHORT).show();
-                        } else {
-                            // Otherwise, the insertion was successful and we can display a toast.
-                            Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
+                            Uri newUri;
 
+                            // This is a NEW record, so insert a new record into the provider,
+                            // returning the content URI for the new record.
+                            newUri = getContentResolver().insert(ReadingEntry.CONTENT_URI, values);
+
+                            // Show a toast message depending on whether or not the insertion was successful.
+                            if (newUri == null) {
+                                // If the new content URI is null, then there was an error with insertion.
+                                Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_failed), Toast.LENGTH_SHORT).show();
+                            } else {
+                                // Otherwise, the insertion was successful and we can display a toast.
+                                Log.w(LOG_TAG, "sensorReadingsStr" + sensorReadingsStr);
+
+                                // Kick off the record loader
+                                getLoaderManager().initLoader(Constants.SAVE_DATAPOINT_LOADER, null, MainActivity.this);
+
+
+                            }
                         }
+
                     }
 
+                }else{
+                    Log.e(LOG_TAG,"bandSubscriptionTaskRunning: "  + bandSubscriptionTaskRunning);
+
+
+                    Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
                 }
-
-
-                Log.w(LOG_TAG, "sensorReadingsStr" + sensorReadingsStr);
-
-
-                // Kick off the record loader
-                getLoaderManager().initLoader(Constants.SAVE_DATAPOINT_LOADER, null, MainActivity.this);
 
             }
         });
@@ -470,7 +481,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void stopButtonClicked() {
+
         Log.v(LOG_TAG, "btnStop onClick");
+
+        bandSubscriptionTaskRunning = false;
+
         clearSensorTextViews();
         disconnectBand();
     }
@@ -561,7 +576,19 @@ public class MainActivity extends AppCompatActivity implements
 
                         bw.flush();
 
+
+
                         Log.w(LOG_TAG,"Datapoint Exported Successfully.");
+
+
+                        //shows "OPEN CSV" action on a snackbar
+                        Snackbar mySnackbar = Snackbar.make(mMainLayout,
+                                R.string.open_csv_file, Snackbar.LENGTH_LONG);
+                        mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
+                        mySnackbar.show();
+
+                        //Show success message
+                        Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
 
                         showLoadingView(false);
                     }
@@ -632,6 +659,12 @@ public class MainActivity extends AppCompatActivity implements
                 showConsentDialog();
             }
 
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            bandSubscriptionTaskRunning = true;
         }
 
         @Override
@@ -1391,5 +1424,31 @@ public class MainActivity extends AppCompatActivity implements
         }
 
 
+    }
+
+    public class OpenCSVFileListener implements View.OnClickListener{
+
+
+        @Override
+        public void onClick(View v) {
+
+            Log.v(LOG_TAG,"OpenCSVFileListener onClick");
+
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension("csv");
+            Log.v(LOG_TAG,"mimeType: " + mimeType);
+
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.fromFile(saveFile));
+            intent.setType(mimeType);
+
+            // Verify that the intent will resolve to an activity
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                Log.v(LOG_TAG,"resolveActivity YES");
+                startActivity(intent);
+            }else{
+                Log.v(LOG_TAG,"resolveActivity NO");
+            }
+
+        }
     }
 }
