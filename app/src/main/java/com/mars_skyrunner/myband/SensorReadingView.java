@@ -2,11 +2,14 @@ package com.mars_skyrunner.myband;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -26,6 +29,8 @@ public class SensorReadingView extends LinearLayout {
     SensorCheckBox checkBox;
     String sampleRate = "";
     SensorReading  mSensorReading ;
+    int spinnerSelection;
+
 
     public TextView getUnitsTextView() {
 
@@ -272,6 +277,9 @@ public class SensorReadingView extends LinearLayout {
         final Spinner mSpinner = spinner;
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(mContext,R.layout.sample_rate_option_textview,options);
+
+        spinnerSelection = 0 ;
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -282,10 +290,18 @@ public class SensorReadingView extends LinearLayout {
 
                 String  optionSelected = mSpinner.getSelectedItem().toString();
 
-                Log.v(LOG_TAG, "spinner: optionSelected:   " + optionSelected);
-
                 sampleRate = optionSelected + " hz";
 
+                if(arg2 != spinnerSelection){
+                    spinnerSelection = arg2;
+
+                    Log.v(LOG_TAG, "spinner:  sampleRate Changed");
+
+                    Intent stopReadingIntent = new Intent(Constants.RESET_SENSOR_READING);
+                    stopReadingIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    mContext.sendBroadcast(stopReadingIntent);
+
+                }
 
             }
 

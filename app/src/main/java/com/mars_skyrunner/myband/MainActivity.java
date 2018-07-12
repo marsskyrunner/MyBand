@@ -1170,6 +1170,11 @@ public class MainActivity extends AppCompatActivity implements
 
                 switch (requestCode) {
 
+                    case Constants.BAND_STATUS:
+                        sensorValueTextView = bandStatusTxt;
+                        break;
+
+
                     case Constants.UV_LEVEL:
 
                         v = findViewById(R.id.uv_sensorview);
@@ -1227,10 +1232,6 @@ public class MainActivity extends AppCompatActivity implements
                     case Constants.ACCELEROMETER:
                         v = findViewById(R.id.accelerometer_sensorview);
                         sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
-
-                    case Constants.BAND_STATUS:
-                        sensorValueTextView = bandStatusTxt;
                         break;
 
 
@@ -1311,11 +1312,13 @@ public class MainActivity extends AppCompatActivity implements
                 Log.v(LOG_TAG, "devices.length == 0");
                 appendToUI("Band isn't paired with your phone.\n", Constants.BAND_STATUS);
                 return false;
+
             } else {
                 Log.v(LOG_TAG, "devices.length =! 0");
             }
 
             client = BandClientManager.getInstance().create(getBaseContext(), devices[0]);
+
         } else {
             Log.v(LOG_TAG, "client != null");
 
