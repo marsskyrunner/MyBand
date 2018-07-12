@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 Log.w(LOG_TAG, "saveDataButton");
 
-                if(bandSubscriptionTaskRunning){
+                if (bandSubscriptionTaskRunning) {
 
 
                     showLoadingView(true);
@@ -176,8 +176,8 @@ public class MainActivity extends AppCompatActivity implements
 
                     }
 
-                }else{
-                    Log.e(LOG_TAG,"bandSubscriptionTaskRunning: "  + bandSubscriptionTaskRunning);
+                } else {
+                    Log.e(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
 
                     Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
@@ -232,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements
     private File getCsvOutputFile(File dir, Date date) {
 
 
-        String timeStamp = new SimpleDateFormat("yyMMddHHmmss").format(date);
+        String timeStamp = new SimpleDateFormat("ddMMyyHHmmss").format(date);
 
         // the name of the file to export with
         String filename = "dp_" + timeStamp + ".csv";
@@ -501,7 +501,8 @@ public class MainActivity extends AppCompatActivity implements
                         ReadingEntry._ID,
                         ReadingEntry.COLUMN_READING_DATE,
                         ReadingEntry.COLUMN_READING_TIME,
-                        ReadingEntry.COLUMN_SENSOR_NAME};
+                        ReadingEntry.COLUMN_SENSOR_NAME,
+                        ReadingEntry.COLUMN_SENSOR_VALUE};
 
                 String sortOrder = ReadingEntry._ID;
 
@@ -576,10 +577,12 @@ public class MainActivity extends AppCompatActivity implements
 
                         bw.flush();
 
+                        Log.w(LOG_TAG, "Datapoint Exported Successfully.");
 
+                        showLoadingView(false);
 
-                        Log.w(LOG_TAG,"Datapoint Exported Successfully.");
-
+                        //Show success message
+                        Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
 
                         //shows "OPEN CSV" action on a snackbar
                         Snackbar mySnackbar = Snackbar.make(mMainLayout,
@@ -587,10 +590,7 @@ public class MainActivity extends AppCompatActivity implements
                         mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
                         mySnackbar.show();
 
-                        //Show success message
-                        Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
 
-                        showLoadingView(false);
                     }
 
                 } catch (IOException e) {
@@ -1426,27 +1426,27 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    public class OpenCSVFileListener implements View.OnClickListener{
+    public class OpenCSVFileListener implements View.OnClickListener {
 
 
         @Override
         public void onClick(View v) {
 
-            Log.v(LOG_TAG,"OpenCSVFileListener onClick");
+            Log.v(LOG_TAG, "OpenCSVFileListener onClick");
 
             String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension("csv");
-            Log.v(LOG_TAG,"mimeType: " + mimeType);
+            Log.v(LOG_TAG, "mimeType: " + mimeType);
 
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.fromFile(saveFile));
-            intent.setType(mimeType);
+            intent.setDataAndType(Uri.fromFile(saveFile), "application/vnd.ms-excel");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             // Verify that the intent will resolve to an activity
             if (intent.resolveActivity(getPackageManager()) != null) {
-                Log.v(LOG_TAG,"resolveActivity YES");
+                Log.v(LOG_TAG, "resolveActivity YES");
                 startActivity(intent);
-            }else{
-                Log.v(LOG_TAG,"resolveActivity NO");
+            } else {
+                Log.v(LOG_TAG, "resolveActivity NO");
             }
 
         }
