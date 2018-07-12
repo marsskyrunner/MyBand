@@ -24,6 +24,8 @@ public class SensorReadingView extends LinearLayout {
     private static final String LOG_TAG = SensorReadingView.class.getSimpleName();
     Context mContext;
     SensorCheckBox checkBox;
+    String sampleRate = "";
+    SensorReading  mSensorReading ;
 
     public TextView getUnitsTextView() {
 
@@ -119,6 +121,7 @@ public class SensorReadingView extends LinearLayout {
         super(context,null);
 
         mContext = context;
+        mSensorReading = sensorReading;
 
         setOrientation(LinearLayout.VERTICAL);
 
@@ -180,6 +183,7 @@ public class SensorReadingView extends LinearLayout {
             //if the sensor is Heart Rate, Skin Temp.,UV,Barometer or Altimeter, sample rate is 1hz
 
             TextView sampleRateTextView = new TextView(mContext);
+            sampleRateTextView.setId(R.id.sample_rate_textview);
 
             RelativeLayout.LayoutParams textParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
             textParams.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -195,6 +199,7 @@ public class SensorReadingView extends LinearLayout {
                     || sensorName.equals(mContext.getResources().getString(R.string.altimeter))
                     || sensorName.equals(mContext.getResources().getString(R.string.uv))){
 
+                sampleRate = "1 hz";
 
                 sampleRateTextView.setText("1");
 
@@ -207,6 +212,8 @@ public class SensorReadingView extends LinearLayout {
 
                 if(sensorName.equals(mContext.getResources().getString(R.string.ambient_light))){
 
+                    sampleRate = "2 hz";
+
                     sampleRateTextView.setText("2");
 
                     displayLayout.addView(sampleRateTextView);
@@ -216,7 +223,9 @@ public class SensorReadingView extends LinearLayout {
 
                     //Sample Rate change when event happens
 
-                    sampleRateTextView.setText("Value change");
+                    sampleRate = "Value change";
+
+                    sampleRateTextView.setText(sampleRate);
                     displayLayout.addView(sampleRateTextView);
 
                 }
@@ -241,10 +250,6 @@ public class SensorReadingView extends LinearLayout {
         spinner.setId(R.id.sample_rate_spinner);
 
         ArrayList<String> options = new ArrayList<>();
-
-
-
-
 
         switch (sensorName){
 
@@ -279,12 +284,16 @@ public class SensorReadingView extends LinearLayout {
 
                 Log.v(LOG_TAG, "spinner: optionSelected:   " + optionSelected);
 
+                sampleRate = optionSelected + " hz";
+
 
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
                 Log.v(LOG_TAG, "spinner: onNothingSelected: arg0:   " + arg0);
+
+                sampleRate = arg0 + " hz";
             }
         });
 
@@ -296,6 +305,12 @@ public class SensorReadingView extends LinearLayout {
 
     public CheckBox getSensorCheckBox(){
         return checkBox;
+    }
+
+
+
+    public String getSampleRate(){
+        return sampleRate;
     }
 
 }

@@ -17,4 +17,5 @@
     <item name="band_contact_sensorview" type="id">band_contact_sensorview</item>
     <item name="sample_rate_spinner" type="id">sample rate spinner</item>
     <item name="units_textview" type="id">units textview</item>
+    <item name="sample_rate_textview" type="id">sample rate textview</item>
 </resources>
