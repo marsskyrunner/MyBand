@@ -62,7 +62,6 @@ import java.util.concurrent.TimeoutException;
 
 import static com.mars_skyrunner.myband.MainActivity.client;
 import static com.mars_skyrunner.myband.MainActivity.mListView;
-import static com.mars_skyrunner.myband.MainActivity.consent;
 
 /**
  * Permorm MSBand Sensors suscription by using an AsyncTask to perform the
@@ -77,6 +76,9 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
     private static final String LOG_TAG = BandSensorsSubscriptionLoader.class.getName();
 
     Context mContext;
+
+    private boolean heartRateChecked = false;
+    private boolean rrIntervalChecked = false;
 
     /**
      * Constructs a new {@link BandSensorsSubscriptionLoader}.
@@ -102,12 +104,17 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
     @Override
     public void deliverResult(String data) {
         super.deliverResult(data);
-        Log.v(LOG_TAG, "deliverResult(); consent:  " + consent);
 
-        if(!consent){
-            ConsentDialog dialog = new ConsentDialog(mContext);
-            dialog.show();
+        if(heartRateChecked || rrIntervalChecked){
+            if (!(client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED)) {
+                Log.v(LOG_TAG, "UserConsent NOT GRANTED");
+                ConsentDialog dialog = new ConsentDialog(mContext);
+                dialog.show();
+            }else{
+                Log.v(LOG_TAG, "UserConsent.GRANTED");
+            }
         }
+
 
     }
 
@@ -140,16 +147,17 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                     if (hrSensorCheckBox.isChecked()) {
 
+                        heartRateChecked = true;
+
                         if (client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
                             try {
                                 client.getSensorManager().registerHeartRateEventListener(mHeartRateEventListener);
                             } catch (BandException e) {
                                 appendToUI("Sensor reading error", Constants.HEART_RATE);
                             }
-                            consent = true;
+
                         } else {
                             Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() =! UserConsent.GRANTED");
-                            consent = false;
                         }
 
                     }
@@ -158,6 +166,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                     Log.v(LOG_TAG, "RR_INTERVAL_SENSOR: " + rrSensorCheckBox.isChecked());
 
                     if (rrSensorCheckBox.isChecked()) {
+
+                        rrIntervalChecked = true;
 
                         if (client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
 
@@ -173,11 +183,11 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                                 appendToUI("Sensor reading error", Constants.RR_INTERVAL);
 
                             }
-                            consent = true;
+
                         } else {
 
                             Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() =! UserConsent.GRANTED");
-                            consent = false;
+
                         }
 
                     }

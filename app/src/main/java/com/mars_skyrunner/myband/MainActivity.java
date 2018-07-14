@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     private Button btnStart, btnStop;
     Toolbar toolbar;
     public static LinearLayout mListView;
-    public static boolean consent;
     LinearLayout mLoadingView, mMainLayout;
     ArrayList<SensorReading> sensorReadings;
     File saveFile;
@@ -188,11 +187,15 @@ public class MainActivity extends AppCompatActivity {
             mMainLayout.setVisibility(View.GONE);
             saveDataButton.setVisibility(View.GONE);
             mLoadingView.setVisibility(View.VISIBLE);
+
+
         } else {
             mMainLayout.setVisibility(View.VISIBLE);
             saveDataButton.setVisibility(View.VISIBLE);
             mLoadingView.setVisibility(View.GONE);
         }
+
+
 
     }
 
