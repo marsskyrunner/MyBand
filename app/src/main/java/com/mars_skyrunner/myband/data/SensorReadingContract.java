@@ -107,7 +107,12 @@ public  final class SensorReadingContract {
          */
         public final static String COLUMN_SENSOR_ID = "sensor_id";
 
-
+        /**
+         * Sensor sample rate of the SensorReading.
+         *
+         * Type: TEXT
+         */
+        public final static String COLUMN_SAMPLE_RATE ="sample_rate";
 
     }
 

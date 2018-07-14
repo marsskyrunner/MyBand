@@ -195,6 +195,12 @@ public class SensorReadingProvider extends ContentProvider {
         }
 
 
+        // Check that the sensorName is not null
+        String sampleRate = values.getAsString(ReadingEntry.COLUMN_SAMPLE_RATE);
+        if (sampleRate == null) {
+            throw new IllegalArgumentException("SensorReading requires a sensor value");
+        }
+
         // Get writeable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
@@ -285,6 +291,14 @@ public class SensorReadingProvider extends ContentProvider {
             }
         }
 
+        // If the {@link ReadingEntry#COLUMN_SAMPLE_RATE} key is present,
+        // check that the time text is not null.
+        if (values.containsKey(ReadingEntry.COLUMN_SAMPLE_RATE)) {
+            String text = values.getAsString(ReadingEntry.COLUMN_SAMPLE_RATE);
+            if (text == null) {
+                throw new IllegalArgumentException("SensorReading requires a sample rate");
+            }
+        }
 
         // If there are no values to update, then don't try to update the database
         if (values.size() == 0) {

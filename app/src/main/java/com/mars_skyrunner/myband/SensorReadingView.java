@@ -154,6 +154,7 @@ public class SensorReadingView extends LinearLayout {
         relativeLayoutHolder.addView(sensorNameTextView);
 
         RelativeLayout sampleRateDisplay = getSampleRateDisplay(sensorReading.getSensorName());
+        sampleRateDisplay.setId(R.id.sample_rate_display);
         relativeLayoutHolder.addView(sampleRateDisplay);
 
         addView(relativeLayoutHolder);
@@ -291,6 +292,8 @@ public class SensorReadingView extends LinearLayout {
                 String  optionSelected = mSpinner.getSelectedItem().toString();
 
                 sampleRate = optionSelected + " hz";
+
+                //If spinner selection changes , stopButtonClicked() Method is called on MainActivity class
 
                 if(arg2 != spinnerSelection){
                     spinnerSelection = arg2;

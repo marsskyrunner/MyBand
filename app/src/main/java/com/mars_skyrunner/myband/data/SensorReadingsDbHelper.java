@@ -43,8 +43,8 @@ public class SensorReadingsDbHelper extends SQLiteOpenHelper {
                 + ReadingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + ReadingEntry.COLUMN_READING_DATE + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_READING_TIME + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_SENSOR_ID + " INTEGER, "
                 + ReadingEntry.COLUMN_SENSOR_NAME + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_SAMPLE_RATE + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT NOT NULL )";
 
         Log.w(LOG_TAG,"SQL_CREATE_SENSOR_READING_TABLE: " + SQL_CREATE_SENSOR_READING_TABLE);

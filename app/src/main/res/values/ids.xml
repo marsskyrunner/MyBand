@@ -18,4 +18,5 @@
     <item name="sample_rate_spinner" type="id">sample rate spinner</item>
     <item name="units_textview" type="id">units textview</item>
     <item name="sample_rate_textview" type="id">sample rate textview</item>
+    <item name="sample_rate_display" type="id">sample rate display</item>
 </resources>
