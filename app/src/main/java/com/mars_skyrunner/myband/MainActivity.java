@@ -22,10 +22,12 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
@@ -49,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
     public static BandClient client = null;
     final String LOG_TAG = "MainActivity";
     private TextView bandStatusTxt;
-    private Button btnStart, btnStop;
     Toolbar toolbar;
     public static LinearLayout mListView;
     LinearLayout mLoadingView, mMainLayout;
@@ -73,6 +74,26 @@ public class MainActivity extends AppCompatActivity {
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
         saveDataButton = (ImageButton) toolbar.findViewById(R.id.save_data_imagebutton);
+
+        final ToggleButton toggle = (ToggleButton) findViewById(R.id.togglebutton);
+
+        toggle.setText(getResources().getString(R.string.start));
+        toggle.setTextOff(getResources().getString(R.string.start));
+        toggle.setTextOn(getResources().getString(R.string.stop));
+
+        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // The toggle is enabled
+                    Log.v(LOG_TAG,"ToggleButton startButtonClicked()");
+                    startButtonClicked();
+                } else {
+                    // The toggle is disabled
+                    Log.v(LOG_TAG,"ToggleButton stopButtonClicked()");
+                    stopButtonClicked();
+                }
+            }
+        });
 
         showLoadingView(false);
 
@@ -148,35 +169,16 @@ public class MainActivity extends AppCompatActivity {
         //Register broadcast receiver to print values on screen from BandSensorsSubscriptionLoader
         registerReceiver(displayVaueReceiver, new IntentFilter(Constants.DISPLAY_VALUE));
 
-        btnStart = (Button) findViewById(R.id.btnStart);
-        btnStop = (Button) findViewById(R.id.btnStop);
-
-
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
 
-        btnStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    }
 
-                Log.v(LOG_TAG, "btnStart onClick");
-                clearSensorTextViews();
+    private void startButtonClicked() {
+        Log.v(LOG_TAG, "btnStart onClick");
+        clearSensorTextViews();
 
-                // Kick off the  loader
-                getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
-
-
-            }
-        });
-
-        btnStop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                stopButtonClicked();
-
-            }
-        });
-
+        // Kick off the  loader
+        getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
     }
 
     private void showLoadingView(boolean loadingState) {
@@ -831,6 +833,7 @@ public class MainActivity extends AppCompatActivity {
                     ReadingEntry._ID,
                     ReadingEntry.COLUMN_READING_DATE,
                     ReadingEntry.COLUMN_READING_TIME,
+                    ReadingEntry.COLUMN_SAMPLE_RATE,
                     ReadingEntry.COLUMN_SENSOR_NAME,
                     ReadingEntry.COLUMN_SENSOR_VALUE};
 
