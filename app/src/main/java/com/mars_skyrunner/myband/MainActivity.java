@@ -14,97 +14,50 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.mars_skyrunner.myband.data.SensorReadingContract;
 import com.microsoft.band.BandClient;
-import com.microsoft.band.BandClientManager;
 import com.microsoft.band.BandException;
-import com.microsoft.band.BandInfo;
 import com.microsoft.band.BandIOException;
-import com.microsoft.band.BandPendingResult;
-import com.microsoft.band.ConnectionState;
-import com.microsoft.band.InvalidBandVersionException;
-import com.microsoft.band.UserConsent;
-import com.microsoft.band.sensors.BandAccelerometerEvent;
-import com.microsoft.band.sensors.BandAccelerometerEventListener;
-import com.microsoft.band.sensors.BandAltimeterEvent;
-import com.microsoft.band.sensors.BandAltimeterEventListener;
-import com.microsoft.band.sensors.BandAmbientLightEvent;
-import com.microsoft.band.sensors.BandAmbientLightEventListener;
-import com.microsoft.band.sensors.BandBarometerEvent;
-import com.microsoft.band.sensors.BandBarometerEventListener;
-import com.microsoft.band.sensors.BandCaloriesEvent;
-import com.microsoft.band.sensors.BandCaloriesEventListener;
-import com.microsoft.band.sensors.BandContactEvent;
-import com.microsoft.band.sensors.BandContactEventListener;
-import com.microsoft.band.sensors.BandDistanceEvent;
-import com.microsoft.band.sensors.BandDistanceEventListener;
-import com.microsoft.band.sensors.BandGsrEvent;
-import com.microsoft.band.sensors.BandGsrEventListener;
-import com.microsoft.band.sensors.BandGyroscopeEvent;
-import com.microsoft.band.sensors.BandGyroscopeEventListener;
-import com.microsoft.band.sensors.BandHeartRateEvent;
-import com.microsoft.band.sensors.BandHeartRateEventListener;
-import com.microsoft.band.sensors.BandPedometerEvent;
-import com.microsoft.band.sensors.BandPedometerEventListener;
-import com.microsoft.band.sensors.BandRRIntervalEvent;
-import com.microsoft.band.sensors.BandRRIntervalEventListener;
-import com.microsoft.band.sensors.BandSkinTemperatureEvent;
-import com.microsoft.band.sensors.BandSkinTemperatureEventListener;
-import com.microsoft.band.sensors.BandUVEvent;
-import com.microsoft.band.sensors.BandUVEventListener;
-import com.microsoft.band.sensors.GsrSampleRate;
-import com.microsoft.band.sensors.HeartRateConsentListener;
-import com.microsoft.band.sensors.SampleRate;
-import com.microsoft.band.sensors.UVIndexLevel;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
+import com.microsoft.band.ConnectionState;
 
 
-public class MainActivity extends AppCompatActivity implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity {
 
     public static BandClient client = null;
     final String LOG_TAG = "MainActivity";
     private TextView bandStatusTxt;
     private Button btnStart, btnStop;
     Toolbar toolbar;
-    LinearLayout mListView, mLoadingView, mMainLayout;
+    public static LinearLayout mListView;
+    LinearLayout mLoadingView, mMainLayout;
     ArrayList<SensorReading> sensorReadings;
     File saveFile;
     Date date;
     boolean bandSubscriptionTaskRunning = false;
+    ImageButton saveDataButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,9 +72,10 @@ public class MainActivity extends AppCompatActivity implements
 
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
+        saveDataButton = (ImageButton) toolbar.findViewById(R.id.save_data_imagebutton);
+
         showLoadingView(false);
 
-        ImageButton saveDataButton = (ImageButton) toolbar.findViewById(R.id.save_data_imagebutton);
         saveDataButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -129,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements
                 Log.w(LOG_TAG, "saveDataButton");
 
                 if (bandSubscriptionTaskRunning) {
-
 
                     showLoadingView(true);
 
@@ -139,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     for (SensorReading sr : sensorReadings) {
                         String sensorValue = getSensorReadingViewValue(sr);
+                        String sensorSampleRate = getSensorSampleRate(sr);
 
                         if (!sensorValue.equals("")) {
 
@@ -151,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements
                             values.put(ReadingEntry.COLUMN_READING_DATE, new SimpleDateFormat("d MMM yyyy").format(date));
                             values.put(ReadingEntry.COLUMN_READING_TIME, new SimpleDateFormat("HH:mm:ss").format(date));
                             values.put(ReadingEntry.COLUMN_SENSOR_NAME, sr.getSensorName());
+                            values.put(ReadingEntry.COLUMN_SAMPLE_RATE, sensorSampleRate);
                             values.put(ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
 
                             Uri newUri;
@@ -161,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements
 
                             // Show a toast message depending on whether or not the insertion was successful.
                             if (newUri == null) {
+
                                 // If the new content URI is null, then there was an error with insertion.
                                 Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_failed), Toast.LENGTH_SHORT).show();
                             } else {
@@ -168,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements
                                 Log.w(LOG_TAG, "sensorReadingsStr" + sensorReadingsStr);
 
                                 // Kick off the record loader
-                                getLoaderManager().initLoader(Constants.SAVE_DATAPOINT_LOADER, null, MainActivity.this);
+                                getLoaderManager().restartLoader(Constants.SAVE_DATAPOINT_LOADER, null, saveDataCursorLoader);
 
 
                             }
@@ -177,8 +133,8 @@ public class MainActivity extends AppCompatActivity implements
                     }
 
                 } else {
-                    Log.e(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
+                    Log.e(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
                     Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
                 }
@@ -188,6 +144,9 @@ public class MainActivity extends AppCompatActivity implements
 
         //Register broadcast receiver to reset activity if any checkbox is selected
         registerReceiver(resetSensorReadingReceiver, new IntentFilter(Constants.RESET_SENSOR_READING));
+
+        //Register broadcast receiver to print values on screen from BandSensorsSubscriptionLoader
+        registerReceiver(displayVaueReceiver, new IntentFilter(Constants.DISPLAY_VALUE));
 
         btnStart = (Button) findViewById(R.id.btnStart);
         btnStop = (Button) findViewById(R.id.btnStop);
@@ -201,7 +160,10 @@ public class MainActivity extends AppCompatActivity implements
 
                 Log.v(LOG_TAG, "btnStart onClick");
                 clearSensorTextViews();
-                new BandSensorsSubscriptionTask().execute();
+
+                // Kick off the  loader
+                getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
+
 
             }
         });
@@ -219,13 +181,21 @@ public class MainActivity extends AppCompatActivity implements
 
     private void showLoadingView(boolean loadingState) {
 
+        Log.v(LOG_TAG, "showLoadingView loadingState: " + loadingState);
+
         if (loadingState) {
             mMainLayout.setVisibility(View.GONE);
+            saveDataButton.setVisibility(View.GONE);
             mLoadingView.setVisibility(View.VISIBLE);
+
+
         } else {
             mMainLayout.setVisibility(View.VISIBLE);
+            saveDataButton.setVisibility(View.VISIBLE);
             mLoadingView.setVisibility(View.GONE);
         }
+
+
 
     }
 
@@ -291,6 +261,89 @@ public class MainActivity extends AppCompatActivity implements
 
         return directory;
 
+    }
+
+
+    private String getSensorSampleRate(SensorReading sr) {
+
+        String value = "";
+        int resourceID = 0;
+
+        Log.v(LOG_TAG, "getSensorSampleRate: sr.getSensorName(): " + sr.getSensorName());
+
+        switch (sr.getSensorName()) {
+            case "heart rate":
+                resourceID = R.id.heart_rate_sensorview;
+                break;
+
+            case "rr interval":
+                resourceID = R.id.rr_interval_sensorview;
+                break;
+
+            case "accelerometer":
+                resourceID = R.id.accelerometer_sensorview;
+                break;
+
+            case "altimeter":
+                resourceID = R.id.altimeter_sensorview;
+                break;
+
+            case "ambient light":
+                resourceID = R.id.ambient_light_sensorview;
+                break;
+
+            case "barometer":
+                resourceID = R.id.barometer_sensorview;
+                break;
+
+            case "GSR":
+                resourceID = R.id.gsr_sensorview;
+                break;
+
+            case "calories":
+                resourceID = R.id.calories_sensorview;
+                break;
+
+            case "distance":
+                resourceID = R.id.distance_sensorview;
+                break;
+
+//            case "band contact":
+//                resourceID = R.id.band_contact_sensorview;
+//                break;
+
+            case "gyroscope":
+                resourceID = R.id.gyroscope_sensorview;
+                break;
+
+            case "pedometer":
+                resourceID = R.id.pedometer_sensorview;
+                break;
+
+            case "skin temperature":
+                resourceID = R.id.skin_temperature_sensorview;
+                break;
+
+            case "uv level":
+                resourceID = R.id.uv_sensorview;
+                break;
+
+            default:
+                resourceID = 0;
+                break;
+        }
+
+        SensorReadingView sensorReadingView = null;
+
+        if (resourceID != 0) {
+            sensorReadingView = findViewById(resourceID);
+            value = sensorReadingView.getSampleRate();
+        }
+
+
+        Log.v(LOG_TAG, "getSensorSampleRate: " + value);
+
+        return value;
     }
 
 
@@ -377,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements
             value = "";
         }
 
-        //Log.v(LOG_TAG,"getSensorReadingViewValue: " + value);
+        Log.v(LOG_TAG, "getSensorReadingViewValue: " + value);
 
         return value;
     }
@@ -490,778 +543,105 @@ public class MainActivity extends AppCompatActivity implements
         disconnectBand();
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-
-        switch (id) {
-            case Constants.SAVE_DATAPOINT_LOADER:
-
-                // Define a projection that specifies the columns from the table we care about.
-                String[] projection = {
-                        ReadingEntry._ID,
-                        ReadingEntry.COLUMN_READING_DATE,
-                        ReadingEntry.COLUMN_READING_TIME,
-                        ReadingEntry.COLUMN_SENSOR_NAME,
-                        ReadingEntry.COLUMN_SENSOR_VALUE};
-
-                String sortOrder = ReadingEntry._ID;
-
-                // This loader will execute the ContentProvider's query method on a background thread
-
-                return new CursorLoader(this,   // Parent activity context
-                        ReadingEntry.CONTENT_URI,   // Provider content URI to query
-                        projection,             // Columns to include in the resulting Cursor
-                        null,                   //  selection clause
-                        null,                   //  selection arguments
-                        sortOrder);                  //  sort order
-
-        }
-
-        return null;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
-
-
-        switch (loader.getId()) {
-            case Constants.SAVE_DATAPOINT_LOADER:
-
-                File dir = getOutputDirectory();
-                saveFile = getCsvOutputFile(dir, date);
-
-                FileWriter fw = null;
-
-                try {
-
-                    fw = new FileWriter(saveFile);
-
-                    BufferedWriter bw = new BufferedWriter(fw);
-
-                    int rowcount = c.getCount();
-                    int colcount = c.getColumnCount();
-
-                    if (rowcount > 0) {
-
-                        c.moveToFirst();
-
-                        for (int i = 0; i < colcount; i++) {
-
-                            if (i != colcount - 1) {
-
-                                bw.write(c.getColumnName(i) + ",");
-
-                            } else {
-
-                                bw.write(c.getColumnName(i));
-
-                            }
-                        }
-
-                        bw.newLine();
-
-                        for (int i = 0; i < rowcount; i++) {
-
-                            c.moveToPosition(i);
-
-                            for (int j = 0; j < colcount; j++) {
-
-                                if (j != colcount - 1)
-                                    bw.write(c.getString(j) + ",");
-                                else
-                                    bw.write(c.getString(j));
-                            }
-
-                            bw.newLine();
-                        }
-
-                        bw.flush();
-
-                        Log.w(LOG_TAG, "Datapoint Exported Successfully.");
-
-                        showLoadingView(false);
-
-                        //Show success message
-                        Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
-
-                        //shows "OPEN CSV" action on a snackbar
-                        Snackbar mySnackbar = Snackbar.make(mMainLayout,
-                                R.string.open_csv_file, Snackbar.LENGTH_LONG);
-                        mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
-                        mySnackbar.show();
-
-
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
-                }
-                break;
-        }
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
-
-
-    private class HeartRateConsentTask extends AsyncTask<WeakReference<Activity>, Void, Void> {
-        @Override
-        protected Void doInBackground(WeakReference<Activity>... params) {
-            try {
-                if (getConnectedBandClient()) {
-
-                    if (params[0].get() != null) {
-                        client.getSensorManager().requestHeartRateConsent(params[0].get(), new HeartRateConsentListener() {
-                            @Override
-                            public void userAccepted(boolean consentGiven) {
-                            }
-                        });
-                    }
-                } else {
-                    appendToUI("Band isn't connected. Please make sure bluetooth is on and the band is in range.\n", Constants.BAND_STATUS);
-                }
-
-            } catch (BandException e) {
-                String exceptionMessage = "";
-                switch (e.getErrorType()) {
-                    case UNSUPPORTED_SDK_VERSION_ERROR:
-                        exceptionMessage = "Microsoft Health BandService doesn't support your SDK Version. Please update to latest SDK.\n";
-                        break;
-                    case SERVICE_ERROR:
-                        exceptionMessage = "Microsoft Health BandService is not available. Please make sure Microsoft Health is installed and that you have the correct permissions.\n";
-                        break;
-                    default:
-                        exceptionMessage = "Unknown error occured: " + e.getMessage() + "\n";
-                        break;
-                }
-                appendToUI(exceptionMessage, Constants.BAND_STATUS);
-
-            } catch (Exception e) {
-                appendToUI(e.getMessage(), Constants.BAND_STATUS);
-            }
-            return null;
-        }
-    }
-
-    private class BandSensorsSubscriptionTask extends AsyncTask<Void, Void, Void> {
-
-        boolean consent = true;
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-            if (!consent) {
-                showConsentDialog();
-            }
-
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            bandSubscriptionTaskRunning = true;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            Log.v(LOG_TAG, "BandSensorsSubscriptionTask doInBackground");
-
-            try {
-
-                String bandStts = "";
-
-                if (getConnectedBandClient()) {
-
-                    bandStts = "Band is connected.";
-
-                    Log.v(LOG_TAG, "getConnectedBandClient(): bandStts: " + bandStts);
-
-                    CheckBox hrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.HEART_RATE_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "HEART_RATE_SENSOR: " + hrSensorCheckBox.isChecked());
-
-                    if (hrSensorCheckBox.isChecked()) {
-
-                        if (client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
-                            try {
-                                client.getSensorManager().registerHeartRateEventListener(mHeartRateEventListener);
-                            } catch (BandException e) {
-                                appendToUI("Sensor reading error", Constants.HEART_RATE);
-                            }
-                            consent = true;
-                        } else {
-                            Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() =! UserConsent.GRANTED");
-                            consent = false;
-                        }
-
-                    }
-
-                    CheckBox rrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.RR_INTERVAL_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "RR_INTERVAL_SENSOR: " + rrSensorCheckBox.isChecked());
-
-                    if (rrSensorCheckBox.isChecked()) {
-
-                        if (client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
-
-                            Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED");
-
-
-                            try {
-
-                                client.getSensorManager().registerRRIntervalEventListener(mRRIntervalEventListener);
-
-                            } catch (BandException e) {
-                                e.printStackTrace();
-                                appendToUI("Sensor reading error", Constants.RR_INTERVAL);
-
-                            }
-                            consent = true;
-                        } else {
-
-                            Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() =! UserConsent.GRANTED");
-                            consent = false;
-                        }
-
-                    }
-
-                    CheckBox accSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.ACCELEROMETER_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "ACCELEROMETER_SENSOR: " + accSensorCheckBox.isChecked());
-
-                    if (accSensorCheckBox.isChecked()) {
-                        try {
-
-                            /*
-                            *  MS128 : A value representing a sample rate of every 128 milliseconds
-                               MS16 : A value representing a sample rate of every 16 milliseconds
-                               MS32 : A value representing a sample rate of every 32 milliseconds
-                            * */
-
-                            client.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS128);
-
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.ACCELEROMETER);
-                        }
-                    }
-
-
-                    CheckBox altSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.ALTIMETER_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "ALTIMETER_SENSOR: " + altSensorCheckBox.isChecked());
-
-                    if (altSensorCheckBox.isChecked()) {
-
-                        try {
-                            client.getSensorManager().registerAltimeterEventListener(mAltimeterEventListener);
-                        } catch (BandIOException e) {
-                            appendToUI("Sensor reading error", Constants.ALTIMETER);
-                            e.printStackTrace();
-                        }
-                    }
-
-
-                    CheckBox ambLightSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.AMBIENT_LIGHT_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "AMBIENT_LIGHT_SENSOR: " + ambLightSensorCheckBox.isChecked());
-
-                    if (ambLightSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerAmbientLightEventListener(mAmbientLightEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.AMBIENT_LIGHT);
-                        }
-                    }
-
-                    CheckBox barSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.BAROMETER_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "BAROMETER_SENSOR: " + barSensorCheckBox.isChecked());
-
-                    if (barSensorCheckBox.isChecked()) {
-
-                        try {
-                            client.getSensorManager().registerBarometerEventListener(mBarometerEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.BAROMETER);
-                        }
-                    }
-
-
-                    CheckBox gsrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.GSR_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "GSR_SENSOR: " + gsrSensorCheckBox.isChecked());
-
-                    if (gsrSensorCheckBox.isChecked()) {
-                        try {
-
-                            /*
-                            * MS200: A value representing a sample rate of every 200 milliseconds
-                              MS5000 : A value representing a sample rate of every 5000 milliseconds
-                            * */
-
-                            client.getSensorManager().registerGsrEventListener(mGsrEventListener, GsrSampleRate.MS5000);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.GSR);
-                        }
-                    }
-
-
-                    CheckBox calSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.CALORIES_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "CALORIES_SENSOR: " + calSensorCheckBox.isChecked());
-
-                    if (calSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerCaloriesEventListener(mCaloriesEventListener);
-                        } catch (BandIOException e) {
-                            appendToUI("Sensor reading error", Constants.CALORIES);
-                            e.printStackTrace();
-                        }
-                    }
-
-
-                    CheckBox contactSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.BAND_CONTACT_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "BAND_CONTACT_SENSOR: " + contactSensorCheckBox.isChecked());
-
-                    if (contactSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerContactEventListener(mContactEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.BAND_CONTACT);
-                        }
-
-                    }
-
-
-                    CheckBox distSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.DISTANCE_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "DISTANCE_SENSOR: " + distSensorCheckBox.isChecked());
-
-                    if (distSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerDistanceEventListener(mDistanceEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.DISTANCE);
-                        }
-                    }
-
-
-                    CheckBox gyroSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.GYROSCOPE_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "GYROSCOPE_SENSOR: " + gyroSensorCheckBox.isChecked());
-
-                    if (gyroSensorCheckBox.isChecked()) {
-                        try {
-
-                                                        /*
-                            *  MS128 : A value representing a sample rate of every 128 milliseconds
-                               MS16 : A value representing a sample rate of every 16 milliseconds
-                               MS32 : A value representing a sample rate of every 32 milliseconds
-                            * */
-
-                            client.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS128);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.GYROSCOPE);
-                        }
-                    }
-
-
-                    CheckBox pedSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.PEDOMETER_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "PEDOMETER_SENSOR: " + pedSensorCheckBox.isChecked());
-
-                    if (pedSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerPedometerEventListener(mPedometerEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.PEDOMETER);
-                        }
-                    }
-
-
-                    CheckBox skinTempSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.SKIN_TEMPERATURE_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "SKIN_TEMPERATURE_SENSOR: " + skinTempSensorCheckBox.isChecked());
-
-                    if (skinTempSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerSkinTemperatureEventListener(mSkinTemperatureListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.SKIN_TEMPERATURE);
-                        }
-                    }
-
-
-                    CheckBox uvSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.UV_LEVEL_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "UV_LEVEL_SENSOR: " + uvSensorCheckBox.isChecked());
-
-                    if (uvSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerUVEventListener(mUVEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.UV_LEVEL);
-                        }
-                    }
-
-
-                } else {
-
-                    bandStts = "Band isn't connected. Please make sure bluetooth is on and the band is in range.\n";
-
-                }
-
-                Log.v(LOG_TAG, bandStts);
-                appendToUI(bandStts, Constants.BAND_STATUS);
-
-            } catch (BandException e) {
-
-                String exceptionMessage = "";
-
-                switch (e.getErrorType()) {
-                    case UNSUPPORTED_SDK_VERSION_ERROR:
-                        exceptionMessage = "Microsoft Health BandService doesn't support your SDK Version. Please update to latest SDK.\n";
-                        break;
-                    case SERVICE_ERROR:
-                        exceptionMessage = "Microsoft Health BandService is not available. Please make sure Microsoft Health is installed and that you have the correct permissions.\n";
-                        break;
-                    default:
-                        exceptionMessage = "Unknown error occured: " + e.getMessage() + "\n";
-                        break;
-                }
-
-                Log.e(LOG_TAG, exceptionMessage);
-                appendToUI(exceptionMessage, Constants.BAND_STATUS);
-
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "BandSensorsSubscriptionTask: " + e.getMessage());
-            }
-
-            return null;
-        }
-    }
-
-    private void showConsentDialog() {
-
-        ConsentDialog dialog = new ConsentDialog(MainActivity.this);
-        dialog.show();
-    }
-
-    private BandUVEventListener mUVEventListener = new BandUVEventListener() {
-        @Override
-        public void onBandUVChanged(BandUVEvent bandUVEvent) {
-            if (bandUVEvent != null) {
-
-                UVIndexLevel level = bandUVEvent.getUVIndexLevel();
-
-                String event = new StringBuilder()
-                        .append(level.toString()).toString();
-
-                Log.v(LOG_TAG, "mUVEventListener: " + event);
-
-                appendToUI(event, Constants.UV_LEVEL);
-
-            }
-        }
-    };
-
-
-    private BandSkinTemperatureEventListener mSkinTemperatureListener =
-            new BandSkinTemperatureEventListener() {
-
-                @Override
-                public void onBandSkinTemperatureChanged(BandSkinTemperatureEvent bandSkinTemperatureEvent) {
-                    if (bandSkinTemperatureEvent != null) {
-
-                        double temp = bandSkinTemperatureEvent.getTemperature();
-                        DecimalFormat df = new DecimalFormat("0.00");
-
-                        String event = new StringBuilder()
-                                .append(df.format(temp) + " °C").toString();
-
-                        appendToUI(event, Constants.SKIN_TEMPERATURE);
-                    }
-                }
-            };
-
-    private BandPedometerEventListener mPedometerEventListener = new BandPedometerEventListener() {
-
-
-        @Override
-        public void onBandPedometerChanged(BandPedometerEvent bandPedometerEvent) {
-            if (bandPedometerEvent != null) {
-
-                long totalSteps = bandPedometerEvent.getTotalSteps();
-
-                String event = new StringBuilder()
-                        .append(String.format("TotalSteps = %d steps\n", totalSteps)).toString();
-
-                appendToUI(event, Constants.PEDOMETER);
-            }
-        }
-    };
-
-
-    private BandGyroscopeEventListener mGyroscopeEventListener = new BandGyroscopeEventListener() {
-        @Override
-        public void onBandGyroscopeChanged(BandGyroscopeEvent bandGyroscopeEvent) {
-            if (bandGyroscopeEvent != null) {
-
-
-                String event = new StringBuilder()
-                        .append(String.format("AngularVelocityX = %f degrees/s\n", bandGyroscopeEvent.getAngularVelocityX()))
-                        .append(String.format("AngularVelocityY = %f degrees/s\n", bandGyroscopeEvent.getAngularVelocityY()))
-                        .append(String.format("AngularVelocityZ = %f degrees/s\n", bandGyroscopeEvent.getAngularVelocityZ())).toString();
-
-                appendToUI(event, Constants.GYROSCOPE);
-
-            }
-        }
-    };
-
-    private BandDistanceEventListener mDistanceEventListener = new BandDistanceEventListener() {
-        @Override
-        public void onBandDistanceChanged(BandDistanceEvent bandDistanceEvent) {
-            if (bandDistanceEvent != null) {
-
-                String event = null;
-
-                try {
-                    event = new StringBuilder()
-
-
-                            .append("Band MotionType = " + bandDistanceEvent.getMotionType().toString() + "\n")
-                            .append(String.format("Total Distance Today = %d cm\n", bandDistanceEvent.getDistanceToday()))
-                            .append(String.format("Band Pace = %f ms/m\n", bandDistanceEvent.getPace()))
-                            .append(String.format("Band Speed = %f cm/s\n", bandDistanceEvent.getPace())).toString();
-
-                } catch (InvalidBandVersionException e) {
-                    event = e.toString();
-
-                }
-
-                appendToUI(event, Constants.DISTANCE);
-
-            }
-        }
-    };
-
-    private BandContactEventListener mContactEventListener = new BandContactEventListener() {
-        @Override
-        public void onBandContactChanged(BandContactEvent bandContactEvent) {
-            if (bandContactEvent != null) {
-                String event = bandContactEvent.getContactState().toString();
-                appendToUI(event, Constants.BAND_CONTACT);
-
-            }
-        }
-    };
-
-    private BandRRIntervalEventListener mRRIntervalEventListener = new BandRRIntervalEventListener() {
-        @Override
-        public void onBandRRIntervalChanged(final BandRRIntervalEvent event) {
-            if (event != null) {
-                appendToUI(String.format("%.3f s\n", event.getInterval()), Constants.RR_INTERVAL);
-            }
-        }
-    };
-
-
-    private BandCaloriesEventListener mCaloriesEventListener = new BandCaloriesEventListener() {
-        @Override
-        public void onBandCaloriesChanged(BandCaloriesEvent bandCaloriesEvent) {
-            if (bandCaloriesEvent != null) {
-                String caloriesEvent = String.format("%d cals\n", bandCaloriesEvent.getCalories());
-                appendToUI(caloriesEvent, Constants.CALORIES);
-            }
-
-        }
-    };
-
-    private BandGsrEventListener mGsrEventListener = new BandGsrEventListener() {
-        @Override
-        public void onBandGsrChanged(final BandGsrEvent event) {
-            if (event != null) {
-                String gsrEvent = String.format("Resistance = %d kOhms\n", event.getResistance());
-                appendToUI(gsrEvent, Constants.GSR);
-            }
-        }
-    };
-
-    private BandAccelerometerEventListener mAccelerometerEventListener = new BandAccelerometerEventListener() {
-        @Override
-        public void onBandAccelerometerChanged(final BandAccelerometerEvent event) {
-            if (event != null) {
-
-                String stts = String.format(" X = %.3f g\n Y = %.3f g\n Z = %.3f g", event.getAccelerationX(),
-                        event.getAccelerationY(), event.getAccelerationZ());
-
-                appendToUI(stts, Constants.ACCELEROMETER);
-
-            }
-        }
-    };
-
-    private BandAltimeterEventListener mAltimeterEventListener = new BandAltimeterEventListener() {
-        @Override
-        public void onBandAltimeterChanged(final BandAltimeterEvent event) {
-            if (event != null) {
-                appendToUI(new StringBuilder()
-                        .append(String.format("Total Gain = %d cm\n", event.getTotalGain()))
-                        .append(String.format("Total Loss = %d cm\n", event.getTotalLoss()))
-                        .append(String.format("Total Elevation Difference= %d cm\n", (event.getTotalGain() - event.getTotalLoss())))
-                        .append(String.format("Stepping Gain = %d cm\n", event.getSteppingGain()))
-                        .append(String.format("Stepping Loss = %d cm\n", event.getSteppingLoss()))
-                        .append(String.format("Steps Ascended = %d\n", event.getStepsAscended()))
-                        .append(String.format("Steps Descended = %d\n", event.getStepsDescended()))
-                        .append(String.format("Rate = %f cm/s\n", event.getRate()))
-                        .append(String.format("Flights of Stairs Ascended = %d\n", event.getFlightsAscended()))
-                        .append(String.format("Flights of Stairs Descended = %d\n", event.getFlightsDescended())).toString(), Constants.ALTIMETER);
-            }
-        }
-    };
-
-    private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
-        @Override
-        public void onBandHeartRateChanged(final BandHeartRateEvent event) {
-            if (event != null) {
-                appendToUI(String.format("%d beats per minute\n"
-                        + "Quality = %s\n", event.getHeartRate(), event.getQuality()), Constants.HEART_RATE);
-            }
-        }
-    };
-
-
-    private BandAmbientLightEventListener mAmbientLightEventListener = new BandAmbientLightEventListener() {
-        @Override
-        public void onBandAmbientLightChanged(final BandAmbientLightEvent event) {
-            if (event != null) {
-                appendToUI(String.format("Brightness = %d lux\n", event.getBrightness()), Constants.AMBIENT_LIGHT);
-            }
-        }
-    };
-
-
-    private BandBarometerEventListener mBarometerEventListener = new BandBarometerEventListener() {
-        @Override
-        public void onBandBarometerChanged(final BandBarometerEvent event) {
-            if (event != null) {
-
-                String barometerEvent =
-                        String.format("Air Pressure = %.3f hPa\n"
-                                + "Temperature = %.2f degrees Celsius", event.getAirPressure(), event.getTemperature());
-
-                appendToUI(barometerEvent, Constants.BAROMETER);
-            }
-        }
-    };
-
 
     private void appendToUI(final String string, final String requestCode) {
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
 
-                View v;
-                TextView sensorValueTextView = null;
+        View v;
+        TextView sensorValueTextView = null;
 
-                switch (requestCode) {
+        switch (requestCode) {
 
-                    case Constants.UV_LEVEL:
-
-                        v = findViewById(R.id.uv_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
+            case Constants.BAND_STATUS:
+                sensorValueTextView = bandStatusTxt;
+                break;
 
 
-                    case Constants.SKIN_TEMPERATURE:
-                        v = findViewById(R.id.skin_temperature_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
+            case Constants.UV_LEVEL:
+
+                v = findViewById(R.id.uv_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
 
 
-                    case Constants.PEDOMETER:
-                        v = findViewById(R.id.pedometer_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
+            case Constants.SKIN_TEMPERATURE:
+                v = findViewById(R.id.skin_temperature_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
 
 
-                    case Constants.GYROSCOPE:
-                        v = findViewById(R.id.gyroscope_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
-
-                    case Constants.DISTANCE:
-                        v = findViewById(R.id.distance_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
-
-                    case Constants.BAND_CONTACT:
-                        v = findViewById(R.id.band_contact_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
-
-                    case Constants.CALORIES:
-                        v = findViewById(R.id.calories_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
-
-                    case Constants.RR_INTERVAL:
-                        v = findViewById(R.id.rr_interval_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
-
-                    case Constants.GSR:
-                        v = findViewById(R.id.gsr_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
-
-                    case Constants.BAROMETER:
-                        v = findViewById(R.id.barometer_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
-
-                    case Constants.ACCELEROMETER:
-                        v = findViewById(R.id.accelerometer_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
-
-                    case Constants.BAND_STATUS:
-                        sensorValueTextView = bandStatusTxt;
-                        break;
+            case Constants.PEDOMETER:
+                v = findViewById(R.id.pedometer_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
 
 
-                    case Constants.ALTIMETER:
-                        v = findViewById(R.id.altimeter_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
+            case Constants.GYROSCOPE:
+                v = findViewById(R.id.gyroscope_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
 
-                    case Constants.HEART_RATE:
-                        v = findViewById(R.id.heart_rate_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
+            case Constants.DISTANCE:
+                v = findViewById(R.id.distance_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
 
-                    case Constants.AMBIENT_LIGHT:
-                        v = findViewById(R.id.ambient_light_sensorview);
-                        sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
-                        break;
+            case Constants.BAND_CONTACT:
+                v = findViewById(R.id.band_contact_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
+
+            case Constants.CALORIES:
+                v = findViewById(R.id.calories_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
+
+            case Constants.RR_INTERVAL:
+                v = findViewById(R.id.rr_interval_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
+
+            case Constants.GSR:
+                v = findViewById(R.id.gsr_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
+
+            case Constants.BAROMETER:
+                v = findViewById(R.id.barometer_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
+
+            case Constants.ACCELEROMETER:
+                v = findViewById(R.id.accelerometer_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
 
 
-                }
+            case Constants.ALTIMETER:
+                v = findViewById(R.id.altimeter_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
 
-                sensorValueTextView.setText(string);
+            case Constants.HEART_RATE:
+                v = findViewById(R.id.heart_rate_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
+
+            case Constants.AMBIENT_LIGHT:
+                v = findViewById(R.id.ambient_light_sensorview);
+                sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
+                break;
 
 
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        }
+
+        sensorValueTextView.setText(string);
+
+
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -1297,52 +677,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    private boolean getConnectedBandClient() throws InterruptedException, BandException {
-
-        Log.v(LOG_TAG, "getConnectedBandClient");
-
-
-        if (client == null) {
-            Log.v(LOG_TAG, "client == null");
-            BandInfo[] devices = BandClientManager.getInstance().getPairedBands();
-
-            if (devices.length == 0) {
-
-                Log.v(LOG_TAG, "devices.length == 0");
-                appendToUI("Band isn't paired with your phone.\n", Constants.BAND_STATUS);
-                return false;
-            } else {
-                Log.v(LOG_TAG, "devices.length =! 0");
-            }
-
-            client = BandClientManager.getInstance().create(getBaseContext(), devices[0]);
-        } else {
-            Log.v(LOG_TAG, "client != null");
-
-            if (ConnectionState.CONNECTED == client.getConnectionState()) {
-
-                Log.v(LOG_TAG, "ConnectionState.CONNECTED");
-                return true;
-            } else {
-                Log.v(LOG_TAG, "ConnectionState.DISCONNECTED");
-            }
-
-        }
-
-
-        appendToUI("Band is connecting...\n", Constants.BAND_STATUS);
-
-        boolean state = ConnectionState.CONNECTED == client.connect().await();
-
-        Log.v(LOG_TAG, "getConnectedBandClient state : " + state);
-
-        return state;
-    }
-
     @Override
     protected void onDestroy() {
 
         unregisterReceiver(resetSensorReadingReceiver);
+        unregisterReceiver(displayVaueReceiver);
 
         try {
             unregisterSensorListeners();
@@ -1369,20 +708,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void unregisterSensorListeners() throws BandIOException {
-        client.getSensorManager().unregisterHeartRateEventListener(mHeartRateEventListener);
-        client.getSensorManager().unregisterRRIntervalEventListener(mRRIntervalEventListener);
-        client.getSensorManager().unregisterAccelerometerEventListener(mAccelerometerEventListener);
-        client.getSensorManager().unregisterAltimeterEventListener(mAltimeterEventListener);
-        client.getSensorManager().unregisterAmbientLightEventListener(mAmbientLightEventListener);
-        client.getSensorManager().unregisterBarometerEventListener(mBarometerEventListener);
-        client.getSensorManager().unregisterGsrEventListener(mGsrEventListener);
-        client.getSensorManager().unregisterCaloriesEventListener(mCaloriesEventListener);
-        client.getSensorManager().unregisterContactEventListener(mContactEventListener);
-        client.getSensorManager().unregisterDistanceEventListener(mDistanceEventListener);
-        client.getSensorManager().unregisterGyroscopeEventListener(mGyroscopeEventListener);
-        client.getSensorManager().unregisterPedometerEventListener(mPedometerEventListener);
-        client.getSensorManager().unregisterSkinTemperatureEventListener(mSkinTemperatureListener);
-        client.getSensorManager().unregisterUVEventListener(mUVEventListener);
+        client.getSensorManager().unregisterAllListeners();
     }
 
 
@@ -1400,31 +726,28 @@ public class MainActivity extends AppCompatActivity implements
     };
 
 
-    private class ConsentDialog extends AppCompatDialog {
+    private BroadcastReceiver displayVaueReceiver = new BroadcastReceiver() {
 
-        public ConsentDialog(Context context) {
+        @Override
+        public void onReceive(Context context, Intent intent) {
 
-            super(context);
+//            Log.v(LOG_TAG, "displayVaueReceiver: onReceive ");
 
-            setContentView(R.layout.consent_dialog);
+            String sensor = intent.getStringExtra(Constants.SENSOR);
+            String value = intent.getStringExtra(Constants.VALUE);
 
-            final WeakReference<Activity> reference = new WeakReference<Activity>(MainActivity.this);
+//            Log.v(LOG_TAG, "displayVaueReceiver: sensor: " + sensor);
+//            Log.v(LOG_TAG, "displayVaueReceiver: value: " + value);
 
-            Button okButton = (Button) findViewById(R.id.btnConsent);
-            okButton.setOnClickListener(new View.OnClickListener() {
-                @SuppressWarnings("unchecked")
-                @Override
-                public void onClick(View v) {
-                    new HeartRateConsentTask().execute(reference);
-                    stopButtonClicked();
-                    dismiss();
-                }
-            });
+            appendToUI(value,sensor);
+
 
         }
 
 
-    }
+    };
+
+
 
     public class OpenCSVFileListener implements View.OnClickListener {
 
@@ -1451,4 +774,189 @@ public class MainActivity extends AppCompatActivity implements
 
         }
     }
+
+
+    private LoaderManager.LoaderCallbacks<String> bandSensorSubscriptionLoader
+            = new LoaderManager.LoaderCallbacks<String>() {
+
+        @Override
+        public Loader<String> onCreateLoader(int i, Bundle bundle) {
+
+            Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onCreateLoader");
+
+            showLoadingView(true);
+
+            bandSubscriptionTaskRunning = true;
+            return new BandSensorsSubscriptionLoader(MainActivity.this, null);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<String> loader, String s) {
+
+            Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onLoadFinished ");
+
+            showLoadingView(false);
+
+            if (client.getConnectionState() == ConnectionState.CONNECTED) {
+
+                Log.v(LOG_TAG, "ConnectionState.CONNECTED");
+
+            } else {
+                Log.v(LOG_TAG, "ConnectionState.DISCONNECTED");
+
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<String> loader) {
+
+            Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onLoaderReset");
+
+        }
+    };
+
+
+    private LoaderManager.LoaderCallbacks<Cursor> saveDataCursorLoader
+            = new LoaderManager.LoaderCallbacks<Cursor>() {
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+
+            Log.v(LOG_TAG, "saveDataCursorLoader: onCreateLoader");
+
+            showLoadingView(true);
+
+            // Define a projection that specifies the columns from the table we care about.
+            String[] projection = {
+                    ReadingEntry._ID,
+                    ReadingEntry.COLUMN_READING_DATE,
+                    ReadingEntry.COLUMN_READING_TIME,
+                    ReadingEntry.COLUMN_SENSOR_NAME,
+                    ReadingEntry.COLUMN_SENSOR_VALUE};
+
+            String sortOrder = ReadingEntry._ID;
+
+            // This loader will execute the ContentProvider's query method on a background thread
+
+            return new CursorLoader(MainActivity.this,   // Parent activity context
+                    ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                    projection,             // Columns to include in the resulting Cursor
+                    null,                   //  selection clause
+                    null,                   //  selection arguments
+                    sortOrder);                  //  sort order
+
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
+
+            Log.v(LOG_TAG, "saveDataCursorLoader: onLoadFinished");
+
+            showLoadingView(false);
+
+            switch (loader.getId()) {
+                case Constants.SAVE_DATAPOINT_LOADER:
+
+                    File dir = getOutputDirectory();
+                    saveFile = getCsvOutputFile(dir, date);
+
+                    FileWriter fw = null;
+
+                    try {
+
+                        fw = new FileWriter(saveFile);
+
+                        BufferedWriter bw = new BufferedWriter(fw);
+
+                        int rowcount = c.getCount();
+                        int colcount = c.getColumnCount();
+
+                        Log.w(LOG_TAG, "rowcount: " + rowcount);
+                        Log.w(LOG_TAG, "colcount: " + colcount);
+
+                        if (rowcount > 0) {
+
+                            c.moveToFirst();
+
+                            for (int i = 0; i < colcount; i++) {
+
+                                if (i != (colcount - 1)) {
+
+                                    bw.write(c.getColumnName(i) + ",");
+
+                                } else {
+
+                                    bw.write(c.getColumnName(i));
+
+                                }
+                            }
+
+                            bw.newLine();
+
+                            for (int i = 0; i < rowcount; i++) {
+
+                                c.moveToPosition(i);
+
+                                for (int j = 0; j < colcount; j++) {
+
+                                    String cellValue = c.getString(j);
+                                    Log.w(LOG_TAG, j + " : " + i + " = " + cellValue);
+
+                                    String fileValue = "";
+
+                                    if (j != (colcount - 1)) {
+
+                                        Log.w(LOG_TAG, j + " != " + (colcount - 1));
+                                        fileValue = cellValue + ",";
+
+                                    } else {
+                                        Log.w(LOG_TAG, j + " == " + (colcount - 1));
+                                        fileValue = cellValue;
+                                    }
+
+                                    Log.w(LOG_TAG, "fileValue: " + fileValue);
+                                    bw.write(fileValue);
+
+                                }
+
+                                bw.newLine();
+                            }
+
+                            bw.flush();
+
+                            Log.w(LOG_TAG, "Datapoint Exported Successfully.");
+
+                            showLoadingView(false);
+
+                            //Show success message
+                            Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
+
+                            //shows "OPEN CSV" action on a snackbar
+                            Snackbar mySnackbar = Snackbar.make(mMainLayout,
+                                    R.string.open_csv_file, Snackbar.LENGTH_LONG);
+                            mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
+                            mySnackbar.show();
+
+
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+                    }
+                    break;
+            }
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+            Log.v(LOG_TAG, "saveDataCursorLoader: onLoaderReset");
+
+        }
+
+    };
+
+
 }
