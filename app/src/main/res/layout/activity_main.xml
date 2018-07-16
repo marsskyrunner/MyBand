@@ -17,6 +17,8 @@
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
+            android:paddingLeft="16dp"
+
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
@@ -24,7 +26,6 @@
             app:popupTheme="@style/AppTheme">
 
             <LinearLayout
-                android:layout_marginLeft="8dp"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -43,19 +44,10 @@
 
 
                 <FrameLayout
+                    android:id="@+id/save_button_holder"
                     android:background="@drawable/save_button_off"
-                    android:layout_margin="8dp"
                     android:layout_width="48dp"
                     android:layout_height="48dp">
-
-                    <ImageButton
-                        android:id="@+id/save_data_imagebutton"
-                        android:layout_gravity="center"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_system_update_alt_white_24dp"
-                        tools:targetApi="lollipop" />
 
                 </FrameLayout>
 

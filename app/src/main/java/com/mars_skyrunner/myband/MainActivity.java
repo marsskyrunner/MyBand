@@ -1,50 +1,46 @@
 package com.mars_skyrunner.myband;
 
-import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
+import android.content.res.TypedArray;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.widget.Button;
+import android.widget.Checkable;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
+import com.microsoft.band.ConnectionState;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
-import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
-import com.microsoft.band.ConnectionState;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -59,9 +55,11 @@ public class MainActivity extends AppCompatActivity {
     File saveFile;
     Date date;
     boolean bandSubscriptionTaskRunning = false;
-    ImageButton saveDataButton;
+    //ImageButton saveDataButton;
+    SaveButton saveDataButton;
+
     boolean saveClicked = false;
-    FrameLayout holder;
+    FrameLayout holder, saveButtonHolder;
     ToggleButton toggle;
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
@@ -78,7 +76,13 @@ public class MainActivity extends AppCompatActivity {
 
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
-        saveDataButton = (ImageButton) toolbar.findViewById(R.id.save_data_imagebutton);
+        //saveDataButton = (ImageButton) toolbar.findViewById(R.id.save_data_imagebutton);
+
+        saveButtonHolder =  (FrameLayout) findViewById(R.id.save_button_holder);
+
+        saveDataButton = new SaveButton(this);
+        saveDataButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_system_update_alt_white_24dp));
+        saveButtonHolder.addView(saveDataButton);
 
         toggle = (ToggleButton) findViewById(R.id.togglebutton);
         holder =  (FrameLayout) findViewById(R.id.toggle_button_holder);
@@ -111,6 +115,14 @@ public class MainActivity extends AppCompatActivity {
         saveDataButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                if(saveDataButton.isChecked()){
+                    saveDataButton.setChecked(false);
+                    saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_off));
+                }else{
+                    saveDataButton.setChecked(true);
+                    saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_on));
+                }
 
                 Log.w(LOG_TAG, "saveDataButton : " +bandSubscriptionTaskRunning);
 
@@ -1028,6 +1040,71 @@ public class MainActivity extends AppCompatActivity {
         }
 
     };
+
+
+
+
+
+
+    private class SaveButton extends android.support.v7.widget.AppCompatImageButton implements Checkable {
+
+        boolean isChecked = false;
+
+        public SaveButton(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void setChecked(boolean b) {
+            isChecked = b;
+            Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
+        }
+
+        @Override
+        public boolean isChecked() {
+
+            Log.v(LOG_TAG,"SaveButton: isChecked: " + isChecked);
+
+            return isChecked;
+        }
+
+        @Override
+        public void toggle() {
+
+            Log.v(LOG_TAG,"SaveButton: toggle");
+
+        }
+
+
+        @Override
+        public void setBackground(Drawable background) {
+
+            // Create an array of the attributes we want to resolve
+            // using values from a theme
+            // android.R.attr.selectableItemBackground requires API LEVEL 11
+            int[] attrs = new int[] { android.R.attr.selectableItemBackground /* index 0 */};
+
+            // Obtain the styled attributes. 'themedContext' is a context with a
+            // theme, typically the current Activity (i.e. 'this')
+            TypedArray ta = obtainStyledAttributes(attrs);
+
+            // Now get the value of the 'listItemBackground' attribute that was
+            // set in the theme used in 'themedContext'. The parameter is the index
+            // of the attribute in the 'attrs' array. The returned Drawable
+            // is what you are after
+            Drawable drawableFromTheme = ta.getDrawable(0 /* index */);
+
+            // Finally free resources used by TypedArray
+            ta.recycle();
+
+            // imageButton.setBackgroundDrawable(drawableFromTheme);
+            super.setBackground(drawableFromTheme);
+        }
+
+
+
+
+    }
 
 
 }
