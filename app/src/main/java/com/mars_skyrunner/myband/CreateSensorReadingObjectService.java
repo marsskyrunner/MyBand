@@ -1,6 +1,7 @@
 package com.mars_skyrunner.myband;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,7 +9,7 @@ import android.widget.Toast;
 
 public class CreateSensorReadingObjectService extends IntentService {
 
-
+    Context mContext;
 
     private final String LOG_TAG = CreateSensorReadingObjectService.class.getSimpleName();
     /**
@@ -22,6 +23,7 @@ public class CreateSensorReadingObjectService extends IntentService {
         super(Constants.CREATE_SENSOR_READING_OBJECT_SERVICE);
 
         Log.v(LOG_TAG,"CreateSensorReadingObjectService() constructor");
+
     }
 
     /**
@@ -31,25 +33,30 @@ public class CreateSensorReadingObjectService extends IntentService {
      */
     @Override
     protected void onHandleIntent(Intent intent) {
-        // Normally we would do some work here, like download a file.
-        // For our sample, we just sleep for 5 seconds.
-
-
-
 
         extra = intent.getExtras().getBundle(Constants.SERVICE_EXTRA);
 
-        Log.v(LOG_TAG,"extra: " + extra.getString(Constants.SENSOR_NAME) );
+        String date = extra.getString(Constants.SENSOR_DATE);
+        String time = extra.getString(Constants.SENSOR_TIME);
+        String rate = extra.getString(Constants.SENSOR_RATE);
+        String name = extra.getString(Constants.SENSOR_NAME);
+        String value = extra.getString(Constants.SENSOR_VALUE);
 
-        for(int i = 0 ; i < 5 ; i ++){
+        Log.v(LOG_TAG,"date: " +  date);
+        Log.v(LOG_TAG,"time: " +  time);
+        Log.v(LOG_TAG,"rate: " +  rate);
+        Log.v(LOG_TAG,"name: " +  name);
+        Log.v(LOG_TAG,"value: " + value);
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                // Restore interrupt status.
-                Thread.currentThread().interrupt();
-            }
-        }
+        SensorReading sensorReading = new SensorReading(mContext,name,value,rate,date,time);
+
+        //(Context context, String sensorName, String sensorReading, String rate, String  date, String time){
+                //
+
+        Intent stopReadingIntent = new Intent(Constants.SENSOR_READING_OBJECT_RECEIVER);
+        //stopReadingIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        stopReadingIntent.putExtra(Constants.SERVICE_EXTRA,sensorReading);
+       sendBroadcast(stopReadingIntent);
 
     }
 
@@ -58,15 +65,16 @@ public class CreateSensorReadingObjectService extends IntentService {
         //Toast.makeText(this, "service " + extra + " starting", Toast.LENGTH_SHORT).show();
 
         Log.w(LOG_TAG,"onStartCommand: " + "service  starting");
+
+        mContext = getBaseContext();
         return super.onStartCommand(intent,flags,startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //Toast.makeText(this, "service" + extra + " destroy", Toast.LENGTH_SHORT).show();
 
-        Log.e(LOG_TAG,"onDestroy(): " + "service " + extra + " destroy");
+        Log.e(LOG_TAG,"onDestroy()service ");
 
     }
 }

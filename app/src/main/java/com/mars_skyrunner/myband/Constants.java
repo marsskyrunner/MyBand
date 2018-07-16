@@ -51,6 +51,7 @@ public class Constants {
     public static final String SENSOR_NAME = packageName + ".SENSOR_NAME";
     public static final String SENSOR_VALUE = packageName + ".SENSOR_VALUE";
     public static final String SENSOR_RATE = packageName + ".SENSOR_RATE";
+    public static final String SENSOR_READING_OBJECT_RECEIVER = packageName + ".SENSOR_READING_OBJECT_RECEIVER";
 
 
     public Constants(){

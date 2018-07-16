@@ -204,6 +204,9 @@ public class MainActivity extends AppCompatActivity {
         //Register broadcast receiver to print values on screen from BandSensorsSubscriptionLoader
         registerReceiver(displayVaueReceiver, new IntentFilter(Constants.DISPLAY_VALUE));
 
+        //Register broadcast receiver to save SensorReading objects from CreateSensorReadingObjectService
+        registerReceiver(sensorReadingObjectReceiver, new IntentFilter(Constants.SENSOR_READING_OBJECT_RECEIVER));
+
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
 
     }
@@ -769,6 +772,23 @@ public class MainActivity extends AppCompatActivity {
 
             Log.v(LOG_TAG, "resetSensorReadingReceiver: onReceive ");
             stopButtonClicked();
+
+        }
+
+
+    };
+
+
+    private BroadcastReceiver  sensorReadingObjectReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            SensorReading receivedSensor = intent.getParcelableExtra(Constants.SERVICE_EXTRA);
+
+            Log.w(LOG_TAG, "sensorReadingObjectReceiver : onReceive:  "  + receivedSensor.getSensorName());
+
+            values.add(receivedSensor);
 
         }
 
