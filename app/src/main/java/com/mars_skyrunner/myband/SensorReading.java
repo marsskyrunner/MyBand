@@ -4,6 +4,8 @@ import android.content.Context;
 
 public class SensorReading {
 
+
+
     public String getSensorName() {
         return mSensorName;
     }
@@ -20,9 +22,27 @@ public class SensorReading {
         this.mSensorReading = mSensorReading;
     }
 
+
+    public String getSensorReadingRate() {
+        return mSensorReadingRate;
+    }
+
+    String mSensorReadingRate;
     String mSensorName;
     String mSensorReading;
+    String mSensorReadingDate;
+
+    public String getSensorReadingDate() {
+        return mSensorReadingDate;
+    }
+
+    public String getSensorReadingTime() {
+        return mSensorReadingTime;
+    }
+
+    String mSensorReadingTime;
     Context mContext;
+
 
     public SensorReading(Context context, String sensorName, String sensorReading){
         mContext = context;
@@ -30,5 +50,15 @@ public class SensorReading {
         mSensorReading = sensorReading;
     }
 
+
+
+    public SensorReading(Context context, String sensorName, String sensorReading, String rate, String  date, String time){
+        mContext = context;
+        mSensorName = sensorName;
+        mSensorReading = sensorReading;
+        mSensorReadingRate = rate;
+        mSensorReadingDate = date;
+        mSensorReadingTime = time;
+    }
 
 }

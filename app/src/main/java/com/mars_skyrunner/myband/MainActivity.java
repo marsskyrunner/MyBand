@@ -23,6 +23,7 @@ import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -59,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
     Date date;
     boolean bandSubscriptionTaskRunning = false;
     ImageButton saveDataButton;
+    boolean saveClicked = false;
+    FrameLayout holder;
+    ToggleButton toggle;
+    ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +80,10 @@ public class MainActivity extends AppCompatActivity {
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
         saveDataButton = (ImageButton) toolbar.findViewById(R.id.save_data_imagebutton);
 
-        final ToggleButton toggle = (ToggleButton) findViewById(R.id.togglebutton);
+        toggle = (ToggleButton) findViewById(R.id.togglebutton);
+        holder =  (FrameLayout) findViewById(R.id.toggle_button_holder);
 
+        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
         toggle.setText(getResources().getString(R.string.start));
         toggle.setTextOff(getResources().getString(R.string.start));
         toggle.setTextOn(getResources().getString(R.string.stop));
@@ -86,11 +93,15 @@ public class MainActivity extends AppCompatActivity {
                 if (isChecked) {
                     // The toggle is enabled
                     Log.v(LOG_TAG,"ToggleButton startButtonClicked()");
+
                     startButtonClicked();
+
                 } else {
                     // The toggle is disabled
                     Log.v(LOG_TAG,"ToggleButton stopButtonClicked()");
+
                     stopButtonClicked();
+
                 }
             }
         });
@@ -101,55 +112,79 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Log.w(LOG_TAG, "saveDataButton");
+                Log.w(LOG_TAG, "saveDataButton : " +bandSubscriptionTaskRunning);
 
                 if (bandSubscriptionTaskRunning) {
 
-                    showLoadingView(true);
-
-                    String sensorReadingsStr = "";
-
                     date = new Date();
+
+                    boolean sensorSelected = false;
+
+                    saveClicked = true;
 
                     for (SensorReading sr : sensorReadings) {
                         String sensorValue = getSensorReadingViewValue(sr);
                         String sensorSampleRate = getSensorSampleRate(sr);
 
+                        Bundle sensorBundle = new Bundle();
+
                         if (!sensorValue.equals("")) {
 
-                            sensorReadingsStr += sr.getSensorName() + " : " + sensorValue + "\n";
-
-                            // Create a ContentValues object where column names are the keys,
-                            // and sensorReadings values are the values.
-
-                            ContentValues values = new ContentValues();
-                            values.put(ReadingEntry.COLUMN_READING_DATE, new SimpleDateFormat("d MMM yyyy").format(date));
-                            values.put(ReadingEntry.COLUMN_READING_TIME, new SimpleDateFormat("HH:mm:ss").format(date));
-                            values.put(ReadingEntry.COLUMN_SENSOR_NAME, sr.getSensorName());
-                            values.put(ReadingEntry.COLUMN_SAMPLE_RATE, sensorSampleRate);
-                            values.put(ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
-
-                            Uri newUri;
-
-                            // This is a NEW record, so insert a new record into the provider,
-                            // returning the content URI for the new record.
-                            newUri = getContentResolver().insert(ReadingEntry.CONTENT_URI, values);
-
-                            // Show a toast message depending on whether or not the insertion was successful.
-                            if (newUri == null) {
-
-                                // If the new content URI is null, then there was an error with insertion.
-                                Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_failed), Toast.LENGTH_SHORT).show();
-                            } else {
-                                // Otherwise, the insertion was successful and we can display a toast.
-                                Log.w(LOG_TAG, "sensorReadingsStr" + sensorReadingsStr);
-
-                                // Kick off the record loader
-                                getLoaderManager().restartLoader(Constants.SAVE_DATAPOINT_LOADER, null, saveDataCursorLoader);
+                            sensorSelected = true;
 
 
-                            }
+
+                            sensorBundle.putString(Constants.SENSOR_DATE,new SimpleDateFormat("d MMM yyyy").format(date));
+                            sensorBundle.putString(Constants.SENSOR_TIME,new SimpleDateFormat("HH:mm:ss").format(date));
+                            sensorBundle.putString(Constants.SENSOR_NAME,sr.getSensorName());
+                            sensorBundle.putString(Constants.SENSOR_VALUE,sensorValue);
+                            sensorBundle.putString(Constants.SENSOR_RATE,sensorSampleRate);
+
+
+
+                            Intent serviceIntent = new Intent(MainActivity.this,CreateSensorReadingObjectService.class);
+                            serviceIntent.putExtra(Constants.SERVICE_EXTRA,sensorBundle);
+                            startService(serviceIntent);
+//
+//                            sensorReadingsStr += sr.getSensorName() + " : " + sensorValue + "\n";
+//
+//                            // Create a ContentValues object where column names are the keys,
+//                            // and sensorReadings values are the values.
+//
+//                            ContentValues values = new ContentValues();
+//                            values.put(ReadingEntry.COLUMN_READING_DATE, new SimpleDateFormat("d MMM yyyy").format(date));
+//                            values.put(ReadingEntry.COLUMN_READING_TIME, new SimpleDateFormat("HH:mm:ss").format(date));
+//                            values.put(ReadingEntry.COLUMN_SENSOR_NAME, sr.getSensorName());
+//                            values.put(ReadingEntry.COLUMN_SAMPLE_RATE, sensorSampleRate);
+//                            values.put(ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
+//
+//                            Uri newUri;
+//
+//                            // This is a NEW record, so insert a new record into the provider,
+//                            // returning the content URI for the new record.
+//                            newUri = getContentResolver().insert(ReadingEntry.CONTENT_URI, values);
+//
+//                            // Show a toast message depending on whether or not the insertion was successful.
+//                            if (newUri == null) {
+//
+//                                // If the new content URI is null, then there was an error with insertion.
+//                                Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_failed), Toast.LENGTH_SHORT).show();
+//                            } else {
+//                                // Otherwise, the insertion was successful and we can display a toast.
+//                                Log.w(LOG_TAG, "sensorReadingsStr" + sensorReadingsStr);
+//
+//                                // Kick off the record loader
+//                                getLoaderManager().restartLoader(Constants.SAVE_DATAPOINT_LOADER, null, saveDataCursorLoader);
+//
+//
+//                            }
                         }
+
+                        if(!sensorSelected){
+                            //Band is connected, but no sensor is selected to take any data point
+                            Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
+                        }
+
 
                     }
 
@@ -175,6 +210,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void startButtonClicked() {
         Log.v(LOG_TAG, "btnStart onClick");
+
+        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
+
         clearSensorTextViews();
 
         // Kick off the  loader
@@ -541,8 +579,14 @@ public class MainActivity extends AppCompatActivity {
 
         bandSubscriptionTaskRunning = false;
 
+        resetToggleButton();
         clearSensorTextViews();
         disconnectBand();
+    }
+
+    private void resetToggleButton() {
+        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
+        toggle.setChecked(false);
     }
 
 
@@ -555,6 +599,10 @@ public class MainActivity extends AppCompatActivity {
 
             case Constants.BAND_STATUS:
                 sensorValueTextView = bandStatusTxt;
+                if(string.equals(Constants.BAND_CONNECTION_FAIL)){
+                    resetToggleButton();
+                }
+
                 break;
 
 

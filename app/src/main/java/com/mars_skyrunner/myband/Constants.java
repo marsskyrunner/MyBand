@@ -43,6 +43,14 @@ public class Constants {
     public static final String SENSOR = packageName + ".SENSOR";
     public static final String VALUE = packageName + ".VALUE";
     public static final String DISPLAY_VALUE = packageName + ".DISPLAY_VALUE";
+    public static final String BAND_CONNECTION_FAIL = "Band Connection failed. Please try again.";
+    public static final String CREATE_SENSOR_READING_OBJECT_SERVICE =  packageName + ".CREATE_SENSOR_READING_OBJECT_SERVICE";
+    public static final String SERVICE_EXTRA = packageName + ".SERVICE_EXTRA";
+    public static final String SENSOR_DATE = packageName + ".SENSOR_DATE";
+    public static final String SENSOR_TIME = packageName + ".SENSOR_TIME";
+    public static final String SENSOR_NAME = packageName + ".SENSOR_NAME";
+    public static final String SENSOR_VALUE = packageName + ".SENSOR_VALUE";
+    public static final String SENSOR_RATE = packageName + ".SENSOR_RATE";
 
 
     public Constants(){

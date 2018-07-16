@@ -677,10 +677,14 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         boolean state = false;
 
         try {
+
+            Log.w(LOG_TAG,"client.connect()");
           state = (ConnectionState.CONNECTED ==  client.connect().await(1,java.util.concurrent.TimeUnit.MINUTES));
         } catch (TimeoutException e) {
-            appendToUI("Band connection failed.",Constants.BAND_STATUS);
+            Log.e(LOG_TAG,"TimeoutException" +  e.toString());
         }
+
+        Log.w(LOG_TAG,"return state : " + state);
 
         return state;
     }
