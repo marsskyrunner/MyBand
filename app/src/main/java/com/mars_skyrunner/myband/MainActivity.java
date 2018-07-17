@@ -2,6 +2,7 @@ package com.mars_skyrunner.myband;
 
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -20,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.CheckBox;
 import android.widget.Checkable;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     File saveFile;
     Date date;
     boolean bandSubscriptionTaskRunning = false;
-    //ImageButton saveDataButton;
+
     SaveButton saveDataButton;
 
     boolean saveClicked = false;
@@ -116,14 +118,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if(saveDataButton.isChecked()){
-                    saveDataButton.setChecked(false);
-                    saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_off));
-                }else{
-                    saveDataButton.setChecked(true);
-                    saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_on));
-                }
-
                 Log.w(LOG_TAG, "saveDataButton : " +bandSubscriptionTaskRunning);
 
                 if (bandSubscriptionTaskRunning) {
@@ -135,68 +129,34 @@ public class MainActivity extends AppCompatActivity {
                     saveClicked = true;
 
                     for (SensorReading sr : sensorReadings) {
-                        String sensorValue = getSensorReadingViewValue(sr);
-                        String sensorSampleRate = getSensorSampleRate(sr);
 
-                        Bundle sensorBundle = new Bundle();
+                        if(!sr.getSensorName().equals("band contact")){
+                            SensorReadingView sensorReadingView = getSensorReadingView(sr);
 
-                        if (!sensorValue.equals("")) {
+                            Log.v(LOG_TAG,sr.getSensorName() + " : " + sensorReadingView.getSensorCheckBox().isChecked());
 
-                            sensorSelected = true;
+                            if (sensorReadingView.getSensorCheckBox().isChecked()) {
 
+                                if(saveDataButton.isChecked()){
+                                    resetSaveDataButton();
+                                }else{
+                                    saveDataButton.setChecked(true);
+                                    saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_on));
+                                }
 
+                                sensorSelected = true;
 
-                            sensorBundle.putString(Constants.SENSOR_DATE,new SimpleDateFormat("d MMM yyyy").format(date));
-                            sensorBundle.putString(Constants.SENSOR_TIME,new SimpleDateFormat("HH:mm:ss").format(date));
-                            sensorBundle.putString(Constants.SENSOR_NAME,sr.getSensorName());
-                            sensorBundle.putString(Constants.SENSOR_VALUE,sensorValue);
-                            sensorBundle.putString(Constants.SENSOR_RATE,sensorSampleRate);
+                                callCreateSensorReadingObjectService(sr, sensorReadingView);
 
-
-
-                            Intent serviceIntent = new Intent(MainActivity.this,CreateSensorReadingObjectService.class);
-                            serviceIntent.putExtra(Constants.SERVICE_EXTRA,sensorBundle);
-                            startService(serviceIntent);
-//
-//                            sensorReadingsStr += sr.getSensorName() + " : " + sensorValue + "\n";
-//
-//                            // Create a ContentValues object where column names are the keys,
-//                            // and sensorReadings values are the values.
-//
-//                            ContentValues values = new ContentValues();
-//                            values.put(ReadingEntry.COLUMN_READING_DATE, new SimpleDateFormat("d MMM yyyy").format(date));
-//                            values.put(ReadingEntry.COLUMN_READING_TIME, new SimpleDateFormat("HH:mm:ss").format(date));
-//                            values.put(ReadingEntry.COLUMN_SENSOR_NAME, sr.getSensorName());
-//                            values.put(ReadingEntry.COLUMN_SAMPLE_RATE, sensorSampleRate);
-//                            values.put(ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
-//
-//                            Uri newUri;
-//
-//                            // This is a NEW record, so insert a new record into the provider,
-//                            // returning the content URI for the new record.
-//                            newUri = getContentResolver().insert(ReadingEntry.CONTENT_URI, values);
-//
-//                            // Show a toast message depending on whether or not the insertion was successful.
-//                            if (newUri == null) {
-//
-//                                // If the new content URI is null, then there was an error with insertion.
-//                                Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_failed), Toast.LENGTH_SHORT).show();
-//                            } else {
-//                                // Otherwise, the insertion was successful and we can display a toast.
-//                                Log.w(LOG_TAG, "sensorReadingsStr" + sensorReadingsStr);
-//
-//                                // Kick off the record loader
-//                                getLoaderManager().restartLoader(Constants.SAVE_DATAPOINT_LOADER, null, saveDataCursorLoader);
-//
-//
-//                            }
+                            }
                         }
 
-                        if(!sensorSelected){
-                            //Band is connected, but no sensor is selected to take any data point
-                            Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
-                        }
+                    }
 
+                    if(!sensorSelected){
+                        stopButtonClicked();
+                        //Band is connected, but no sensor is selected to take any data point
+                        Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
 
                     }
 
@@ -221,6 +181,34 @@ public class MainActivity extends AppCompatActivity {
 
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
 
+    }
+
+    private boolean callCreateSensorReadingObjectService(SensorReading sr, SensorReadingView sensorReadingView) {
+        boolean sensorSelected;
+        String sensorSampleRate = getSensorSampleRate(sr);
+        TextView sensorValueTextView =  ( TextView) sensorReadingView.findViewById(R.id.sensor_value);
+        String sensorValue = sensorValueTextView.getText().toString();
+
+
+        Log.v(LOG_TAG,"sensorValue : " + sensorValue );
+        Log.v(LOG_TAG,"sensorSampleRate : " + sensorSampleRate );
+
+        Bundle sensorBundle = new Bundle();
+
+        sensorSelected = true;
+
+        Log.v(LOG_TAG,"sensorSelected = true");
+
+        sensorBundle.putString(Constants.SENSOR_DATE,new SimpleDateFormat("d MMM yyyy").format(date));
+        sensorBundle.putString(Constants.SENSOR_TIME,new SimpleDateFormat("HH:mm:ss").format(date));
+        sensorBundle.putString(Constants.SENSOR_NAME,sr.getSensorName());
+        sensorBundle.putString(Constants.SENSOR_VALUE,sensorValue);
+        sensorBundle.putString(Constants.SENSOR_RATE,sensorSampleRate);
+
+        Intent serviceIntent = new Intent(MainActivity.this,CreateSensorReadingObjectService.class);
+        serviceIntent.putExtra(Constants.SERVICE_EXTRA,sensorBundle);
+        startService(serviceIntent);
+        return sensorSelected;
     }
 
     private void startButtonClicked() {
@@ -324,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
         String value = "";
         int resourceID = 0;
 
-        Log.v(LOG_TAG, "getSensorSampleRate: sr.getSensorName(): " + sr.getSensorName());
+        //Log.v(LOG_TAG, "getSensorSampleRate: sr.getSensorName(): " + sr.getSensorName());
 
         switch (sr.getSensorName()) {
             case "heart rate":
@@ -396,18 +384,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        Log.v(LOG_TAG, "getSensorSampleRate: " + value);
+        //Log.v(LOG_TAG, "getSensorSampleRate: " + value);
 
         return value;
     }
 
 
-    private String getSensorReadingViewValue(SensorReading sr) {
+    private SensorReadingView getSensorReadingView(SensorReading sr) {
 
         String value;
         int resourceID = 0;
 
-        //Log.v(LOG_TAG,"getSensorReadingViewValue: sr.getSensorName(): " + sr.getSensorName());
+        //Log.v(LOG_TAG,"getSensorReadingView: sr.getSensorName(): " + sr.getSensorName());
 
         switch (sr.getSensorName()) {
             case "heart rate":
@@ -479,15 +467,8 @@ public class MainActivity extends AppCompatActivity {
             sensorValueTextView = (TextView) sensorReadingView.findViewById(R.id.sensor_value);
         }
 
-        if (sensorValueTextView != null) {
-            value = sensorValueTextView.getText().toString();
-        } else {
-            value = "";
-        }
 
-        Log.v(LOG_TAG, "getSensorReadingViewValue: " + value);
-
-        return value;
+        return sensorReadingView;
     }
 
     private void initSensorListView() {
@@ -594,14 +575,21 @@ public class MainActivity extends AppCompatActivity {
 
         bandSubscriptionTaskRunning = false;
 
+        resetSaveDataButton();
         resetToggleButton();
         clearSensorTextViews();
         disconnectBand();
     }
 
+    private void resetSaveDataButton() {
+        saveDataButton.setChecked(false);
+        saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_off));
+    }
+
     private void resetToggleButton() {
         holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
         toggle.setChecked(false);
+
     }
 
 
@@ -747,6 +735,7 @@ public class MainActivity extends AppCompatActivity {
 
         unregisterReceiver(resetSensorReadingReceiver);
         unregisterReceiver(displayVaueReceiver);
+        unregisterReceiver(sensorReadingObjectReceiver);
 
         try {
             unregisterSensorListeners();
@@ -858,6 +847,53 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
+
+    private LoaderManager.LoaderCallbacks<ArrayList<Boolean>> saveDataPointLoader
+            = new LoaderManager.LoaderCallbacks<ArrayList<Boolean>>() {
+
+        @Override
+        public Loader<ArrayList<Boolean>> onCreateLoader(int i, Bundle bundle) {
+
+            Log.v(LOG_TAG, "saveDataPointLoader: onCreateLoader");
+
+            showLoadingView(true);
+
+            return new SaveDataPointLoader(MainActivity.this, values ,date);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<ArrayList<Boolean>> loader, ArrayList<Boolean> s) {
+
+            Log.v(LOG_TAG, "saveDataPointLoader: onLoadFinished ");
+
+            showLoadingView(false);
+            logSaveDataPointLoaderResult(s);
+
+            // Kick off the record loader
+            getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
+
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<ArrayList<Boolean>> loader) {
+
+            Log.v(LOG_TAG, "saveDataPointLoader: onLoaderReset");
+
+        }
+    };
+
+    private void logSaveDataPointLoaderResult(ArrayList<Boolean> s) {
+
+        Log.v(LOG_TAG,"logSaveDataPointLoaderResult");
+        for(int i = 0 ; i < s.size() ; i++){
+            Log.v(LOG_TAG,"sensor " + (i+1) + " : " + s.get(i));
+        }
+    }
+
+
     private LoaderManager.LoaderCallbacks<String> bandSensorSubscriptionLoader
             = new LoaderManager.LoaderCallbacks<String>() {
 
@@ -938,7 +974,7 @@ public class MainActivity extends AppCompatActivity {
             showLoadingView(false);
 
             switch (loader.getId()) {
-                case Constants.SAVE_DATAPOINT_LOADER:
+                case Constants.CREATE_CSV_LOADER:
 
                     File dir = getOutputDirectory();
                     saveFile = getCsvOutputFile(dir, date);
@@ -1014,6 +1050,8 @@ public class MainActivity extends AppCompatActivity {
                             //Show success message
                             Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
 
+                            values.clear();
+
                             //shows "OPEN CSV" action on a snackbar
                             Snackbar mySnackbar = Snackbar.make(mMainLayout,
                                     R.string.open_csv_file, Snackbar.LENGTH_LONG);
@@ -1058,6 +1096,15 @@ public class MainActivity extends AppCompatActivity {
         public void setChecked(boolean b) {
             isChecked = b;
             Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
+
+            Log.v(LOG_TAG,"SaveButton: values.size(): " + values.size());
+
+            if(!b && (values.size() != 0)){
+
+                // Kick off SaveDatapointLoader
+                getLoaderManager().restartLoader(Constants.SAVE_DATAPOINT_LOADER, null, saveDataPointLoader);
+
+            }
         }
 
         @Override

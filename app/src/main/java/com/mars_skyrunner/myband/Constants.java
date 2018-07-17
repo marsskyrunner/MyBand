@@ -6,6 +6,7 @@ public class Constants {
     private static final String packageName = "com.mars_skyrunner.myband";
     public static final int SAVE_DATAPOINT_LOADER = 100;
     public static final int BAND_SUSCRIPTION_LOADER = 200;
+    public static final int CREATE_CSV_LOADER = 300;
 
     public static final String RESET_SENSOR_READING = "com.mars_skyrunner.myband.RESET_SENSOR_READING";
     public static final String SHOW_CONSENT_DIALOG = "com.mars_skyrunner.myband.SHOW_CONSENT_DIALOG";
@@ -52,6 +53,7 @@ public class Constants {
     public static final String SENSOR_VALUE = packageName + ".SENSOR_VALUE";
     public static final String SENSOR_RATE = packageName + ".SENSOR_RATE";
     public static final String SENSOR_READING_OBJECT_RECEIVER = packageName + ".SENSOR_READING_OBJECT_RECEIVER";
+    ;
 
 
     public Constants(){
