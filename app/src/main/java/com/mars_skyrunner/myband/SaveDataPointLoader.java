@@ -114,7 +114,7 @@ public class SaveDataPointLoader extends android.content.AsyncTaskLoader< ArrayL
 
 
             // If the new content URI is null, then there was an error with insertion.
-            Log.w(LOG_TAG, "sr.getSensorName(): " + result);
+            Log.w(LOG_TAG, "result: " + result);
 
 
         }

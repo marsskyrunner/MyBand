@@ -12,7 +12,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 
 import com.microsoft.band.BandClientManager;
@@ -47,6 +50,7 @@ import com.microsoft.band.sensors.BandPedometerEvent;
 import com.microsoft.band.sensors.BandPedometerEventListener;
 import com.microsoft.band.sensors.BandRRIntervalEvent;
 import com.microsoft.band.sensors.BandRRIntervalEventListener;
+import com.microsoft.band.sensors.BandSensorEvent;
 import com.microsoft.band.sensors.BandSkinTemperatureEvent;
 import com.microsoft.band.sensors.BandSkinTemperatureEventListener;
 import com.microsoft.band.sensors.BandUVEvent;
@@ -58,10 +62,13 @@ import com.microsoft.band.sensors.UVIndexLevel;
 
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
 import static com.mars_skyrunner.myband.MainActivity.client;
 import static com.mars_skyrunner.myband.MainActivity.mListView;
+import static com.mars_skyrunner.myband.MainActivity.saveDataButton;
 
 /**
  * Permorm MSBand Sensors suscription by using an AsyncTask to perform the
@@ -79,6 +86,9 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
     private boolean heartRateChecked = false;
     private boolean rrIntervalChecked = false;
+    String gyroSampleRateSelection;
+    String gsrSampleRateSelection;
+    String accSampleRateSelection;
 
     /**
      * Constructs a new {@link BandSensorsSubscriptionLoader}.
@@ -201,8 +211,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         try {
 
                             Spinner accSensorSampleRateSelector = (Spinner) mListView.getChildAt(Constants.ACCELEROMETER_SENSOR).findViewById(R.id.sample_rate_spinner);
-                            String sampleRateSelection = accSensorSampleRateSelector.getSelectedItem().toString();
-                            Log.v(LOG_TAG, "sampleRateSelection: " + sampleRateSelection);
+                            accSampleRateSelection = accSensorSampleRateSelector.getSelectedItem().toString();
+                            Log.v(LOG_TAG, "sampleRateSelection: " + accSampleRateSelection);
 
                             /*
                             *  MS128 : A value representing a sample rate of every 128 milliseconds
@@ -210,7 +220,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                                MS32 : A value representing a sample rate of every 32 milliseconds
                             * */
 
-                            client.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, getSampleRate(sampleRateSelection));
+                            client.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, getSampleRate(accSampleRateSelection));
 
                         } catch (BandIOException e) {
                             e.printStackTrace();
@@ -267,7 +277,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         try {
 
                             Spinner gsrSensorSampleRateSelector = (Spinner) mListView.getChildAt(Constants.GSR_SENSOR).findViewById(R.id.sample_rate_spinner);
-                            String gsrSampleRateSelection = gsrSensorSampleRateSelector.getSelectedItem().toString();
+                            gsrSampleRateSelection = gsrSensorSampleRateSelector.getSelectedItem().toString();
                             Log.v(LOG_TAG, "gsrSampleRateSelection: " + gsrSampleRateSelection);
 
                             client.getSensorManager().registerGsrEventListener(mGsrEventListener, getGsrSampleRate(gsrSampleRateSelection));
@@ -324,9 +334,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                     if (gyroSensorCheckBox.isChecked()) {
                         try {
 
-
                             Spinner gyroSensorSampleRateSelector = (Spinner) mListView.getChildAt(Constants.GYROSCOPE_SENSOR).findViewById(R.id.sample_rate_spinner);
-                            String gyroSampleRateSelection = gyroSensorSampleRateSelector.getSelectedItem().toString();
+                            gyroSampleRateSelection = gyroSensorSampleRateSelector.getSelectedItem().toString();
                             Log.v(LOG_TAG, "gyroSampleRateSelection: " + gyroSampleRateSelection);
 
                             client.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, getSampleRate(gyroSampleRateSelection));
@@ -420,8 +429,18 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandHeartRateChanged(final BandHeartRateEvent event) {
             if (event != null) {
-                appendToUI(String.format("%d beats per minute,"
-                        + "Quality = %s", event.getHeartRate(), event.getQuality()), Constants.HEART_RATE);
+
+                String sensorName = mContext.getResources().getString(R.string.heart_rate);
+                String sensorValue = String.format("%d beats per minute,"
+                        + "Quality = %s", event.getHeartRate(), event.getQuality());
+
+                appendToUI(sensorValue, Constants.HEART_RATE);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, sensorValue, getSensorSamplingRate(sensorName),date);
+                }
             }
         }
     };
@@ -440,6 +459,14 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 Log.v(LOG_TAG, "mUVEventListener: " + event);
 
                 appendToUI(event, Constants.UV_LEVEL);
+
+                String sensorName = mContext.getResources().getString(R.string.uv);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                }
 
             }
         }
@@ -460,6 +487,14 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                                 .append(df.format(temp) + " °C").toString();
 
                         appendToUI(event, Constants.SKIN_TEMPERATURE);
+
+                        String sensorName = mContext.getResources().getString(R.string.skin_temperature);
+
+                        if (saveDataButton.isChecked()) {
+
+                            Date date = new Date();
+                            createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                        }
                     }
                 }
             };
@@ -477,6 +512,16 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         .append(String.format("TotalSteps = %d steps", totalSteps)).toString();
 
                 appendToUI(event, Constants.PEDOMETER);
+
+
+                String sensorName = mContext.getResources().getString(R.string.pedometer);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                }
+
             }
         }
     };
@@ -494,6 +539,15 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         .append(String.format("ωZ = %f °/s", bandGyroscopeEvent.getAngularVelocityZ())).toString();
 
                 appendToUI(event, Constants.GYROSCOPE);
+
+                String sensorName = mContext.getResources().getString(R.string.gyroscope);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                }
+
 
             }
         }
@@ -522,6 +576,15 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 appendToUI(event, Constants.DISTANCE);
 
+                String sensorName = mContext.getResources().getString(R.string.distance);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                }
+
+
             }
         }
     };
@@ -540,8 +603,20 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandContactChanged(BandContactEvent bandContactEvent) {
             if (bandContactEvent != null) {
+
                 String event = bandContactEvent.getContactState().toString();
                 appendToUI(event, Constants.BAND_CONTACT);
+
+//                String sensorName = mContext.getResources().getString(R.string.distance);
+//
+//                        if (saveDataButton.isChecked()) {
+//
+//                            Date date = new Date();
+//                            createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+//                        }
+//
+
+
 
             }
         }
@@ -551,7 +626,18 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandRRIntervalChanged(final BandRRIntervalEvent event) {
             if (event != null) {
-                appendToUI(String.format("%.3f s", event.getInterval()), Constants.RR_INTERVAL);
+
+                String value = String.format("%.3f s", event.getInterval());
+                appendToUI(value, Constants.RR_INTERVAL);
+
+                String sensorName = mContext.getResources().getString(R.string.rr_interval);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName),date);
+                }
+
             }
         }
     };
@@ -563,6 +649,16 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
             if (bandCaloriesEvent != null) {
                 String caloriesEvent = String.format("%d cals", bandCaloriesEvent.getCalories());
                 appendToUI(caloriesEvent, Constants.CALORIES);
+
+
+                String sensorName = mContext.getResources().getString(R.string.calories);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, caloriesEvent, getSensorSamplingRate(sensorName),date);
+                }
+
             }
 
         }
@@ -574,6 +670,14 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
             if (event != null) {
                 String gsrEvent = String.format("%d kOhms", event.getResistance());
                 appendToUI(gsrEvent, Constants.GSR);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    String sensorName = mContext.getResources().getString(R.string.gsr);
+                    createSensorReadingObject(sensorName, gsrEvent, getSensorSamplingRate(sensorName),date);
+                }
+
             }
         }
     };
@@ -588,6 +692,16 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 appendToUI(stts, Constants.ACCELEROMETER);
 
+
+                String sensorName = mContext.getResources().getString(R.string.accelerometer);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, stts, getSensorSamplingRate(sensorName),date);
+                }
+
+
             }
         }
     };
@@ -596,7 +710,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandAltimeterChanged(final BandAltimeterEvent event) {
             if (event != null) {
-                appendToUI(new StringBuilder()
+
+                String value = new StringBuilder()
                         .append(String.format("Total Gain = %d cm,", event.getTotalGain()))
                         .append(String.format("Total Loss = %d cm,", event.getTotalLoss()))
                         .append(String.format("Total Elevation Difference= %d cm,", (event.getTotalGain() - event.getTotalLoss())))
@@ -606,7 +721,18 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         .append(String.format("Steps Descended = %d,", event.getStepsDescended()))
                         .append(String.format("Rate = %f cm/s,", event.getRate()))
                         .append(String.format("Flights of Stairs Ascended = %d,", event.getFlightsAscended()))
-                        .append(String.format("Flights of Stairs Descended = %d", event.getFlightsDescended())).toString(), Constants.ALTIMETER);
+                        .append(String.format("Flights of Stairs Descended = %d", event.getFlightsDescended())).toString();
+
+                appendToUI(value, Constants.ALTIMETER);
+
+                String sensorName = mContext.getResources().getString(R.string.altimeter);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName),date);
+                }
+
             }
         }
     };
@@ -617,7 +743,19 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandAmbientLightChanged(final BandAmbientLightEvent event) {
             if (event != null) {
-                appendToUI(String.format("%d lux", event.getBrightness()), Constants.AMBIENT_LIGHT);
+
+                String value =String.format("%d lux", event.getBrightness());
+
+                appendToUI(value, Constants.AMBIENT_LIGHT);
+
+                String sensorName = mContext.getResources().getString(R.string.ambient_light);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName),date);
+                }
+
             }
         }
     };
@@ -633,6 +771,16 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                                 + "Temperature = %.2f degrees Celsius", event.getAirPressure(), event.getTemperature());
 
                 appendToUI(barometerEvent, Constants.BAROMETER);
+
+
+                String sensorName = mContext.getResources().getString(R.string.barometer);
+
+                if (saveDataButton.isChecked()) {
+
+                    Date date = new Date();
+                    createSensorReadingObject(sensorName, barometerEvent, getSensorSamplingRate(sensorName),date);
+                }
+
             }
         }
     };
@@ -826,4 +974,87 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
     }
+
+    private void createSensorReadingObject(String sensorName , String sensorValue, String sensorSampleRate, Date date){
+
+        SensorReading sensorReading = new SensorReading(mContext,sensorName,sensorValue,sensorSampleRate,new SimpleDateFormat("d MMM yyyy").format(date),new SimpleDateFormat("HH:mm:ss").format(date));
+
+        Intent sendObjectIntent = new Intent(Constants.SENSOR_READING_OBJECT_RECEIVER);
+        sendObjectIntent.putExtra(Constants.SERVICE_EXTRA,sensorReading);
+        mContext.sendBroadcast(sendObjectIntent);
+
+    }
+
+    private String getSensorSamplingRate(String sensorName){
+
+        String sampleRate = "";
+
+        //if the sensor is Heart Rate, Skin Temp.,UV,Barometer or Altimeter, sample rate is 1hz
+        //if the sensor is Ambient light, sample rate is 2hz
+        // else , value change
+
+        switch (sensorName) {
+            case "heart rate":
+                sampleRate = "1 hz";
+                break;
+
+            case "rr interval":
+                sampleRate = "Value change";
+                break;
+
+            case "accelerometer":
+                sampleRate = accSampleRateSelection + " hz";
+                break;
+
+            case "altimeter":
+                sampleRate = "1 hz";
+                break;
+
+            case "ambient light":
+                sampleRate = "2 hz";
+                break;
+
+            case "barometer":
+                sampleRate = "1 hz";
+                break;
+
+            case "GSR":
+                sampleRate = gsrSampleRateSelection + " hz";
+                break;
+
+            case "calories":
+                sampleRate = "Value change";
+                break;
+
+            case "distance":
+                sampleRate = "Value change";
+                break;
+
+//            case "band contact":
+//                resourceID = R.id.band_contact_sensorview;
+//                break;
+
+            case "gyroscope":
+                sampleRate = gyroSampleRateSelection + " hz";
+                break;
+
+            case "pedometer":
+                sampleRate = "Value change";
+                break;
+
+            case "skin temperature":
+                sampleRate = "1 hz";
+                break;
+
+            case "uv level":
+                sampleRate = "1 hz";
+                break;
+
+        }
+
+
+        return sampleRate;
+
+    }
+
 }

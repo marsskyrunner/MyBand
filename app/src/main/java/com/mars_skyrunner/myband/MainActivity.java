@@ -56,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<SensorReading> sensorReadings;
     File saveFile;
     Date date;
-    boolean bandSubscriptionTaskRunning = false;
+    public static boolean bandSubscriptionTaskRunning = false;
 
-    SaveButton saveDataButton;
+    public static SaveButton saveDataButton;
 
     boolean saveClicked = false;
     FrameLayout holder, saveButtonHolder;
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 sensorSelected = true;
 
-                                callCreateSensorReadingObjectService(sr, sensorReadingView);
+                                //callCreateSensorReadingObjectService(sr, sensorReadingView);
 
                             }
                         }
@@ -176,39 +176,11 @@ public class MainActivity extends AppCompatActivity {
         //Register broadcast receiver to print values on screen from BandSensorsSubscriptionLoader
         registerReceiver(displayVaueReceiver, new IntentFilter(Constants.DISPLAY_VALUE));
 
-        //Register broadcast receiver to save SensorReading objects from CreateSensorReadingObjectService
+        //Register broadcast receiver to save SensorReading objects from BandSensorsSubscriptionLoader
         registerReceiver(sensorReadingObjectReceiver, new IntentFilter(Constants.SENSOR_READING_OBJECT_RECEIVER));
 
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
 
-    }
-
-    private boolean callCreateSensorReadingObjectService(SensorReading sr, SensorReadingView sensorReadingView) {
-        boolean sensorSelected;
-        String sensorSampleRate = getSensorSampleRate(sr);
-        TextView sensorValueTextView =  ( TextView) sensorReadingView.findViewById(R.id.sensor_value);
-        String sensorValue = sensorValueTextView.getText().toString();
-
-
-        Log.v(LOG_TAG,"sensorValue : " + sensorValue );
-        Log.v(LOG_TAG,"sensorSampleRate : " + sensorSampleRate );
-
-        Bundle sensorBundle = new Bundle();
-
-        sensorSelected = true;
-
-        Log.v(LOG_TAG,"sensorSelected = true");
-
-        sensorBundle.putString(Constants.SENSOR_DATE,new SimpleDateFormat("d MMM yyyy").format(date));
-        sensorBundle.putString(Constants.SENSOR_TIME,new SimpleDateFormat("HH:mm:ss").format(date));
-        sensorBundle.putString(Constants.SENSOR_NAME,sr.getSensorName());
-        sensorBundle.putString(Constants.SENSOR_VALUE,sensorValue);
-        sensorBundle.putString(Constants.SENSOR_RATE,sensorSampleRate);
-
-        Intent serviceIntent = new Intent(MainActivity.this,CreateSensorReadingObjectService.class);
-        serviceIntent.putExtra(Constants.SERVICE_EXTRA,sensorBundle);
-        startService(serviceIntent);
-        return sensorSelected;
     }
 
     private void startButtonClicked() {
@@ -1084,7 +1056,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private class SaveButton extends android.support.v7.widget.AppCompatImageButton implements Checkable {
+    public class SaveButton extends android.support.v7.widget.AppCompatImageButton implements Checkable {
 
         boolean isChecked = false;
 
