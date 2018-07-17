@@ -63,6 +63,7 @@ import com.microsoft.band.sensors.UVIndexLevel;
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
@@ -438,8 +439,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, sensorValue, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, sensorValue, getSensorSamplingRate(sensorName));
                 }
             }
         }
@@ -464,8 +464,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
                 }
 
             }
@@ -492,8 +491,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                         if (saveDataButton.isChecked()) {
 
-                            Date date = new Date();
-                            createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                            createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
                         }
                     }
                 }
@@ -518,8 +516,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
                 }
 
             }
@@ -544,8 +541,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
                 }
 
 
@@ -580,8 +576,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
                 }
 
 
@@ -611,8 +606,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 //
 //                        if (saveDataButton.isChecked()) {
 //
-//                            Date date = new Date();
-//                            createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName),date);
+//                            createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
 //                        }
 //
 
@@ -634,8 +628,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName));
                 }
 
             }
@@ -655,8 +648,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, caloriesEvent, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, caloriesEvent, getSensorSamplingRate(sensorName));
                 }
 
             }
@@ -673,9 +665,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
                     String sensorName = mContext.getResources().getString(R.string.gsr);
-                    createSensorReadingObject(sensorName, gsrEvent, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, gsrEvent, getSensorSamplingRate(sensorName));
                 }
 
             }
@@ -697,8 +688,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, stts, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, stts, getSensorSamplingRate(sensorName));
                 }
 
 
@@ -729,8 +719,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName));
                 }
 
             }
@@ -752,8 +741,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName));
                 }
 
             }
@@ -777,8 +765,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (saveDataButton.isChecked()) {
 
-                    Date date = new Date();
-                    createSensorReadingObject(sensorName, barometerEvent, getSensorSamplingRate(sensorName),date);
+                    createSensorReadingObject(sensorName, barometerEvent, getSensorSamplingRate(sensorName));
                 }
 
             }
@@ -975,9 +962,15 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
     }
 
-    private void createSensorReadingObject(String sensorName , String sensorValue, String sensorSampleRate, Date date){
+    private void createSensorReadingObject(String sensorName , String sensorValue, String sensorSampleRate){
 
-        SensorReading sensorReading = new SensorReading(mContext,sensorName,sensorValue,sensorSampleRate,new SimpleDateFormat("d MMM yyyy").format(date),new SimpleDateFormat("HH:mm:ss").format(date));
+
+        long currentTime = System.currentTimeMillis();
+        String mDate = new SimpleDateFormat("d MMM yyyy").format(currentTime);
+        String time = new SimpleDateFormat("HH:mm:ss").format(currentTime);
+
+        Log.v(LOG_TAG,"currentTime: " + time);
+        SensorReading sensorReading = new SensorReading(mContext,sensorName,sensorValue,sensorSampleRate,mDate,time);
 
         Intent sendObjectIntent = new Intent(Constants.SENSOR_READING_OBJECT_RECEIVER);
         sendObjectIntent.putExtra(Constants.SERVICE_EXTRA,sensorReading);
