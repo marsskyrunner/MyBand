@@ -436,6 +436,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         + "Quality = %s", event.getHeartRate(), event.getQuality());
 
                 appendToUI(sensorValue, Constants.HEART_RATE);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -461,6 +462,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 appendToUI(event, Constants.UV_LEVEL);
 
                 String sensorName = mContext.getResources().getString(R.string.uv);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -488,6 +490,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         appendToUI(event, Constants.SKIN_TEMPERATURE);
 
                         String sensorName = mContext.getResources().getString(R.string.skin_temperature);
+                        Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                         if (saveDataButton.isChecked()) {
 
@@ -513,6 +516,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
                 String sensorName = mContext.getResources().getString(R.string.pedometer);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -538,6 +542,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 appendToUI(event, Constants.GYROSCOPE);
 
                 String sensorName = mContext.getResources().getString(R.string.gyroscope);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -560,7 +565,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                     event = new StringBuilder()
 
 
-                            .append("Band MotionType = " + bandDistanceEvent.getMotionType().toString() + "\n")
+                            .append("Band MotionType = " + bandDistanceEvent.getMotionType().toString() + ",")
                             .append(String.format("Total Distance Today = %d cm,", bandDistanceEvent.getDistanceToday()))
                             .append(String.format("Band Pace = %f ms/m,", bandDistanceEvent.getPace()))
                             .append(String.format("Band Speed = %f cm/s", bandDistanceEvent.getPace())).toString();
@@ -573,6 +578,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 appendToUI(event, Constants.DISTANCE);
 
                 String sensorName = mContext.getResources().getString(R.string.distance);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -625,6 +631,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 appendToUI(value, Constants.RR_INTERVAL);
 
                 String sensorName = mContext.getResources().getString(R.string.rr_interval);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -645,6 +652,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
                 String sensorName = mContext.getResources().getString(R.string.calories);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -666,6 +674,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 if (saveDataButton.isChecked()) {
 
                     String sensorName = mContext.getResources().getString(R.string.gsr);
+                    Log.w(LOG_TAG,sensorName + " checks SaveButton");
                     createSensorReadingObject(sensorName, gsrEvent, getSensorSamplingRate(sensorName));
                 }
 
@@ -685,6 +694,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
                 String sensorName = mContext.getResources().getString(R.string.accelerometer);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -716,6 +726,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 appendToUI(value, Constants.ALTIMETER);
 
                 String sensorName = mContext.getResources().getString(R.string.altimeter);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -738,6 +749,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 appendToUI(value, Constants.AMBIENT_LIGHT);
 
                 String sensorName = mContext.getResources().getString(R.string.ambient_light);
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -762,6 +774,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
                 String sensorName = mContext.getResources().getString(R.string.barometer);
+
+                Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 

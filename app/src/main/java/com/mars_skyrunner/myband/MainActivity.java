@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
     ToggleButton toggle;
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,6 +122,8 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.w(LOG_TAG, "saveDataButton : " +bandSubscriptionTaskRunning);
 
+                Log.w(LOG_TAG, "saveDataButton isChecked(): " +saveDataButton.isChecked() );
+
                 if (bandSubscriptionTaskRunning) {
 
                     date = new Date();
@@ -137,16 +141,17 @@ public class MainActivity extends AppCompatActivity {
 
                             if (sensorReadingView.getSensorCheckBox().isChecked()) {
 
-                                if(saveDataButton.isChecked()){
-                                    resetSaveDataButton();
-                                }else{
-                                    saveDataButton.setChecked(true);
-                                    saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_on));
+                                if(sensorSelected){
+                                    if(saveDataButton.isChecked()){
+                                        resetSaveDataButton();
+                                    }else{
+                                        saveDataButton.setChecked(true);
+                                        saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_on));
+                                    }
+
                                 }
 
                                 sensorSelected = true;
-
-                                //callCreateSensorReadingObjectService(sr, sensorReadingView);
 
                             }
                         }
@@ -669,11 +674,36 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        Log.v(LOG_TAG,"onStop()");
+
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+
+        Log.v(LOG_TAG,"onPostResume()");
+
+    }
 
     @Override
     protected void onResume() {
+
+
+        Log.v(LOG_TAG,"onResume()");
         super.onResume();
-        clearSensorTextViews();
+        stopButtonClicked();
+
+
+        //TODO: que al regresar a la app, no se reinicie el saveDataCursorLoader
+        saveDataCursorLoader.onLoaderReset(new Loader<Cursor>(this));
+
+
+
     }
 
     private void clearSensorTextViews() {
@@ -832,7 +862,7 @@ public class MainActivity extends AppCompatActivity {
 
             showLoadingView(true);
 
-            return new SaveDataPointLoader(MainActivity.this, values ,date);
+            return new SaveDataPointLoader(MainActivity.this, values );
         }
 
         @Override
@@ -962,8 +992,8 @@ public class MainActivity extends AppCompatActivity {
                         int rowcount = c.getCount();
                         int colcount = c.getColumnCount();
 
-                        Log.w(LOG_TAG, "rowcount: " + rowcount);
-                        Log.w(LOG_TAG, "colcount: " + colcount);
+                        //Log.w(LOG_TAG, "rowcount: " + rowcount);
+                        //Log.w(LOG_TAG, "colcount: " + colcount);
 
                         if (rowcount > 0) {
 
@@ -1005,7 +1035,7 @@ public class MainActivity extends AppCompatActivity {
                                         fileValue = cellValue;
                                     }
 
-                                    Log.w(LOG_TAG, "fileValue: " + fileValue);
+                                    //Log.w(LOG_TAG, "fileValue: " + fileValue);
                                     bw.write(fileValue);
 
                                 }

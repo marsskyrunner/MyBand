@@ -31,20 +31,17 @@ public class SaveDataPointLoader extends android.content.AsyncTaskLoader< ArrayL
 
     ArrayList<SensorReading> mValues;
 
-    Date mDate;
-
     /**
      * Constructs a new {@link SaveDataPointLoader}.
      *
      * @param context of the activity
      */
 
-    public SaveDataPointLoader(Context context, ArrayList<SensorReading> values , Date date) {
+    public SaveDataPointLoader(Context context, ArrayList<SensorReading> values ) {
 
         super(context);
         mContext = context;
         mValues = values;
-        mDate = date;
 
     }
 
@@ -85,8 +82,8 @@ public class SaveDataPointLoader extends android.content.AsyncTaskLoader< ArrayL
             // and sensorReadings values are the values.
 
             ContentValues values = new ContentValues();
-            values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_DATE, new SimpleDateFormat("d MMM yyyy").format(mDate));
-            values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_TIME, new SimpleDateFormat("HH:mm:ss").format(mDate));
+            values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_DATE, sr.getSensorReadingDate());
+            values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_TIME, sr.getSensorReadingTime());
             values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_NAME, sr.getSensorName());
             values.put(SensorReadingContract.ReadingEntry.COLUMN_SAMPLE_RATE, sensorSampleRate);
             values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
