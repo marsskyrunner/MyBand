@@ -73,7 +73,17 @@ public class SaveDataPointLoader extends android.content.AsyncTaskLoader< ArrayL
 
         ArrayList<Boolean> answer = new ArrayList<>();
 
+        // reset temporary table
+        mContext.getContentResolver().delete(SensorReadingContract.ReadingEntry.CONTENT_URI,null,null);
+
+        Log.v(LOG_TAG, "mValues.size(): " + mValues.size());
+
+        int counter = 0;
         for (SensorReading sr : mValues) {
+
+            counter++;
+
+            Log.v(LOG_TAG, "Reading "+ counter);
 
             String sensorValue = sr.getSensorReading();
             String sensorSampleRate = sr.getSensorReadingRate();
@@ -88,14 +98,29 @@ public class SaveDataPointLoader extends android.content.AsyncTaskLoader< ArrayL
             values.put(SensorReadingContract.ReadingEntry.COLUMN_SAMPLE_RATE, sensorSampleRate);
             values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
 
-            Uri newUri;
-
-            // This is a NEW record, so insert a new record into the provider,
-            // returning the content URI for the new record.
-            newUri = mContext.getContentResolver().insert(SensorReadingContract.ReadingEntry.CONTENT_URI, values);
-
+            // Insert sensorReadings into master Database
+            Uri masterUri = mContext.getContentResolver().insert(SensorReadingContract.ReadingEntry.MASTER_CONTENT_URI, values);
 
             String result = "";
+            // Show a toast message depending on whether or not the insertion was successful.
+            if (masterUri == null) {
+
+                result = "masterUri"  + mContext.getResources().getString(R.string.sensor_data_saving_failed);
+
+
+            } else {
+
+                result =  "masterUri" + mContext.getResources().getString(R.string.sensor_data_saving_success);
+
+            }
+
+            Log.w(LOG_TAG,result);
+
+
+            Uri newUri;
+            // Insert sensorReadings into interval Database
+            newUri = mContext.getContentResolver().insert(SensorReadingContract.ReadingEntry.CONTENT_URI, values);
+
             // Show a toast message depending on whether or not the insertion was successful.
             if (newUri == null) {
 

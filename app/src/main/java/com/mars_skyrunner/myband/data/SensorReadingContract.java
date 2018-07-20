@@ -25,6 +25,7 @@ public  final class SensorReadingContract {
      */
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
+
     /**
      * Possible path (appended to base content URI for possible URI's)
      * For instance, content://com.mars_skyrunner.myband/readings/ is a valid path for
@@ -33,6 +34,8 @@ public  final class SensorReadingContract {
 
     public static final String PATH_READINGS = "readings";
 
+    public static final String PATH_MASTER_READINGS = "master_readings";
+
     /**
      * Inner class that defines constant values for the SensorReadings database table.
      * Each entry in the table represents a single SensorReading.
@@ -40,8 +43,13 @@ public  final class SensorReadingContract {
 
     public static final class ReadingEntry implements BaseColumns {
 
-        /** The content URI to access the record data in the provider */
+        /** The content URI to access the sensor data in the provider */
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_READINGS);
+
+        /** The content URI to access the sensor reading data in the provider */
+        public static final Uri MASTER_CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_MASTER_READINGS);
+
+
 
         /**
          * The MIME type of the {@link #CONTENT_URI} for a list of records.
@@ -57,8 +65,14 @@ public  final class SensorReadingContract {
 
 
 
-        /** Name of database table for records */
-        public final static String TABLE_NAME = "readings";
+        /** Name of database table for sensor readings */
+        public final static String TABLE_NAME = "readings_table";
+
+
+
+        /** Name of master database table for sensor readings */
+        public final static String MASTER_TABLE_NAME = "master_readings_table";
+
 
         /**
          * Unique ID number for the SensorReading (only for use in the database table).
@@ -98,14 +112,6 @@ public  final class SensorReadingContract {
          */
         public final static String COLUMN_SENSOR_VALUE = "sensor_value";
 
-
-
-        /**
-         * Sensor ID
-         *
-         * Type: TEXT
-         */
-        public final static String COLUMN_SENSOR_ID = "sensor_id";
 
         /**
          * Sensor sample rate of the SensorReading.

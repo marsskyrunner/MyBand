@@ -11,6 +11,8 @@ import android.util.Log;
 
 import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
 
+import java.util.concurrent.RecursiveTask;
+
 /**
  * {@link ContentProvider} for MyBand app.
  */
@@ -31,6 +33,16 @@ public class SensorReadingProvider extends ContentProvider {
      */
     private static final int READING_ID = 101;
 
+    /**
+     * URI matcher code for the content URI for the readings table
+     */
+    private static final int MASTER_READINGS = 102;
+
+    /**
+     * URI matcher code for the content URI for a single reading in the readings table
+     */
+    private static final int MASTER_READING_ID = 103;
+
 
     /**
      * UriMatcher object to match a content URI to a corresponding code.
@@ -41,23 +53,10 @@ public class SensorReadingProvider extends ContentProvider {
 
     // Static initializer. This is run the first time anything is called from this class.
     static {
-        // The calls to addURI() go here, for all of the content URI patterns that the provider
-        // should recognize. All paths added to the UriMatcher have a corresponding code to return
-        // when a match is found.
-
-        // The content URI of the form "content://com.mars_skyrunner.myband/readings" will map to the
-        // integer code {@link #readings}. This URI is used to provide access to MULTIPLE rows
-        // of the readings table.
         sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_READINGS, READINGS);
-
-        // The content URI of the form "content://com.mars_skyrunner.lalalog.readings/readings/#" will map to the
-        // integer code {@link #RECORD_ID}. This URI is used to provide access to ONE single row
-        // of the readings table.
-        //
-        // In this case, the "#" wildcard is used where "#" can be substituted for an integer.
-        // For example, "content://com.mars_skyrunner.lalalog.readings/readings/3" matches, but
-        // "content://com.mars_skyrunner.lalalog.readings/readings" (without a number at the end) doesn't match.
         sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_READINGS + "/#", READING_ID);
+        sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_MASTER_READINGS, MASTER_READINGS);
+        sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_MASTER_READINGS + "/#", MASTER_READING_ID);
 
     }
 
@@ -134,6 +133,28 @@ public class SensorReadingProvider extends ContentProvider {
                         null, null, sortOrder);
                 break;
 
+            case MASTER_READINGS:
+
+                Log.w(LOG_TAG, "sUriMatcher:  MASTER_READINGS");
+
+                // For the readings code, query the readings table directly with the given
+                // projection, selection, selection arguments, and sort order. The cursor
+                // could contain multiple rows of the readings table.
+                cursor = database.query(ReadingEntry.MASTER_TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
+
+            case MASTER_READING_ID:
+                Log.w(LOG_TAG, "sUriMatcher:  MASTER_READING_ID");
+
+                selection = ReadingEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+
+                cursor = database.query(ReadingEntry.MASTER_TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
+
+
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
@@ -153,9 +174,10 @@ public class SensorReadingProvider extends ContentProvider {
         
         switch (match) {
             case READINGS:
-                Log.w(LOG_TAG,"insert readings");
+            case MASTER_READINGS:
+                Log.w(LOG_TAG,"insert readings/master_readings");
                 return insertReading(uri, contentValues);
-                
+
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }
@@ -204,8 +226,28 @@ public class SensorReadingProvider extends ContentProvider {
         // Get writeable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
+        String tableName = "";
+        // Figure out if the URI matcher can match the URI to a specific code
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+
+            case READINGS:
+            case READING_ID:
+                tableName = ReadingEntry.TABLE_NAME;
+                break;
+
+            case MASTER_READINGS:
+            case MASTER_READING_ID:
+                tableName = ReadingEntry.MASTER_TABLE_NAME;
+                break;
+
+
+            default:
+                throw new IllegalArgumentException("Cannot query unknown URI " + uri);
+        }
+
         // Insert the new record with the given values
-        long id = database.insert(ReadingEntry.TABLE_NAME, null, values);
+        long id = database.insert(tableName, null, values);
         // If the ID is -1, then the insertion failed. Log an error and return null.
         if (id == -1) {
             Log.e(LOG_TAG, "Failed to insert row for " + uri);
@@ -231,18 +273,17 @@ public class SensorReadingProvider extends ContentProvider {
         
         final int match = sUriMatcher.match(uri);
         switch (match) {
-            
             case READINGS:
+            case MASTER_READINGS:
                 return updateSensorReading(uri, contentValues, selection, selectionArgs);
-                
+
             case READING_ID:
-                // For the READING_ID code, extract out the ID from the URI,
-                // so we know which row to update. Selection will be "_id=?" and selection
-                // arguments will be a String array containing the actual ID.
+            case MASTER_READING_ID:
                 selection = ReadingEntry._ID + "=?";
-                
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 return updateSensorReading(uri, contentValues, selection, selectionArgs);
+
+
 
             default:
                 throw new IllegalArgumentException("Update is not supported for " + uri);
@@ -308,8 +349,29 @@ public class SensorReadingProvider extends ContentProvider {
         // Otherwise, get writeable database to update the data
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
+
+        String tableName = "";
+        // Figure out if the URI matcher can match the URI to a specific code
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+
+            case READINGS:
+            case READING_ID:
+                tableName = ReadingEntry.TABLE_NAME;
+                break;
+
+            case MASTER_READINGS:
+            case MASTER_READING_ID:
+                tableName = ReadingEntry.MASTER_TABLE_NAME;
+                break;
+
+
+            default:
+                throw new IllegalArgumentException("Cannot query unknown URI " + uri);
+        }
+
         // Perform the update on the database and get the number of rows affected
-        int rowsUpdated = database.update(ReadingEntry.TABLE_NAME, values, selection, selectionArgs);
+        int rowsUpdated = database.update(tableName, values, selection, selectionArgs);
 
         // If 1 or more rows were updated, then notify all listeners that the data at the
         // given URI has changed
@@ -345,6 +407,18 @@ public class SensorReadingProvider extends ContentProvider {
                 rowsDeleted = database.delete(ReadingEntry.TABLE_NAME, selection, selectionArgs);
                 break;
 
+            case MASTER_READINGS:
+                // Delete all rows that match the selection and selection args
+                rowsDeleted = database.delete(ReadingEntry.MASTER_TABLE_NAME, selection, selectionArgs);
+                break;
+
+            case MASTER_READING_ID:
+                // Delete a single row given by the ID in the URI
+                selection = ReadingEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                rowsDeleted = database.delete(ReadingEntry.MASTER_TABLE_NAME, selection, selectionArgs);
+                break;
+
 
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
@@ -365,9 +439,11 @@ public class SensorReadingProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         switch (match) {
 
-
+            case MASTER_READINGS:
             case READINGS:
                 return ReadingEntry.CONTENT_LIST_TYPE;
+
+            case MASTER_READING_ID:
             case READING_ID:
                 return ReadingEntry.CONTENT_ITEM_TYPE;
 

@@ -30,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.mars_skyrunner.myband.data.SensorReadingContract;
 import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
@@ -80,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
 
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
-        //saveDataButton = (ImageButton) toolbar.findViewById(R.id.save_data_imagebutton);
 
         saveButtonHolder =  (FrameLayout) findViewById(R.id.save_button_holder);
 
@@ -141,16 +141,6 @@ public class MainActivity extends AppCompatActivity {
 
                             if (sensorReadingView.getSensorCheckBox().isChecked()) {
 
-                                if(sensorSelected){
-                                    if(saveDataButton.isChecked()){
-                                        resetSaveDataButton();
-                                    }else{
-                                        saveDataButton.setChecked(true);
-                                        saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_on));
-                                    }
-
-                                }
-
                                 sensorSelected = true;
 
                             }
@@ -163,6 +153,13 @@ public class MainActivity extends AppCompatActivity {
                         //Band is connected, but no sensor is selected to take any data point
                         Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
 
+                    }else{
+                        if(saveDataButton.isChecked()){
+                            resetSaveDataButton();
+                        }else{
+                            saveDataButton.setChecked(true);
+                            saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_on));
+                        }
                     }
 
                 } else {
@@ -696,12 +693,6 @@ public class MainActivity extends AppCompatActivity {
 
         Log.v(LOG_TAG,"onResume()");
         super.onResume();
-        stopButtonClicked();
-
-
-        //TODO: que al regresar a la app, no se reinicie el saveDataCursorLoader
-        saveDataCursorLoader.onLoaderReset(new Loader<Cursor>(this));
-
 
 
     }
@@ -1052,7 +1043,15 @@ public class MainActivity extends AppCompatActivity {
                             //Show success message
                             Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
 
+
+                            //If SaveDatapoint button is clicked while MSBand still connected, it saves the
+                            //newest values
                             values.clear();
+
+
+                            //Save datapoint loader destroyed, so that if user comes back from
+                            //CSV file viewer, it does not create a new one
+                            getLoaderManager().destroyLoader(Constants.SAVE_DATAPOINT_LOADER);
 
                             //shows "OPEN CSV" action on a snackbar
                             Snackbar mySnackbar = Snackbar.make(mMainLayout,
