@@ -68,7 +68,7 @@ import static com.mars_skyrunner.myband.MainActivity.mListView;
  * processing
  */
 
-public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoader<String> {
+public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoader<ConnectionState> {
 
     /**
      * Tag for log messages
@@ -86,7 +86,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
      * @param context          of the activity
      */
 
-    public BandSensorsSubscriptionLoader(Context context , Bundle bundle) {
+    public BandSensorsSubscriptionLoader(Context context) {
 
         super(context);
         mContext = context;
@@ -102,7 +102,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
     @Override
-    public void deliverResult(String data) {
+    public void deliverResult(ConnectionState data) {
         super.deliverResult(data);
 
         if(heartRateChecked || rrIntervalChecked){
@@ -127,8 +127,9 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
     @Override
-    public String loadInBackground() {
+    public ConnectionState loadInBackground() {
 
+        ConnectionState answer = null;
 
             Log.v(LOG_TAG, "BandSensorsSubscriptionLoader doInBackground");
 
@@ -138,6 +139,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 if (getConnectedBandClient()) {
 
+                    answer = ConnectionState.CONNECTED;
                     bandStts = "Band is connected.";
 
                     Log.v(LOG_TAG, "getConnectedBandClient(): bandStts: " + bandStts);
@@ -379,12 +381,15 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 } else {
 
                     bandStts = "Band Connection failed. Please try again.";
+                    answer = client.getConnectionState();
 
 
                 }
 
                 Log.v(LOG_TAG, bandStts);
                 appendToUI(bandStts, Constants.BAND_STATUS);
+
+                Log.v(LOG_TAG,"answer: " + answer);
 
             } catch (BandException e) {
 
@@ -411,7 +416,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 Log.e(LOG_TAG, "BandSensorsSubscriptionTask: " + e.getMessage());
             }
 
-            return null;
+            return answer;
         
 
     }
@@ -667,6 +672,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 return true;
             } else {
                 Log.v(LOG_TAG, "ConnectionState.DISCONNECTED");
+                return false;
             }
 
         }
