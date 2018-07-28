@@ -8,25 +8,34 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
+import android.content.res.TypedArray;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.CheckBox;
+import android.widget.Checkable;
+import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
+import com.mars_skyrunner.myband.data.SensorReadingContract;
+import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
+import com.microsoft.band.ConnectionState;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,24 +45,28 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import com.mars_skyrunner.myband.data.SensorReadingContract.ReadingEntry;
-import com.microsoft.band.ConnectionState;
-
 
 public class MainActivity extends AppCompatActivity {
 
     public static BandClient client = null;
     final String LOG_TAG = "MainActivity";
     private TextView bandStatusTxt;
-    private Button btnStart, btnStop;
     Toolbar toolbar;
     public static LinearLayout mListView;
     LinearLayout mLoadingView, mMainLayout;
     ArrayList<SensorReading> sensorReadings;
     File saveFile;
     Date date;
-    boolean bandSubscriptionTaskRunning = false;
-    ImageButton saveDataButton;
+    public static boolean bandSubscriptionTaskRunning = false;
+
+    public static SaveButton saveDataButton;
+
+    boolean saveClicked = false;
+    FrameLayout holder, saveButtonHolder;
+    ToggleButton toggle;
+    ArrayList<SensorReading> values = new ArrayList<SensorReading>();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,66 +81,85 @@ public class MainActivity extends AppCompatActivity {
 
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
-        saveDataButton = (ImageButton) toolbar.findViewById(R.id.save_data_imagebutton);
+
+        saveButtonHolder =  (FrameLayout) findViewById(R.id.save_button_holder);
+
+        saveDataButton = new SaveButton(this);
+        saveDataButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_system_update_alt_white_24dp));
+        saveButtonHolder.addView(saveDataButton);
+
+        toggle = (ToggleButton) findViewById(R.id.togglebutton);
+        holder =  (FrameLayout) findViewById(R.id.toggle_button_holder);
+
+        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
+        toggle.setText(getResources().getString(R.string.start));
+        toggle.setTextOff(getResources().getString(R.string.start));
+        toggle.setTextOn(getResources().getString(R.string.stop));
+
+        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // The toggle is enabled
+                    Log.v(LOG_TAG,"ToggleButton startButtonClicked()");
+
+                    startButtonClicked();
+
+                } else {
+                    // The toggle is disabled
+                    Log.v(LOG_TAG,"ToggleButton stopButtonClicked()");
+
+                    stopButtonClicked();
+
+                }
+            }
+        });
 
         showLoadingView(false);
 
         saveDataButton.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View view) {
 
-                Log.w(LOG_TAG, "saveDataButton");
+                Log.w(LOG_TAG, "saveDataButton : " +bandSubscriptionTaskRunning);
+
+                Log.w(LOG_TAG, "saveDataButton isChecked(): " +saveDataButton.isChecked() );
 
                 if (bandSubscriptionTaskRunning) {
 
-                    showLoadingView(true);
-
-                    String sensorReadingsStr = "";
-
                     date = new Date();
+
+                    boolean sensorSelected = false;
+
+                    saveClicked = true;
 
                     for (SensorReading sr : sensorReadings) {
 
-                        String sensorValue = getSensorReadingViewValue(sr);
-                        String sensorSampleRate = getSensorSampleRate(sr);
+                        if(!sr.getSensorName().equals("band contact")){
+                            SensorReadingView sensorReadingView = getSensorReadingView(sr);
 
-                        if (!sensorValue.equals("")) {
+                            Log.v(LOG_TAG,sr.getSensorName() + " : " + sensorReadingView.getSensorCheckBox().isChecked());
 
-                            sensorReadingsStr += sr.getSensorName() + " : " + sensorValue + "\n";
+                            if (sensorReadingView.getSensorCheckBox().isChecked()) {
 
-                            // Create a ContentValues object where column names are the keys,
-                            // and sensorReadings values are the values.
-
-                            ContentValues values = new ContentValues();
-                            values.put(ReadingEntry.COLUMN_READING_DATE, new SimpleDateFormat("d MMM yyyy").format(date));
-                            values.put(ReadingEntry.COLUMN_READING_TIME, new SimpleDateFormat("HH:mm:ss").format(date));
-                            values.put(ReadingEntry.COLUMN_SENSOR_NAME, sr.getSensorName());
-                            values.put(ReadingEntry.COLUMN_SAMPLE_RATE, sensorSampleRate);
-                            values.put(ReadingEntry.COLUMN_SENSOR_VALUE, sensorValue);
-
-                            Uri newUri;
-
-                            // This is a NEW record, so insert a new record into the provider,
-                            // returning the content URI for the new record.
-                            newUri = getContentResolver().insert(ReadingEntry.CONTENT_URI, values);
-
-                            // Show a toast message depending on whether or not the insertion was successful.
-                            if (newUri == null) {
-
-                                // If the new content URI is null, then there was an error with insertion.
-                                Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_failed), Toast.LENGTH_SHORT).show();
-                            } else {
-                                // Otherwise, the insertion was successful and we can display a toast.
-                                Log.w(LOG_TAG, "sensorReadingsStr" + sensorReadingsStr);
-
-                                // Kick off the record loader
-                                getLoaderManager().restartLoader(Constants.SAVE_DATAPOINT_LOADER, null, saveDataCursorLoader);
-
+                                sensorSelected = true;
 
                             }
                         }
 
+                    }
+
+                    if(!sensorSelected){
+                        stopButtonClicked();
+                        //Band is connected, but no sensor is selected to take any data point
+                        Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
+
+                    }else{
+                        if(saveDataButton.isChecked()){
+                            resetSaveDataButton();
+                        }else{
+                            saveDataButton.setChecked(true);
+                            saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_on));
+                        }
                     }
 
                 } else {
@@ -135,7 +167,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
                     Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
-
                 }
 
             }
@@ -147,35 +178,22 @@ public class MainActivity extends AppCompatActivity {
         //Register broadcast receiver to print values on screen from BandSensorsSubscriptionLoader
         registerReceiver(displayVaueReceiver, new IntentFilter(Constants.DISPLAY_VALUE));
 
-        btnStart = (Button) findViewById(R.id.btnStart);
-        btnStop = (Button) findViewById(R.id.btnStop);
-
+        //Register broadcast receiver to save SensorReading objects from BandSensorsSubscriptionLoader
+        registerReceiver(sensorReadingObjectReceiver, new IntentFilter(Constants.SENSOR_READING_OBJECT_RECEIVER));
 
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
 
-        btnStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    }
 
-                Log.v(LOG_TAG, "btnStart onClick");
-                clearSensorTextViews();
+    private void startButtonClicked() {
+        Log.v(LOG_TAG, "btnStart onClick");
 
-                // Kick off the  loader
-                getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
+        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
 
+        clearSensorTextViews();
 
-            }
-        });
-
-        btnStop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                stopButtonClicked();
-
-            }
-        });
-
+        // Kick off the  loader
+        getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
     }
 
     private void showLoadingView(boolean loadingState) {
@@ -268,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
         String value = "";
         int resourceID = 0;
 
-        Log.v(LOG_TAG, "getSensorSampleRate: sr.getSensorName(): " + sr.getSensorName());
+        //Log.v(LOG_TAG, "getSensorSampleRate: sr.getSensorName(): " + sr.getSensorName());
 
         switch (sr.getSensorName()) {
             case "heart rate":
@@ -340,18 +358,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        Log.v(LOG_TAG, "getSensorSampleRate: " + value);
+        //Log.v(LOG_TAG, "getSensorSampleRate: " + value);
 
         return value;
     }
 
 
-    private String getSensorReadingViewValue(SensorReading sr) {
+    private SensorReadingView getSensorReadingView(SensorReading sr) {
 
         String value;
         int resourceID = 0;
 
-        //Log.v(LOG_TAG,"getSensorReadingViewValue: sr.getSensorName(): " + sr.getSensorName());
+        //Log.v(LOG_TAG,"getSensorReadingView: sr.getSensorName(): " + sr.getSensorName());
 
         switch (sr.getSensorName()) {
             case "heart rate":
@@ -423,15 +441,8 @@ public class MainActivity extends AppCompatActivity {
             sensorValueTextView = (TextView) sensorReadingView.findViewById(R.id.sensor_value);
         }
 
-        if (sensorValueTextView != null) {
-            value = sensorValueTextView.getText().toString();
-        } else {
-            value = "";
-        }
 
-        Log.v(LOG_TAG, "getSensorReadingViewValue: " + value);
-
-        return value;
+        return sensorReadingView;
     }
 
     private void initSensorListView() {
@@ -538,8 +549,21 @@ public class MainActivity extends AppCompatActivity {
 
         bandSubscriptionTaskRunning = false;
 
+        resetSaveDataButton();
+        resetToggleButton();
         clearSensorTextViews();
         disconnectBand();
+    }
+
+    private void resetSaveDataButton() {
+        saveDataButton.setChecked(false);
+        saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_off));
+    }
+
+    private void resetToggleButton() {
+        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
+        toggle.setChecked(false);
+
     }
 
 
@@ -552,6 +576,10 @@ public class MainActivity extends AppCompatActivity {
 
             case Constants.BAND_STATUS:
                 sensorValueTextView = bandStatusTxt;
+                if(string.equals(Constants.BAND_CONNECTION_FAIL)){
+                    resetToggleButton();
+                }
+
                 break;
 
 
@@ -643,11 +671,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        Log.v(LOG_TAG,"onStop()");
+
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+
+        Log.v(LOG_TAG,"onPostResume()");
+
+    }
 
     @Override
     protected void onResume() {
+
+
+        Log.v(LOG_TAG,"onResume()");
         super.onResume();
-        clearSensorTextViews();
+
+
     }
 
     private void clearSensorTextViews() {
@@ -681,6 +728,7 @@ public class MainActivity extends AppCompatActivity {
 
         unregisterReceiver(resetSensorReadingReceiver);
         unregisterReceiver(displayVaueReceiver);
+        unregisterReceiver(sensorReadingObjectReceiver);
 
         try {
             unregisterSensorListeners();
@@ -693,7 +741,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void disconnectBand() {
-
         if (client != null) {
             try {
                 client.disconnect().await();
@@ -705,9 +752,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(LOG_TAG, "disconnectBand: BandException: " + e.toString());
             }
         }
-
-        Log.v(LOG_TAG,"disconnectBand(): " + client.getConnectionState().toString());
-
     }
 
     private void unregisterSensorListeners() throws BandIOException {
@@ -722,6 +766,23 @@ public class MainActivity extends AppCompatActivity {
 
             Log.v(LOG_TAG, "resetSensorReadingReceiver: onReceive ");
             stopButtonClicked();
+
+        }
+
+
+    };
+
+
+    private BroadcastReceiver  sensorReadingObjectReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            SensorReading receivedSensor = intent.getParcelableExtra(Constants.SERVICE_EXTRA);
+
+            Log.w(LOG_TAG, "sensorReadingObjectReceiver : onReceive:  "  + receivedSensor.getSensorName());
+
+            values.add(receivedSensor);
 
         }
 
@@ -775,6 +836,53 @@ public class MainActivity extends AppCompatActivity {
                 Log.v(LOG_TAG, "resolveActivity NO");
             }
 
+        }
+    }
+
+
+
+
+
+    private LoaderManager.LoaderCallbacks<ArrayList<Boolean>> saveDataPointLoader
+            = new LoaderManager.LoaderCallbacks<ArrayList<Boolean>>() {
+
+        @Override
+        public Loader<ArrayList<Boolean>> onCreateLoader(int i, Bundle bundle) {
+
+            Log.v(LOG_TAG, "saveDataPointLoader: onCreateLoader");
+
+            showLoadingView(true);
+
+            return new SaveDataPointLoader(MainActivity.this, values );
+        }
+
+        @Override
+        public void onLoadFinished(Loader<ArrayList<Boolean>> loader, ArrayList<Boolean> s) {
+
+            Log.v(LOG_TAG, "saveDataPointLoader: onLoadFinished ");
+
+            showLoadingView(false);
+            logSaveDataPointLoaderResult(s);
+
+            // Kick off the record loader
+            getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
+
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<ArrayList<Boolean>> loader) {
+
+            Log.v(LOG_TAG, "saveDataPointLoader: onLoaderReset");
+
+        }
+    };
+
+    private void logSaveDataPointLoaderResult(ArrayList<Boolean> s) {
+
+        Log.v(LOG_TAG,"logSaveDataPointLoaderResult");
+        for(int i = 0 ; i < s.size() ; i++){
+            Log.v(LOG_TAG,"sensor " + (i+1) + " : " + s.get(i));
         }
     }
 
@@ -873,6 +981,7 @@ public class MainActivity extends AppCompatActivity {
                     ReadingEntry._ID,
                     ReadingEntry.COLUMN_READING_DATE,
                     ReadingEntry.COLUMN_READING_TIME,
+                    ReadingEntry.COLUMN_SAMPLE_RATE,
                     ReadingEntry.COLUMN_SENSOR_NAME,
                     ReadingEntry.COLUMN_SENSOR_VALUE};
 
@@ -897,7 +1006,7 @@ public class MainActivity extends AppCompatActivity {
             showLoadingView(false);
 
             switch (loader.getId()) {
-                case Constants.SAVE_DATAPOINT_LOADER:
+                case Constants.CREATE_CSV_LOADER:
 
                     File dir = getOutputDirectory();
                     saveFile = getCsvOutputFile(dir, date);
@@ -913,8 +1022,8 @@ public class MainActivity extends AppCompatActivity {
                         int rowcount = c.getCount();
                         int colcount = c.getColumnCount();
 
-                        Log.w(LOG_TAG, "rowcount: " + rowcount);
-                        Log.w(LOG_TAG, "colcount: " + colcount);
+                        //Log.w(LOG_TAG, "rowcount: " + rowcount);
+                        //Log.w(LOG_TAG, "colcount: " + colcount);
 
                         if (rowcount > 0) {
 
@@ -956,7 +1065,7 @@ public class MainActivity extends AppCompatActivity {
                                         fileValue = cellValue;
                                     }
 
-                                    Log.w(LOG_TAG, "fileValue: " + fileValue);
+                                    //Log.w(LOG_TAG, "fileValue: " + fileValue);
                                     bw.write(fileValue);
 
                                 }
@@ -972,6 +1081,16 @@ public class MainActivity extends AppCompatActivity {
 
                             //Show success message
                             Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
+
+
+                            //If SaveDatapoint button is clicked while MSBand still connected, it saves the
+                            //newest values
+                            values.clear();
+
+
+                            //Save datapoint loader destroyed, so that if user comes back from
+                            //CSV file viewer, it does not create a new one
+                            getLoaderManager().destroyLoader(Constants.SAVE_DATAPOINT_LOADER);
 
                             //shows "OPEN CSV" action on a snackbar
                             Snackbar mySnackbar = Snackbar.make(mMainLayout,
@@ -999,6 +1118,80 @@ public class MainActivity extends AppCompatActivity {
         }
 
     };
+
+
+
+
+
+
+    public class SaveButton extends android.support.v7.widget.AppCompatImageButton implements Checkable {
+
+        boolean isChecked = false;
+
+        public SaveButton(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void setChecked(boolean b) {
+            isChecked = b;
+            Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
+
+            Log.v(LOG_TAG,"SaveButton: values.size(): " + values.size());
+
+            if(!b && (values.size() != 0)){
+
+                // Kick off SaveDatapointLoader
+                getLoaderManager().restartLoader(Constants.SAVE_DATAPOINT_LOADER, null, saveDataPointLoader);
+
+            }
+        }
+
+        @Override
+        public boolean isChecked() {
+
+            Log.v(LOG_TAG,"SaveButton: isChecked: " + isChecked);
+
+            return isChecked;
+        }
+
+        @Override
+        public void toggle() {
+
+            Log.v(LOG_TAG,"SaveButton: toggle");
+
+        }
+
+
+        @Override
+        public void setBackground(Drawable background) {
+
+            // Create an array of the attributes we want to resolve
+            // using values from a theme
+            // android.R.attr.selectableItemBackground requires API LEVEL 11
+            int[] attrs = new int[] { android.R.attr.selectableItemBackground /* index 0 */};
+
+            // Obtain the styled attributes. 'themedContext' is a context with a
+            // theme, typically the current Activity (i.e. 'this')
+            TypedArray ta = obtainStyledAttributes(attrs);
+
+            // Now get the value of the 'listItemBackground' attribute that was
+            // set in the theme used in 'themedContext'. The parameter is the index
+            // of the attribute in the 'attrs' array. The returned Drawable
+            // is what you are after
+            Drawable drawableFromTheme = ta.getDrawable(0 /* index */);
+
+            // Finally free resources used by TypedArray
+            ta.recycle();
+
+            // imageButton.setBackgroundDrawable(drawableFromTheme);
+            super.setBackground(drawableFromTheme);
+        }
+
+
+
+
+    }
 
 
 }

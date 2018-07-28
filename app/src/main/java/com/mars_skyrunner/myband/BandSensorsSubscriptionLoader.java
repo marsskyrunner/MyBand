@@ -12,7 +12,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 
 import com.microsoft.band.BandClientManager;
@@ -47,6 +50,7 @@ import com.microsoft.band.sensors.BandPedometerEvent;
 import com.microsoft.band.sensors.BandPedometerEventListener;
 import com.microsoft.band.sensors.BandRRIntervalEvent;
 import com.microsoft.band.sensors.BandRRIntervalEventListener;
+import com.microsoft.band.sensors.BandSensorEvent;
 import com.microsoft.band.sensors.BandSkinTemperatureEvent;
 import com.microsoft.band.sensors.BandSkinTemperatureEventListener;
 import com.microsoft.band.sensors.BandUVEvent;
@@ -58,10 +62,14 @@ import com.microsoft.band.sensors.UVIndexLevel;
 
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
 import static com.mars_skyrunner.myband.MainActivity.client;
 import static com.mars_skyrunner.myband.MainActivity.mListView;
+import static com.mars_skyrunner.myband.MainActivity.saveDataButton;
 
 /**
  * Permorm MSBand Sensors suscription by using an AsyncTask to perform the
@@ -79,6 +87,9 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
     private boolean heartRateChecked = false;
     private boolean rrIntervalChecked = false;
+    String gyroSampleRateSelection;
+    String gsrSampleRateSelection;
+    String accSampleRateSelection;
 
     /**
      * Constructs a new {@link BandSensorsSubscriptionLoader}.
@@ -131,80 +142,78 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
         ConnectionState answer = null;
 
-            Log.v(LOG_TAG, "BandSensorsSubscriptionLoader doInBackground");
+        Log.v(LOG_TAG, "BandSensorsSubscriptionLoader doInBackground");
 
-            try {
+        try {
 
-                String bandStts = "";
+            String bandStts = "";
 
-                if (getConnectedBandClient()) {
+            if (getConnectedBandClient()) {
 
-                    answer = ConnectionState.CONNECTED;
-                    bandStts = "Band is connected.";
+                answer = ConnectionState.CONNECTED;
+                bandStts = "Band is connected.";
 
-                    Log.v(LOG_TAG, "getConnectedBandClient(): bandStts: " + bandStts);
+                Log.v(LOG_TAG, "getConnectedBandClient(): bandStts: " + bandStts);
 
-                    CheckBox hrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.HEART_RATE_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "HEART_RATE_SENSOR: " + hrSensorCheckBox.isChecked());
+                CheckBox hrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.HEART_RATE_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "HEART_RATE_SENSOR: " + hrSensorCheckBox.isChecked());
 
-                    if (hrSensorCheckBox.isChecked()) {
+                if (hrSensorCheckBox.isChecked()) {
 
-                        heartRateChecked = true;
+                    heartRateChecked = true;
 
-                        if (client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
-                            try {
-                                client.getSensorManager().registerHeartRateEventListener(mHeartRateEventListener);
-                            } catch (BandException e) {
-                                appendToUI("Sensor reading error", Constants.HEART_RATE);
-                            }
-
-                        } else {
-                            Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() =! UserConsent.GRANTED");
+                    if (client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
+                        try {
+                            client.getSensorManager().registerHeartRateEventListener(mHeartRateEventListener);
+                        } catch (BandException e) {
+                            appendToUI("Sensor reading error", Constants.HEART_RATE);
                         }
 
+                    } else {
+                        Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() =! UserConsent.GRANTED");
                     }
 
-                    CheckBox rrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.RR_INTERVAL_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "RR_INTERVAL_SENSOR: " + rrSensorCheckBox.isChecked());
+                }
 
-                    if (rrSensorCheckBox.isChecked()) {
+                CheckBox rrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.RR_INTERVAL_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "RR_INTERVAL_SENSOR: " + rrSensorCheckBox.isChecked());
 
-                        rrIntervalChecked = true;
+                if (rrSensorCheckBox.isChecked()) {
 
-                        if (client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
+                    rrIntervalChecked = true;
 
-                            Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED");
+                    if (client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
 
-
-                            try {
-
-                                client.getSensorManager().registerRRIntervalEventListener(mRRIntervalEventListener);
-
-                            } catch (BandException e) {
-                                e.printStackTrace();
-                                appendToUI("Sensor reading error", Constants.RR_INTERVAL);
-
-                            }
-
-                        } else {
-
-                            Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() =! UserConsent.GRANTED");
-
-                        }
-
-                    }
-
-                    CheckBox accSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.ACCELEROMETER_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "ACCELEROMETER_SENSOR: " + accSensorCheckBox.isChecked());
+                        Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED");
 
 
-
-                    if (accSensorCheckBox.isChecked()) {
                         try {
 
-                            Spinner accSensorSampleRateSelector = (Spinner) mListView.getChildAt(Constants.ACCELEROMETER_SENSOR).findViewById(R.id.sample_rate_spinner);
-                            String sampleRateSelection = accSensorSampleRateSelector.getSelectedItem().toString();
-                            Log.v(LOG_TAG, "sampleRateSelection: " + sampleRateSelection);
+                            client.getSensorManager().registerRRIntervalEventListener(mRRIntervalEventListener);
+
+                        } catch (BandException e) {
+                            e.printStackTrace();
+                            appendToUI("Sensor reading error", Constants.RR_INTERVAL);
+
+                        }
+
+                    } else {
+
+                        Log.v(LOG_TAG, "client.getSensorManager().getCurrentHeartRateConsent() =! UserConsent.GRANTED");
+
+                    }
+
+                }
+
+                CheckBox accSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.ACCELEROMETER_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "ACCELEROMETER_SENSOR: " + accSensorCheckBox.isChecked());
+
+                if (accSensorCheckBox.isChecked()) {
+                    try {
+
+                        Spinner accSensorSampleRateSelector = (Spinner) mListView.getChildAt(Constants.ACCELEROMETER_SENSOR).findViewById(R.id.sample_rate_spinner);
+                        accSampleRateSelection = accSensorSampleRateSelector.getSelectedItem().toString();
+                        Log.v(LOG_TAG, "sampleRateSelection: " + accSampleRateSelection);
 
                             /*
                             *  MS128 : A value representing a sample rate of every 128 milliseconds
@@ -212,221 +221,231 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                                MS32 : A value representing a sample rate of every 32 milliseconds
                             * */
 
-                            client.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, getSampleRate(sampleRateSelection));
+                        client.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, getSampleRate(accSampleRateSelection));
 
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.ACCELEROMETER);
-                        }
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.ACCELEROMETER);
                     }
+                }
 
 
-                    CheckBox altSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.ALTIMETER_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "ALTIMETER_SENSOR: " + altSensorCheckBox.isChecked());
+                CheckBox altSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.ALTIMETER_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "ALTIMETER_SENSOR: " + altSensorCheckBox.isChecked());
 
-                    if (altSensorCheckBox.isChecked()) {
+                if (altSensorCheckBox.isChecked()) {
 
-                        try {
-                            client.getSensorManager().registerAltimeterEventListener(mAltimeterEventListener);
-                        } catch (BandIOException e) {
-                            appendToUI("Sensor reading error", Constants.ALTIMETER);
-                            e.printStackTrace();
-                        }
+                    try {
+                        client.getSensorManager().registerAltimeterEventListener(mAltimeterEventListener);
+                    } catch (BandIOException e) {
+                        appendToUI("Sensor reading error", Constants.ALTIMETER);
+                        e.printStackTrace();
                     }
+                }
 
 
-                    CheckBox ambLightSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.AMBIENT_LIGHT_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "AMBIENT_LIGHT_SENSOR: " + ambLightSensorCheckBox.isChecked());
+                CheckBox ambLightSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.AMBIENT_LIGHT_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "AMBIENT_LIGHT_SENSOR: " + ambLightSensorCheckBox.isChecked());
 
-                    if (ambLightSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerAmbientLightEventListener(mAmbientLightEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.AMBIENT_LIGHT);
-                        }
+                if (ambLightSensorCheckBox.isChecked()) {
+                    try {
+                        client.getSensorManager().registerAmbientLightEventListener(mAmbientLightEventListener);
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.AMBIENT_LIGHT);
                     }
+                }
 
-                    CheckBox barSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.BAROMETER_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "BAROMETER_SENSOR: " + barSensorCheckBox.isChecked());
+                CheckBox barSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.BAROMETER_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "BAROMETER_SENSOR: " + barSensorCheckBox.isChecked());
 
-                    if (barSensorCheckBox.isChecked()) {
+                if (barSensorCheckBox.isChecked()) {
 
-                        try {
-                            client.getSensorManager().registerBarometerEventListener(mBarometerEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.BAROMETER);
-                        }
+                    try {
+                        client.getSensorManager().registerBarometerEventListener(mBarometerEventListener);
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.BAROMETER);
                     }
+                }
 
 
-                    CheckBox gsrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.GSR_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "GSR_SENSOR: " + gsrSensorCheckBox.isChecked());
+                CheckBox gsrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.GSR_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "GSR_SENSOR: " + gsrSensorCheckBox.isChecked());
 
 
-                    if (gsrSensorCheckBox.isChecked()) {
-                        try {
+                if (gsrSensorCheckBox.isChecked()) {
+                    try {
 
-                            Spinner gsrSensorSampleRateSelector = (Spinner) mListView.getChildAt(Constants.GSR_SENSOR).findViewById(R.id.sample_rate_spinner);
-                            String gsrSampleRateSelection = gsrSensorSampleRateSelector.getSelectedItem().toString();
-                            Log.v(LOG_TAG, "gsrSampleRateSelection: " + gsrSampleRateSelection);
+                        Spinner gsrSensorSampleRateSelector = (Spinner) mListView.getChildAt(Constants.GSR_SENSOR).findViewById(R.id.sample_rate_spinner);
+                        gsrSampleRateSelection = gsrSensorSampleRateSelector.getSelectedItem().toString();
+                        Log.v(LOG_TAG, "gsrSampleRateSelection: " + gsrSampleRateSelection);
 
-                            client.getSensorManager().registerGsrEventListener(mGsrEventListener, getGsrSampleRate(gsrSampleRateSelection));
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.GSR);
-                        }
+                        client.getSensorManager().registerGsrEventListener(mGsrEventListener, getGsrSampleRate(gsrSampleRateSelection));
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.GSR);
                     }
+                }
 
 
-                    CheckBox calSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.CALORIES_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "CALORIES_SENSOR: " + calSensorCheckBox.isChecked());
+                CheckBox calSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.CALORIES_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "CALORIES_SENSOR: " + calSensorCheckBox.isChecked());
 
-                    if (calSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerCaloriesEventListener(mCaloriesEventListener);
-                        } catch (BandIOException e) {
-                            appendToUI("Sensor reading error", Constants.CALORIES);
-                            e.printStackTrace();
-                        }
+                if (calSensorCheckBox.isChecked()) {
+                    try {
+                        client.getSensorManager().registerCaloriesEventListener(mCaloriesEventListener);
+                    } catch (BandIOException e) {
+                        appendToUI("Sensor reading error", Constants.CALORIES);
+                        e.printStackTrace();
                     }
+                }
 
 
-                    CheckBox contactSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.BAND_CONTACT_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "BAND_CONTACT_SENSOR: " + contactSensorCheckBox.isChecked());
+                CheckBox contactSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.BAND_CONTACT_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "BAND_CONTACT_SENSOR: " + contactSensorCheckBox.isChecked());
 
-                    if (contactSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerContactEventListener(mContactEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.BAND_CONTACT);
-                        }
-
+                if (contactSensorCheckBox.isChecked()) {
+                    try {
+                        client.getSensorManager().registerContactEventListener(mContactEventListener);
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.BAND_CONTACT);
                     }
-
-
-                    CheckBox distSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.DISTANCE_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "DISTANCE_SENSOR: " + distSensorCheckBox.isChecked());
-
-                    if (distSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerDistanceEventListener(mDistanceEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.DISTANCE);
-                        }
-                    }
-
-
-                    CheckBox gyroSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.GYROSCOPE_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "GYROSCOPE_SENSOR: " + gyroSensorCheckBox.isChecked());
-
-                    if (gyroSensorCheckBox.isChecked()) {
-                        try {
-
-
-                            Spinner gyroSensorSampleRateSelector = (Spinner) mListView.getChildAt(Constants.GYROSCOPE_SENSOR).findViewById(R.id.sample_rate_spinner);
-                            String gyroSampleRateSelection = gyroSensorSampleRateSelector.getSelectedItem().toString();
-                            Log.v(LOG_TAG, "gyroSampleRateSelection: " + gyroSampleRateSelection);
-
-                            client.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, getSampleRate(gyroSampleRateSelection));
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.GYROSCOPE);
-                        }
-                    }
-
-
-                    CheckBox pedSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.PEDOMETER_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "PEDOMETER_SENSOR: " + pedSensorCheckBox.isChecked());
-
-                    if (pedSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerPedometerEventListener(mPedometerEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.PEDOMETER);
-                        }
-                    }
-
-
-                    CheckBox skinTempSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.SKIN_TEMPERATURE_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "SKIN_TEMPERATURE_SENSOR: " + skinTempSensorCheckBox.isChecked());
-
-                    if (skinTempSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerSkinTemperatureEventListener(mSkinTemperatureListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.SKIN_TEMPERATURE);
-                        }
-                    }
-
-
-                    CheckBox uvSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.UV_LEVEL_SENSOR).findViewById(R.id.sensor_checkbox);
-                    Log.v(LOG_TAG, "UV_LEVEL_SENSOR: " + uvSensorCheckBox.isChecked());
-
-                    if (uvSensorCheckBox.isChecked()) {
-                        try {
-                            client.getSensorManager().registerUVEventListener(mUVEventListener);
-                        } catch (BandIOException e) {
-                            e.printStackTrace();
-                            appendToUI("Sensor reading error", Constants.UV_LEVEL);
-                        }
-                    }
-
-
-                } else {
-
-                    bandStts = "Band Connection failed. Please try again.";
-                    answer = client.getConnectionState();
-
 
                 }
 
-                Log.v(LOG_TAG, bandStts);
-                appendToUI(bandStts, Constants.BAND_STATUS);
 
-                Log.v(LOG_TAG,"answer: " + answer);
+                CheckBox distSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.DISTANCE_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "DISTANCE_SENSOR: " + distSensorCheckBox.isChecked());
 
-            } catch (BandException e) {
-
-                String exceptionMessage = "";
-
-                switch (e.getErrorType()) {
-                    case UNSUPPORTED_SDK_VERSION_ERROR:
-                        exceptionMessage = "Microsoft Health BandService doesn't support your SDK Version. Please update to latest SDK.";
-                        break;
-                    case SERVICE_ERROR:
-                        exceptionMessage = "Microsoft Health BandService is not available. Please make sure Microsoft Health is installed and that you have the correct permissions.";
-                        break;
-                    default:
-                        exceptionMessage = "Unknown error occured: " + e.getMessage() ;
-                        break;
+                if (distSensorCheckBox.isChecked()) {
+                    try {
+                        client.getSensorManager().registerDistanceEventListener(mDistanceEventListener);
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.DISTANCE);
+                    }
                 }
 
-                Log.e(LOG_TAG, exceptionMessage);
-                appendToUI(exceptionMessage, Constants.BAND_STATUS);
 
-                Log.e(LOG_TAG,"BandException: " + e.toString());
+                CheckBox gyroSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.GYROSCOPE_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "GYROSCOPE_SENSOR: " + gyroSensorCheckBox.isChecked());
 
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "BandSensorsSubscriptionTask: " + e.getMessage());
+                if (gyroSensorCheckBox.isChecked()) {
+                    try {
+
+                        Spinner gyroSensorSampleRateSelector = (Spinner) mListView.getChildAt(Constants.GYROSCOPE_SENSOR).findViewById(R.id.sample_rate_spinner);
+                        gyroSampleRateSelection = gyroSensorSampleRateSelector.getSelectedItem().toString();
+                        Log.v(LOG_TAG, "gyroSampleRateSelection: " + gyroSampleRateSelection);
+
+                        client.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, getSampleRate(gyroSampleRateSelection));
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.GYROSCOPE);
+                    }
+                }
+
+
+                CheckBox pedSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.PEDOMETER_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "PEDOMETER_SENSOR: " + pedSensorCheckBox.isChecked());
+
+                if (pedSensorCheckBox.isChecked()) {
+                    try {
+                        client.getSensorManager().registerPedometerEventListener(mPedometerEventListener);
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.PEDOMETER);
+                    }
+                }
+
+
+                CheckBox skinTempSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.SKIN_TEMPERATURE_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "SKIN_TEMPERATURE_SENSOR: " + skinTempSensorCheckBox.isChecked());
+
+                if (skinTempSensorCheckBox.isChecked()) {
+                    try {
+                        client.getSensorManager().registerSkinTemperatureEventListener(mSkinTemperatureListener);
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.SKIN_TEMPERATURE);
+                    }
+                }
+
+
+                CheckBox uvSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.UV_LEVEL_SENSOR).findViewById(R.id.sensor_checkbox);
+                Log.v(LOG_TAG, "UV_LEVEL_SENSOR: " + uvSensorCheckBox.isChecked());
+
+                if (uvSensorCheckBox.isChecked()) {
+                    try {
+                        client.getSensorManager().registerUVEventListener(mUVEventListener);
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                        appendToUI("Sensor reading error", Constants.UV_LEVEL);
+                    }
+                }
+
+
+            } else {
+
+                bandStts = "Band Connection failed. Please try again.";
+                answer = client.getConnectionState();
+
+
             }
 
-            return answer;
-        
+            Log.v(LOG_TAG, bandStts);
+            appendToUI(bandStts, Constants.BAND_STATUS);
+
+            Log.v(LOG_TAG,"answer: " + answer);
+
+        } catch (BandException e) {
+
+            String exceptionMessage = "";
+
+            switch (e.getErrorType()) {
+                case UNSUPPORTED_SDK_VERSION_ERROR:
+                    exceptionMessage = "Microsoft Health BandService doesn't support your SDK Version. Please update to latest SDK.";
+                    break;
+                case SERVICE_ERROR:
+                    exceptionMessage = "Microsoft Health BandService is not available. Please make sure Microsoft Health is installed and that you have the correct permissions.";
+                    break;
+                default:
+                    exceptionMessage = "Unknown error occured: " + e.getMessage() ;
+                    break;
+            }
+
+            Log.e(LOG_TAG, exceptionMessage);
+            appendToUI(exceptionMessage, Constants.BAND_STATUS);
+
+            Log.e(LOG_TAG,"BandException: " + e.toString());
+
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "BandSensorsSubscriptionTask: " + e.getMessage());
+        }
+
+        return answer;
+
 
     }
+
 
     private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
         @Override
         public void onBandHeartRateChanged(final BandHeartRateEvent event) {
             if (event != null) {
-                appendToUI(String.format("%d beats per minute,"
-                        + "Quality = %s", event.getHeartRate(), event.getQuality()), Constants.HEART_RATE);
+
+                String sensorName = mContext.getResources().getString(R.string.heart_rate);
+                String sensorValue = String.format("%d beats per minute,"
+                        + "Quality = %s", event.getHeartRate(), event.getQuality());
+
+                appendToUI(sensorValue, Constants.HEART_RATE);
+                //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, sensorValue, getSensorSamplingRate(sensorName));
+                }
             }
         }
     };
@@ -445,6 +464,14 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 Log.v(LOG_TAG, "mUVEventListener: " + event);
 
                 appendToUI(event, Constants.UV_LEVEL);
+
+                String sensorName = mContext.getResources().getString(R.string.uv);
+                //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
+                }
 
             }
         }
@@ -465,6 +492,14 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                                 .append(df.format(temp) + " °C").toString();
 
                         appendToUI(event, Constants.SKIN_TEMPERATURE);
+
+                        String sensorName = mContext.getResources().getString(R.string.skin_temperature);
+                        //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                        if (saveDataButton.isChecked()) {
+
+                            createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
+                        }
                     }
                 }
             };
@@ -482,6 +517,16 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         .append(String.format("TotalSteps = %d steps", totalSteps)).toString();
 
                 appendToUI(event, Constants.PEDOMETER);
+
+
+                String sensorName = mContext.getResources().getString(R.string.pedometer);
+                //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
+                }
+
             }
         }
     };
@@ -500,6 +545,15 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 appendToUI(event, Constants.GYROSCOPE);
 
+                String sensorName = mContext.getResources().getString(R.string.gyroscope);
+                //Log.w(LOG_TAG,sensorName + " 7");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
+                }
+
+
             }
         }
     };
@@ -515,7 +569,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                     event = new StringBuilder()
 
 
-                            .append("Band MotionType = " + bandDistanceEvent.getMotionType().toString() + "\n")
+                            .append("Band MotionType = " + bandDistanceEvent.getMotionType().toString() + ",")
                             .append(String.format("Total Distance Today = %d cm,", bandDistanceEvent.getDistanceToday()))
                             .append(String.format("Band Pace = %f ms/m,", bandDistanceEvent.getPace()))
                             .append(String.format("Band Speed = %f cm/s", bandDistanceEvent.getPace())).toString();
@@ -526,6 +580,15 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 }
 
                 appendToUI(event, Constants.DISTANCE);
+
+                String sensorName = mContext.getResources().getString(R.string.distance);
+                //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
+                }
+
 
             }
         }
@@ -538,15 +601,26 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         appendToUiIntent.putExtra(Constants.SENSOR,sensor);
         appendToUiIntent.putExtra(Constants.VALUE,value);
         mContext.sendBroadcast(appendToUiIntent);
-        
+
     }
 
     private BandContactEventListener mContactEventListener = new BandContactEventListener() {
         @Override
         public void onBandContactChanged(BandContactEvent bandContactEvent) {
             if (bandContactEvent != null) {
+
                 String event = bandContactEvent.getContactState().toString();
                 appendToUI(event, Constants.BAND_CONTACT);
+
+//                String sensorName = mContext.getResources().getString(R.string.distance);
+//
+//                        if (saveDataButton.isChecked()) {
+//
+//                            createSensorReadingObject(sensorName, event, getSensorSamplingRate(sensorName));
+//                        }
+//
+
+
 
             }
         }
@@ -556,7 +630,18 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandRRIntervalChanged(final BandRRIntervalEvent event) {
             if (event != null) {
-                appendToUI(String.format("%.3f s", event.getInterval()), Constants.RR_INTERVAL);
+
+                String value = String.format("%.3f s", event.getInterval());
+                appendToUI(value, Constants.RR_INTERVAL);
+
+                String sensorName = mContext.getResources().getString(R.string.rr_interval);
+                //7Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName));
+                }
+
             }
         }
     };
@@ -568,6 +653,16 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
             if (bandCaloriesEvent != null) {
                 String caloriesEvent = String.format("%d cals", bandCaloriesEvent.getCalories());
                 appendToUI(caloriesEvent, Constants.CALORIES);
+
+
+                String sensorName = mContext.getResources().getString(R.string.calories);
+                //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, caloriesEvent, getSensorSamplingRate(sensorName));
+                }
+
             }
 
         }
@@ -579,6 +674,14 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
             if (event != null) {
                 String gsrEvent = String.format("%d kOhms", event.getResistance());
                 appendToUI(gsrEvent, Constants.GSR);
+
+                if (saveDataButton.isChecked()) {
+
+                    String sensorName = mContext.getResources().getString(R.string.gsr);
+                    //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+                    createSensorReadingObject(sensorName, gsrEvent, getSensorSamplingRate(sensorName));
+                }
+
             }
         }
     };
@@ -593,6 +696,16 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 appendToUI(stts, Constants.ACCELEROMETER);
 
+
+                String sensorName = mContext.getResources().getString(R.string.accelerometer);
+                //Log.w(LOG_TAG,sensorName + " 7);
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, stts, getSensorSamplingRate(sensorName));
+                }
+
+
             }
         }
     };
@@ -601,7 +714,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandAltimeterChanged(final BandAltimeterEvent event) {
             if (event != null) {
-                appendToUI(new StringBuilder()
+
+                String value = new StringBuilder()
                         .append(String.format("Total Gain = %d cm,", event.getTotalGain()))
                         .append(String.format("Total Loss = %d cm,", event.getTotalLoss()))
                         .append(String.format("Total Elevation Difference= %d cm,", (event.getTotalGain() - event.getTotalLoss())))
@@ -611,7 +725,18 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         .append(String.format("Steps Descended = %d,", event.getStepsDescended()))
                         .append(String.format("Rate = %f cm/s,", event.getRate()))
                         .append(String.format("Flights of Stairs Ascended = %d,", event.getFlightsAscended()))
-                        .append(String.format("Flights of Stairs Descended = %d", event.getFlightsDescended())).toString(), Constants.ALTIMETER);
+                        .append(String.format("Flights of Stairs Descended = %d", event.getFlightsDescended())).toString();
+
+                appendToUI(value, Constants.ALTIMETER);
+
+                String sensorName = mContext.getResources().getString(R.string.altimeter);
+                //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName));
+                }
+
             }
         }
     };
@@ -622,7 +747,19 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandAmbientLightChanged(final BandAmbientLightEvent event) {
             if (event != null) {
-                appendToUI(String.format("%d lux", event.getBrightness()), Constants.AMBIENT_LIGHT);
+
+                String value =String.format("%d lux", event.getBrightness());
+
+                appendToUI(value, Constants.AMBIENT_LIGHT);
+
+                String sensorName = mContext.getResources().getString(R.string.ambient_light);
+                //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, value, getSensorSamplingRate(sensorName));
+                }
+
             }
         }
     };
@@ -638,10 +775,108 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                                 + "Temperature = %.2f degrees Celsius", event.getAirPressure(), event.getTemperature());
 
                 appendToUI(barometerEvent, Constants.BAROMETER);
+
+
+                String sensorName = mContext.getResources().getString(R.string.barometer);
+
+               //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+
+                if (saveDataButton.isChecked()) {
+
+                    createSensorReadingObject(sensorName, barometerEvent, getSensorSamplingRate(sensorName));
+                }
+
             }
         }
     };
 
+    private void createSensorReadingObject(String sensorName , String sensorValue, String sensorSampleRate){
+
+
+        long currentTime = System.currentTimeMillis();
+        String mDate = new SimpleDateFormat("d MMM yyyy").format(currentTime);
+        String time = new SimpleDateFormat("HH:mm:ss").format(currentTime);
+
+        Log.v(LOG_TAG,"currentTime: " + time);
+        SensorReading sensorReading = new SensorReading(mContext,sensorName,sensorValue,sensorSampleRate,mDate,time);
+
+        Intent sendObjectIntent = new Intent(Constants.SENSOR_READING_OBJECT_RECEIVER);
+        sendObjectIntent.putExtra(Constants.SERVICE_EXTRA,sensorReading);
+        mContext.sendBroadcast(sendObjectIntent);
+
+    }
+
+    private String getSensorSamplingRate(String sensorName){
+
+        String sampleRate = "";
+
+        //if the sensor is Heart Rate, Skin Temp.,UV,Barometer or Altimeter, sample rate is 1hz
+        //if the sensor is Ambient light, sample rate is 2hz
+        // else , value change
+
+        switch (sensorName) {
+            case "heart rate":
+                sampleRate = "1 hz";
+                break;
+
+            case "rr interval":
+                sampleRate = "Value change";
+                break;
+
+            case "accelerometer":
+                sampleRate = accSampleRateSelection + " hz";
+                break;
+
+            case "altimeter":
+                sampleRate = "1 hz";
+                break;
+
+            case "ambient light":
+                sampleRate = "2 hz";
+                break;
+
+            case "barometer":
+                sampleRate = "1 hz";
+                break;
+
+            case "GSR":
+                sampleRate = gsrSampleRateSelection + " hz";
+                break;
+
+            case "calories":
+                sampleRate = "Value change";
+                break;
+
+            case "distance":
+                sampleRate = "Value change";
+                break;
+
+//            case "band contact":
+//                resourceID = R.id.band_contact_sensorview;
+//                break;
+
+            case "gyroscope":
+                sampleRate = gyroSampleRateSelection + " hz";
+                break;
+
+            case "pedometer":
+                sampleRate = "Value change";
+                break;
+
+            case "skin temperature":
+                sampleRate = "1 hz";
+                break;
+
+            case "uv level":
+                sampleRate = "1 hz";
+                break;
+
+        }
+
+
+        return sampleRate;
+
+    }
 
     private boolean getConnectedBandClient() throws InterruptedException, BandException {
 

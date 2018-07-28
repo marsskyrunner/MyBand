@@ -22,7 +22,7 @@
         android:layout_margin="5dp"
         android:layout_gravity="center_horizontal"
         android:id="@+id/btnConsent"
-        android:background="@drawable/main_activity_button_background"
+        android:background="@drawable/toggle_button_on_background"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/consent" />
