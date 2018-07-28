@@ -1,6 +1,5 @@
 package com.mars_skyrunner.myband;
 
-import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -11,12 +10,10 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -35,7 +32,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -77,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         showLoadingView(false);
 
         saveDataButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
 
@@ -91,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                     date = new Date();
 
                     for (SensorReading sr : sensorReadings) {
+
                         String sensorValue = getSensorReadingViewValue(sr);
                         String sensorSampleRate = getSensorSampleRate(sr);
 
@@ -137,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
                     Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
+
                 }
 
             }
@@ -694,6 +693,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void disconnectBand() {
+
         if (client != null) {
             try {
                 client.disconnect().await();
@@ -705,6 +705,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(LOG_TAG, "disconnectBand: BandException: " + e.toString());
             }
         }
+
+        Log.v(LOG_TAG,"disconnectBand(): " + client.getConnectionState().toString());
+
     }
 
     private void unregisterSensorListeners() throws BandIOException {
@@ -776,39 +779,78 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private LoaderManager.LoaderCallbacks<String> bandSensorSubscriptionLoader
-            = new LoaderManager.LoaderCallbacks<String>() {
+    private LoaderManager.LoaderCallbacks<ConnectionState> bandSensorSubscriptionLoader
+            = new LoaderManager.LoaderCallbacks<ConnectionState>() {
 
         @Override
-        public Loader<String> onCreateLoader(int i, Bundle bundle) {
+        public Loader<ConnectionState> onCreateLoader(int i, Bundle bundle) {
 
             Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onCreateLoader");
 
             showLoadingView(true);
 
             bandSubscriptionTaskRunning = true;
-            return new BandSensorsSubscriptionLoader(MainActivity.this, null);
+            return new BandSensorsSubscriptionLoader(MainActivity.this);
         }
 
         @Override
-        public void onLoadFinished(Loader<String> loader, String s) {
+        public void onLoadFinished(Loader<ConnectionState> loader, ConnectionState cs) {
 
             Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onLoadFinished ");
 
             showLoadingView(false);
 
-            if (client.getConnectionState() == ConnectionState.CONNECTED) {
+            Log.v(LOG_TAG,cs.toString());
 
-                Log.v(LOG_TAG, "ConnectionState.CONNECTED");
+            String userMsg = "";
 
-            } else {
-                Log.v(LOG_TAG, "ConnectionState.DISCONNECTED");
+            switch (cs){
+
+                case CONNECTED:
+
+                    userMsg = "Band is bound to Microsoft Health's band communication service and connected to its corresponding Microsoft Band";
+
+                    break;
+
+                case BOUND:
+                    userMsg = " Band is bound to Microsoft Health's band communication service";
+                    break;
+
+                case BINDING:
+                    userMsg = "Band is binding to Microsoft Health's band communication service";
+                    break;
+
+                case UNBOUND:
+                    userMsg = "Band is not bound to Microsoft Health's band communication service";
+                    break;
+
+                case DISPOSED:
+                    userMsg = "Band has been disposed of by Microsoft Health's band communication service";
+                    break;
+
+                case UNBINDING:
+                    userMsg = "Band is unbinding from Microsoft Health's band communication service";
+                    break;
+
+                case INVALID_SDK_VERSION:
+                    userMsg = "Band will not be able to bind to the currently in use Microsoft Health band communication service due to a version mismatch";
+                    break;
 
             }
+
+            Log.v(LOG_TAG,userMsg);
+
+            if(cs.equals(ConnectionState.CONNECTED)){
+                appendToUI("Band Connected.", Constants.BAND_STATUS);
+            }else{
+                appendToUI(userMsg, Constants.BAND_STATUS);
+            }
+
+
         }
 
         @Override
-        public void onLoaderReset(Loader<String> loader) {
+        public void onLoaderReset(Loader<ConnectionState> loader) {
 
             Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onLoaderReset");
 
