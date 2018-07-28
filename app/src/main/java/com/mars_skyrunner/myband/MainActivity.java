@@ -887,39 +887,78 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private LoaderManager.LoaderCallbacks<String> bandSensorSubscriptionLoader
-            = new LoaderManager.LoaderCallbacks<String>() {
+    private LoaderManager.LoaderCallbacks<ConnectionState> bandSensorSubscriptionLoader
+            = new LoaderManager.LoaderCallbacks<ConnectionState>() {
 
         @Override
-        public Loader<String> onCreateLoader(int i, Bundle bundle) {
+        public Loader<ConnectionState> onCreateLoader(int i, Bundle bundle) {
 
             Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onCreateLoader");
 
             showLoadingView(true);
 
             bandSubscriptionTaskRunning = true;
-            return new BandSensorsSubscriptionLoader(MainActivity.this, null);
+            return new BandSensorsSubscriptionLoader(MainActivity.this);
         }
 
         @Override
-        public void onLoadFinished(Loader<String> loader, String s) {
+        public void onLoadFinished(Loader<ConnectionState> loader, ConnectionState cs) {
 
             Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onLoadFinished ");
 
             showLoadingView(false);
 
-            if (client.getConnectionState() == ConnectionState.CONNECTED) {
+            Log.v(LOG_TAG,cs.toString());
 
-                Log.v(LOG_TAG, "ConnectionState.CONNECTED");
+            String userMsg = "";
 
-            } else {
-                Log.v(LOG_TAG, "ConnectionState.DISCONNECTED");
+            switch (cs){
+
+                case CONNECTED:
+
+                    userMsg = "Band is bound to Microsoft Health's band communication service and connected to its corresponding Microsoft Band";
+
+                    break;
+
+                case BOUND:
+                    userMsg = " Band is bound to Microsoft Health's band communication service";
+                    break;
+
+                case BINDING:
+                    userMsg = "Band is binding to Microsoft Health's band communication service";
+                    break;
+
+                case UNBOUND:
+                    userMsg = "Band is not bound to Microsoft Health's band communication service";
+                    break;
+
+                case DISPOSED:
+                    userMsg = "Band has been disposed of by Microsoft Health's band communication service";
+                    break;
+
+                case UNBINDING:
+                    userMsg = "Band is unbinding from Microsoft Health's band communication service";
+                    break;
+
+                case INVALID_SDK_VERSION:
+                    userMsg = "Band will not be able to bind to the currently in use Microsoft Health band communication service due to a version mismatch";
+                    break;
 
             }
+
+            Log.v(LOG_TAG,userMsg);
+
+            if(cs.equals(ConnectionState.CONNECTED)){
+                appendToUI("Band Connected.", Constants.BAND_STATUS);
+            }else{
+                appendToUI(userMsg, Constants.BAND_STATUS);
+            }
+
+
         }
 
         @Override
-        public void onLoaderReset(Loader<String> loader) {
+        public void onLoaderReset(Loader<ConnectionState> loader) {
 
             Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onLoaderReset");
 
