@@ -647,43 +647,32 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
         Log.v(LOG_TAG, "getConnectedBandClient");
 
-        if (client == null) {
-            Log.v(LOG_TAG, "client == null");
-            BandInfo[] devices = BandClientManager.getInstance().getPairedBands();
+        Log.v(LOG_TAG, "client == null");
+        BandInfo[] devices = BandClientManager.getInstance().getPairedBands();
 
-            if (devices.length == 0) {
+        if (devices.length == 0) {
 
-                Log.v(LOG_TAG, "devices.length == 0");
-                appendToUI("Band isn't paired with your phone.\n", Constants.BAND_STATUS);
-                return false;
-
-            } else {
-                Log.v(LOG_TAG, "devices.length =! 0");
-            }
-
-            client = BandClientManager.getInstance().create(mContext, devices[0]);
+            Log.v(LOG_TAG, "devices.length == 0");
+            appendToUI("Band isn't paired with your phone.\n", Constants.BAND_STATUS);
+            return false;
 
         } else {
-            Log.v(LOG_TAG, "client != null");
-
-            if (ConnectionState.CONNECTED == client.getConnectionState()) {
-
-                Log.v(LOG_TAG, "ConnectionState.CONNECTED");
-                return true;
-            } else {
-                Log.v(LOG_TAG, "ConnectionState.DISCONNECTED");
-                return false;
-            }
-
+            Log.v(LOG_TAG, "devices.length =! 0");
         }
+
+        client = BandClientManager.getInstance().create(mContext, devices[0]);
+
+
+        Log.v(LOG_TAG, "pairedBand : " + devices[0].getName());
 
 
         appendToUI("Band is connecting...", Constants.BAND_STATUS);
 
+
         boolean state = false;
 
         try {
-          state = (ConnectionState.CONNECTED ==  client.connect().await(1,java.util.concurrent.TimeUnit.MINUTES));
+            state = (ConnectionState.CONNECTED ==  client.connect().await(1,java.util.concurrent.TimeUnit.MINUTES));
         } catch (TimeoutException e) {
             appendToUI("Band connection failed.",Constants.BAND_STATUS);
         }

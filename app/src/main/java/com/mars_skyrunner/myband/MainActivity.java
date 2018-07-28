@@ -693,6 +693,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void disconnectBand() {
+
         if (client != null) {
             try {
                 client.disconnect().await();
@@ -704,6 +705,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(LOG_TAG, "disconnectBand: BandException: " + e.toString());
             }
         }
+
+        Log.v(LOG_TAG,"disconnectBand(): " + client.getConnectionState().toString());
+
     }
 
     private void unregisterSensorListeners() throws BandIOException {
@@ -798,38 +802,50 @@ public class MainActivity extends AppCompatActivity {
 
             Log.v(LOG_TAG,cs.toString());
 
+            String userMsg = "";
+
             switch (cs){
 
                 case CONNECTED:
 
-                    Log.v(LOG_TAG,"BandClient is bound to Microsoft Health's band communication service and connected to its corresponding Microsoft Band");
+                    userMsg = "Band is bound to Microsoft Health's band communication service and connected to its corresponding Microsoft Band";
+
                     break;
 
                 case BOUND:
-                    Log.v(LOG_TAG," BandClient is bound to Microsoft Health's band communication service");
+                    userMsg = " Band is bound to Microsoft Health's band communication service";
                     break;
 
                 case BINDING:
-                    Log.v(LOG_TAG," BandClient is binding to Microsoft Health's band communication service");
+                    userMsg = "Band is binding to Microsoft Health's band communication service";
                     break;
 
                 case UNBOUND:
-                    Log.v(LOG_TAG," BandClient is not bound to Microsoft Health's band communication service");
+                    userMsg = "Band is not bound to Microsoft Health's band communication service";
                     break;
 
                 case DISPOSED:
-                    Log.v(LOG_TAG," BandClient has been disposed of by Microsoft Health's band communication service");
+                    userMsg = "Band has been disposed of by Microsoft Health's band communication service";
                     break;
 
                 case UNBINDING:
-                    Log.v(LOG_TAG," BandClient is unbinding from Microsoft Health's band communication service");
+                    userMsg = "Band is unbinding from Microsoft Health's band communication service";
                     break;
 
                 case INVALID_SDK_VERSION:
-                    Log.v(LOG_TAG," BandClient will not be able to bind to the currently in use Microsoft Health band communication service due to a version mismatch");
+                    userMsg = "Band will not be able to bind to the currently in use Microsoft Health band communication service due to a version mismatch";
                     break;
 
             }
+
+            Log.v(LOG_TAG,userMsg);
+
+            if(cs.equals(ConnectionState.CONNECTED)){
+                appendToUI("Band Connected.", Constants.BAND_STATUS);
+            }else{
+                appendToUI(userMsg, Constants.BAND_STATUS);
+            }
+
 
         }
 
