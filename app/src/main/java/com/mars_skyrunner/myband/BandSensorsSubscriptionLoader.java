@@ -391,7 +391,6 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 bandStts = "Band Connection failed. Please try again.";
                 answer = client.getConnectionState();
 
-
             }
 
             Log.v(LOG_TAG, bandStts);
@@ -800,9 +799,10 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         Log.v(LOG_TAG,"currentTime: " + time);
         SensorReading sensorReading = new SensorReading(mContext,sensorName,sensorValue,sensorSampleRate,mDate,time);
 
-        Intent sendObjectIntent = new Intent(Constants.SENSOR_READING_OBJECT_RECEIVER);
+
+        Intent sendObjectIntent = new Intent(mContext, DbInsertionService.class);
         sendObjectIntent.putExtra(Constants.SERVICE_EXTRA,sensorReading);
-        mContext.sendBroadcast(sendObjectIntent);
+        mContext.startService(sendObjectIntent);
 
     }
 
@@ -888,7 +888,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         if (devices.length == 0) {
 
             Log.v(LOG_TAG, "devices.length == 0");
-            appendToUI("Band isn't paired with your phone.\n", Constants.BAND_STATUS);
+
             return false;
 
         } else {

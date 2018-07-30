@@ -782,7 +782,8 @@ public class MainActivity extends AppCompatActivity {
 
             Log.w(LOG_TAG, "sensorReadingObjectReceiver : onReceive:  "  + receivedSensor.getSensorName());
 
-            values.add(receivedSensor);
+            //values.add(receivedSensor);
+
 
         }
 
@@ -841,52 +842,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
-    private LoaderManager.LoaderCallbacks<ArrayList<Boolean>> saveDataPointLoader
-            = new LoaderManager.LoaderCallbacks<ArrayList<Boolean>>() {
-
-        @Override
-        public Loader<ArrayList<Boolean>> onCreateLoader(int i, Bundle bundle) {
-
-            Log.v(LOG_TAG, "saveDataPointLoader: onCreateLoader");
-
-            showLoadingView(true);
-
-            return new SaveDataPointLoader(MainActivity.this, values );
-        }
-
-        @Override
-        public void onLoadFinished(Loader<ArrayList<Boolean>> loader, ArrayList<Boolean> s) {
-
-            Log.v(LOG_TAG, "saveDataPointLoader: onLoadFinished ");
-
-            showLoadingView(false);
-            logSaveDataPointLoaderResult(s);
-
-            // Kick off the record loader
-            getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
-
-
-        }
-
-        @Override
-        public void onLoaderReset(Loader<ArrayList<Boolean>> loader) {
-
-            Log.v(LOG_TAG, "saveDataPointLoader: onLoaderReset");
-
-        }
-    };
-
-    private void logSaveDataPointLoaderResult(ArrayList<Boolean> s) {
-
-        Log.v(LOG_TAG,"logSaveDataPointLoaderResult");
-        for(int i = 0 ; i < s.size() ; i++){
-            Log.v(LOG_TAG,"sensor " + (i+1) + " : " + s.get(i));
-        }
-    }
-
-
     private LoaderManager.LoaderCallbacks<ConnectionState> bandSensorSubscriptionLoader
             = new LoaderManager.LoaderCallbacks<ConnectionState>() {
 
@@ -908,52 +863,66 @@ public class MainActivity extends AppCompatActivity {
 
             showLoadingView(false);
 
-            Log.v(LOG_TAG,cs.toString());
+            //Log.v(LOG_TAG,cs.toString());
 
             String userMsg = "";
 
-            switch (cs){
+            if(cs != null){
 
-                case CONNECTED:
+                switch (cs){
 
-                    userMsg = "Band is bound to Microsoft Health's band communication service and connected to its corresponding Microsoft Band";
+                    case CONNECTED:
 
-                    break;
+                        userMsg = "Band is bound to MS Health's band communication service and connected to its corresponding MS Band";
 
-                case BOUND:
-                    userMsg = " Band is bound to Microsoft Health's band communication service";
-                    break;
+                        break;
 
-                case BINDING:
-                    userMsg = "Band is binding to Microsoft Health's band communication service";
-                    break;
+                    case BOUND:
+                        userMsg = " Band is bound to MS Health's band comm. service";
+                        break;
 
-                case UNBOUND:
-                    userMsg = "Band is not bound to Microsoft Health's band communication service";
-                    break;
+                    case BINDING:
+                        userMsg = "Band is binding to MS Health's band comm. service";
+                        break;
 
-                case DISPOSED:
-                    userMsg = "Band has been disposed of by Microsoft Health's band communication service";
-                    break;
+                    case UNBOUND:
+                        userMsg = "Band is not bound to MS Health's band comm. service";
+                        break;
 
-                case UNBINDING:
-                    userMsg = "Band is unbinding from Microsoft Health's band communication service";
-                    break;
+                    case DISPOSED:
+                        userMsg = "Band has been disposed of by MS Health's band comm. service";
+                        break;
 
-                case INVALID_SDK_VERSION:
-                    userMsg = "Band will not be able to bind to the currently in use Microsoft Health band communication service due to a version mismatch";
-                    break;
+                    case UNBINDING:
+                        userMsg = "Band is unbinding from MS Health's band comm. service";
+                        break;
 
-            }
+                    case INVALID_SDK_VERSION:
+                        userMsg = "Band will not be able to bind to the currently in use MS Health band comm. service due to a version mismatch";
+                        break;
 
-            Log.v(LOG_TAG,userMsg);
+                    default:
+                        userMsg = "Band Suscription failed.";
+                        break;
 
-            if(cs.equals(ConnectionState.CONNECTED)){
-                appendToUI("Band Connected.", Constants.BAND_STATUS);
+                }
+
+                Log.v(LOG_TAG,userMsg);
+
+                if(cs.equals(ConnectionState.CONNECTED)){
+                    appendToUI("Band Connected.", Constants.BAND_STATUS);
+                }else{
+                    resetToggleButton();
+                    appendToUI(userMsg, Constants.BAND_STATUS);
+                }
+
             }else{
-                appendToUI(userMsg, Constants.BAND_STATUS);
-            }
 
+                //Band isnt paired with phone
+                resetToggleButton();
+                appendToUI("Band isn't paired with your phone.", Constants.BAND_STATUS);
+
+            }
 
         }
 
@@ -1139,10 +1108,16 @@ public class MainActivity extends AppCompatActivity {
 
             Log.v(LOG_TAG,"SaveButton: values.size(): " + values.size());
 
-            if(!b && (values.size() != 0)){
+            if(b){
+                // reset temporary table
+                getContentResolver().delete(SensorReadingContract.ReadingEntry.CONTENT_URI,null,null);
 
-                // Kick off SaveDatapointLoader
-                getLoaderManager().restartLoader(Constants.SAVE_DATAPOINT_LOADER, null, saveDataPointLoader);
+            }else{
+
+                if(bandSubscriptionTaskRunning){
+                    // Kick off saveDataCursorLoader
+                    getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
+                }
 
             }
         }
@@ -1192,6 +1167,5 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
 
 }

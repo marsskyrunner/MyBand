@@ -27,7 +27,7 @@
             android:authorities="com.mars_skyrunner.myband"
             android:exported="false"/>
 
-
+        <service android:name=".DbInsertionService" />
     </application>
 
     <uses-permission android:name="android.permission.BLUETOOTH"/>
