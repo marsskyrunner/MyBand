@@ -91,6 +91,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
     String gsrSampleRateSelection;
     String accSampleRateSelection;
 
+    //TODO: CASE IF MS BAND IS TURNED OFF WHILE LISTENERS ARE TURNED ON
+
     /**
      * Constructs a new {@link BandSensorsSubscriptionLoader}.
      *
@@ -148,7 +150,9 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
             String bandStts = "";
 
-            if (getConnectedBandClient()) {
+            ConnectionState clientState = getConnectedBandClient();
+
+            if (ConnectionState.CONNECTED == clientState) {
 
                 answer = ConnectionState.CONNECTED;
                 bandStts = "Band is connected.";
@@ -385,18 +389,16 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                     }
                 }
 
+                Log.v(LOG_TAG, bandStts);
+                appendToUI(bandStts, Constants.BAND_STATUS);
 
             } else {
 
-                bandStts = "Band Connection failed. Please try again.";
-                answer = client.getConnectionState();
+                answer = clientState;
 
             }
 
-            Log.v(LOG_TAG, bandStts);
-            appendToUI(bandStts, Constants.BAND_STATUS);
-
-            Log.v(LOG_TAG,"answer: " + answer);
+            Log.v(LOG_TAG,"answer: " + answer.toString());
 
         } catch (BandException e) {
 
@@ -404,10 +406,12 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
             switch (e.getErrorType()) {
                 case UNSUPPORTED_SDK_VERSION_ERROR:
-                    exceptionMessage = "Microsoft Health BandService doesn't support your SDK Version. Please update to latest SDK.";
+                    Log.e(LOG_TAG,"Microsoft Health BandService doesn't support your SDK Version. Please update to latest SDK.");
+                    exceptionMessage = "SDK Version unsupported";
                     break;
                 case SERVICE_ERROR:
-                    exceptionMessage = "Microsoft Health BandService is not available. Please make sure Microsoft Health is installed and that you have the correct permissions.";
+                    Log.e(LOG_TAG,"Microsoft Health BandService is not available. Please make sure Microsoft Health is installed and that you have the correct permissions.");
+                    exceptionMessage = "Microsoft Health BandService is not available.";
                     break;
                 default:
                     exceptionMessage = "Unknown error occured: " + e.getMessage() ;
@@ -421,6 +425,9 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
         } catch (Exception e) {
             Log.e(LOG_TAG, "BandSensorsSubscriptionTask: " + e.getMessage());
+
+
+
         }
 
         return answer;
@@ -878,7 +885,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
     }
 
-    private boolean getConnectedBandClient() throws InterruptedException, BandException {
+    private ConnectionState getConnectedBandClient() throws InterruptedException, BandException {
 
         Log.v(LOG_TAG, "getConnectedBandClient");
 
@@ -889,7 +896,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
             Log.v(LOG_TAG, "devices.length == 0");
 
-            return false;
+            return client.getConnectionState();
 
         } else {
             Log.v(LOG_TAG, "devices.length =! 0");
@@ -904,12 +911,12 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         appendToUI("Band is connecting...", Constants.BAND_STATUS);
 
 
-        boolean state = false;
+        ConnectionState state  = client.getConnectionState();
 
         try {
-            state = (ConnectionState.CONNECTED ==  client.connect().await(1,java.util.concurrent.TimeUnit.MINUTES));
+            state = client.connect().await(1,java.util.concurrent.TimeUnit.MINUTES);
         } catch (TimeoutException e) {
-            appendToUI("Band connection failed.",Constants.BAND_STATUS);
+            Log.e(LOG_TAG,"TimeoutException: " + e.toString());
         }
 
         return state;
@@ -984,7 +991,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         protected Void doInBackground(WeakReference<Activity>... params) {
 
             try {
-                if (getConnectedBandClient()) {
+                if (getConnectedBandClient() == ConnectionState.CONNECTED) {
 
                     if (params[0].get() != null) {
                         client.getSensorManager().requestHeartRateConsent(params[0].get(), new HeartRateConsentListener() {

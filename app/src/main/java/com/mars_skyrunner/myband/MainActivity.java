@@ -201,15 +201,13 @@ public class MainActivity extends AppCompatActivity {
         Log.v(LOG_TAG, "showLoadingView loadingState: " + loadingState);
 
         if (loadingState) {
-            mMainLayout.setVisibility(View.GONE);
+            findViewById(R.id.main_layout).setVisibility(View.GONE);
             saveDataButton.setVisibility(View.GONE);
-            mLoadingView.setVisibility(View.VISIBLE);
-
-
+            findViewById(R.id.loading_layout).setVisibility(View.VISIBLE);
         } else {
-            mMainLayout.setVisibility(View.VISIBLE);
+            findViewById(R.id.main_layout).setVisibility(View.VISIBLE);
             saveDataButton.setVisibility(View.VISIBLE);
-            mLoadingView.setVisibility(View.GONE);
+            findViewById(R.id.loading_layout).setVisibility(View.GONE);
         }
 
 
@@ -576,10 +574,6 @@ public class MainActivity extends AppCompatActivity {
 
             case Constants.BAND_STATUS:
                 sensorValueTextView = bandStatusTxt;
-                if(string.equals(Constants.BAND_CONNECTION_FAIL)){
-                    resetToggleButton();
-                }
-
                 break;
 
 
@@ -690,10 +684,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
 
-
         Log.v(LOG_TAG,"onResume()");
         super.onResume();
-
 
     }
 
@@ -801,11 +793,10 @@ public class MainActivity extends AppCompatActivity {
             String sensor = intent.getStringExtra(Constants.SENSOR);
             String value = intent.getStringExtra(Constants.VALUE);
 
-//            Log.v(LOG_TAG, "displayVaueReceiver: sensor: " + sensor);
-//            Log.v(LOG_TAG, "displayVaueReceiver: value: " + value);
+            Log.v(LOG_TAG, "displayVaueReceiver: sensor: " + sensor);
+            Log.v(LOG_TAG, "displayVaueReceiver: value: " + value);
 
             appendToUI(value,sensor);
-
 
         }
 
@@ -863,11 +854,11 @@ public class MainActivity extends AppCompatActivity {
 
             showLoadingView(false);
 
-            //Log.v(LOG_TAG,cs.toString());
-
             String userMsg = "";
 
             if(cs != null){
+
+                Log.v(LOG_TAG,cs.toString());
 
                 switch (cs){
 
@@ -878,7 +869,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case BOUND:
-                        userMsg = " Band is bound to MS Health's band comm. service";
+                        userMsg = "Band is bound to MS Health's band comm. service";
                         break;
 
                     case BINDING:
@@ -898,7 +889,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case INVALID_SDK_VERSION:
-                        userMsg = "Band will not be able to bind to the currently in use MS Health band comm. service due to a version mismatch";
+                        userMsg = "MS Health band comm. service version mismatch";
                         break;
 
                     default:
@@ -909,9 +900,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.v(LOG_TAG,userMsg);
 
-                if(cs.equals(ConnectionState.CONNECTED)){
-                    appendToUI("Band Connected.", Constants.BAND_STATUS);
-                }else{
+                if(!cs.equals(ConnectionState.CONNECTED)){
                     resetToggleButton();
                     appendToUI(userMsg, Constants.BAND_STATUS);
                 }
@@ -923,6 +912,8 @@ public class MainActivity extends AppCompatActivity {
                 appendToUI("Band isn't paired with your phone.", Constants.BAND_STATUS);
 
             }
+
+
 
         }
 
@@ -1106,15 +1097,16 @@ public class MainActivity extends AppCompatActivity {
             isChecked = b;
             Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
 
-            Log.v(LOG_TAG,"SaveButton: values.size(): " + values.size());
-
             if(b){
                 // reset temporary table
                 getContentResolver().delete(SensorReadingContract.ReadingEntry.CONTENT_URI,null,null);
 
             }else{
 
+                Log.v(LOG_TAG,"SaveButton " + b + " , bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+
                 if(bandSubscriptionTaskRunning){
+
                     // Kick off saveDataCursorLoader
                     getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
                 }
