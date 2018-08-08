@@ -28,6 +28,7 @@
             android:exported="false"/>
 
         <service android:name=".DbInsertionService" />
+        <service android:name=".BandConnectionService" />
     </application>
 
     <uses-permission android:name="android.permission.BLUETOOTH"/>

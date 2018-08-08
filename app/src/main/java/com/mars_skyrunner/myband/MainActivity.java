@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     public static BandClient client = null;
     final String LOG_TAG = "MainActivity";
@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,7 +78,8 @@ public class MainActivity extends AppCompatActivity {
         mListView = (LinearLayout) findViewById(R.id.sensor_list);
         initSensorListView();
 
-        mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
+
+                mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
 
         saveButtonHolder =  (FrameLayout) findViewById(R.id.save_button_holder);
@@ -802,7 +802,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     };
-
 
 
     public class OpenCSVFileListener implements View.OnClickListener {
