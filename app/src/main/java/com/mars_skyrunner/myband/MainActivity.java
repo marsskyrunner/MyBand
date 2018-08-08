@@ -783,7 +783,7 @@ public class MainActivity extends AppCompatActivity{
             Log.v(LOG_TAG,"createCSVReceiver onReceive");
 
             // Kick off saveDataCursorLoader
-            //getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
+            getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
 
         }
 
@@ -1074,7 +1074,7 @@ public class MainActivity extends AppCompatActivity{
 
                             //Save datapoint loader destroyed, so that if user comes back from
                             //CSV file viewer, it does not create a new one
-                            getLoaderManager().destroyLoader(Constants.SAVE_DATAPOINT_LOADER);
+                            getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
 
                             //shows "OPEN CSV" action on a snackbar
                             Snackbar mySnackbar = Snackbar.make(mMainLayout,
