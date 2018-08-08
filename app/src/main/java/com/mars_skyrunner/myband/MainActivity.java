@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     public static BandClient client = null;
     final String LOG_TAG = "MainActivity";
@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,7 +78,8 @@ public class MainActivity extends AppCompatActivity {
         mListView = (LinearLayout) findViewById(R.id.sensor_list);
         initSensorListView();
 
-        mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
+
+                mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
 
         saveButtonHolder =  (FrameLayout) findViewById(R.id.save_button_holder);
@@ -180,6 +180,12 @@ public class MainActivity extends AppCompatActivity {
 
         //Register broadcast receiver to save SensorReading objects from BandSensorsSubscriptionLoader
         registerReceiver(sensorReadingObjectReceiver, new IntentFilter(Constants.SENSOR_READING_OBJECT_RECEIVER));
+
+
+        //Register broadcast receiver to save SensorReading objects from BandSensorsSubscriptionLoader
+        registerReceiver(createCSVReceiver, new IntentFilter(Constants.CREATE_CSV_RECEIVER));
+
+
 
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
 
@@ -721,6 +727,7 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(resetSensorReadingReceiver);
         unregisterReceiver(displayVaueReceiver);
         unregisterReceiver(sensorReadingObjectReceiver);
+        unregisterReceiver(createCSVReceiver);
 
         try {
             unregisterSensorListeners();
@@ -765,6 +772,24 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
+
+
+
+    private BroadcastReceiver  createCSVReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Log.v(LOG_TAG,"createCSVReceiver onReceive");
+
+            // Kick off saveDataCursorLoader
+            getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
+
+        }
+
+    };
+
+
     private BroadcastReceiver  sensorReadingObjectReceiver = new BroadcastReceiver() {
 
         @Override
@@ -802,7 +827,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     };
-
 
 
     public class OpenCSVFileListener implements View.OnClickListener {
@@ -1050,7 +1074,7 @@ public class MainActivity extends AppCompatActivity {
 
                             //Save datapoint loader destroyed, so that if user comes back from
                             //CSV file viewer, it does not create a new one
-                            getLoaderManager().destroyLoader(Constants.SAVE_DATAPOINT_LOADER);
+                            getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
 
                             //shows "OPEN CSV" action on a snackbar
                             Snackbar mySnackbar = Snackbar.make(mMainLayout,

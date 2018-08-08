@@ -18,6 +18,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 
+import com.microsoft.band.BandClient;
 import com.microsoft.band.BandClientManager;
 import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
@@ -91,8 +92,6 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
     String gsrSampleRateSelection;
     String accSampleRateSelection;
 
-    //TODO: CASE IF MS BAND IS TURNED OFF WHILE LISTENERS ARE TURNED ON
-
     /**
      * Constructs a new {@link BandSensorsSubscriptionLoader}.
      *
@@ -157,7 +156,12 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 answer = ConnectionState.CONNECTED;
                 bandStts = "Band is connected.";
 
+               //Kicks off BandConnectionService
+                Intent sendObjectIntent = new Intent(mContext, BandConnectionService.class);
+                mContext.startService(sendObjectIntent);
+
                 Log.v(LOG_TAG, "getConnectedBandClient(): bandStts: " + bandStts);
+
 
                 CheckBox hrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.HEART_RATE_SENSOR).findViewById(R.id.sensor_checkbox);
                 Log.v(LOG_TAG, "HEART_RATE_SENSOR: " + hrSensorCheckBox.isChecked());
@@ -434,6 +438,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
     }
+
+
 
 
     private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
@@ -904,9 +910,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
         client = BandClientManager.getInstance().create(mContext, devices[0]);
 
-
         Log.v(LOG_TAG, "pairedBand : " + devices[0].getName());
-
 
         appendToUI("Band is connecting...", Constants.BAND_STATUS);
 
