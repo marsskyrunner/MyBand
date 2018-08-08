@@ -92,8 +92,6 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
     String gsrSampleRateSelection;
     String accSampleRateSelection;
 
-    //TODO: CASE IF MS BAND IS TURNED OFF WHILE LISTENERS ARE TURNED ON
-
     /**
      * Constructs a new {@link BandSensorsSubscriptionLoader}.
      *

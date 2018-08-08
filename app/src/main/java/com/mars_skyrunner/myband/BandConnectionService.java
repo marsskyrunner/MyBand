@@ -13,6 +13,8 @@ import com.microsoft.band.ConnectionState;
 
 import java.sql.Connection;
 
+import static com.mars_skyrunner.myband.MainActivity.saveDataButton;
+
 public class BandConnectionService extends IntentService {
 
 
@@ -54,13 +56,35 @@ public class BandConnectionService extends IntentService {
 
         Log.v(LOG_TAG, "while loop FINISHED");
 
+
         if(MainActivity.client != null){
 
             Log.v(LOG_TAG, "MainActivity.client != null");
 
+            if(bandConnection == ConnectionState.BOUND){ //this means the android device cannot find MS Band
+
+                Log.v(LOG_TAG, "ConnectionState.BOUND");
+
+                if(saveDataButton.isChecked()){ // Create CSV file with collected data
+
+                    Log.v(LOG_TAG, "saveDataButton is checked");
+
+                    Intent createCsvIntent = new Intent(Constants.CREATE_CSV_RECEIVER);
+                    createCsvIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    mContext.sendBroadcast(createCsvIntent);
+
+                }else{
+
+                    Log.v(LOG_TAG, "saveDataButton not checked");
+
+                }
+
+            }
+
             Intent resetReadingsIntent = new Intent(Constants.RESET_SENSOR_READING);
             resetReadingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             mContext.sendBroadcast(resetReadingsIntent);
+
 
 
         }else{

@@ -55,7 +55,7 @@ public class Constants {
     public static final String SENSOR_READING_OBJECT_RECEIVER = packageName + ".SENSOR_READING_OBJECT_RECEIVER";
 
     public static final String INSERT_SENSOR_READING = packageName + ".INSERT_SENSOR_READING";
-
+    public static final String CREATE_CSV_RECEIVER = packageName + ".CREATE_CSV_RECEIVER";
 
 
     public Constants(){

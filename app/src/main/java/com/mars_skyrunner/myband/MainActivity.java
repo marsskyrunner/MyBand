@@ -181,6 +181,12 @@ public class MainActivity extends AppCompatActivity{
         //Register broadcast receiver to save SensorReading objects from BandSensorsSubscriptionLoader
         registerReceiver(sensorReadingObjectReceiver, new IntentFilter(Constants.SENSOR_READING_OBJECT_RECEIVER));
 
+
+        //Register broadcast receiver to save SensorReading objects from BandSensorsSubscriptionLoader
+        registerReceiver(createCSVReceiver, new IntentFilter(Constants.CREATE_CSV_RECEIVER));
+
+
+
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
 
     }
@@ -721,6 +727,7 @@ public class MainActivity extends AppCompatActivity{
         unregisterReceiver(resetSensorReadingReceiver);
         unregisterReceiver(displayVaueReceiver);
         unregisterReceiver(sensorReadingObjectReceiver);
+        unregisterReceiver(createCSVReceiver);
 
         try {
             unregisterSensorListeners();
@@ -761,6 +768,24 @@ public class MainActivity extends AppCompatActivity{
 
         }
 
+
+    };
+
+
+
+
+
+    private BroadcastReceiver  createCSVReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Log.v(LOG_TAG,"createCSVReceiver onReceive");
+
+            // Kick off saveDataCursorLoader
+            //getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
+
+        }
 
     };
 
