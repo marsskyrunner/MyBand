@@ -7,6 +7,8 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
+
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -30,6 +32,16 @@
         <item name="android:windowBackground">@drawable/dialog_background</item>
 
         <item name="windowNoTitle">true</item>
+
+    </style>
+
+    <style name="LabelNameEditText" >
+
+        <item name="android:background">@drawable/edit_label_edittext_background</item>
+        <item name="android:hint">@string/label</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
 
     </style>
 

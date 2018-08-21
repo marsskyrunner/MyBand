@@ -1,5 +1,6 @@
 package com.mars_skyrunner.myband;
 
+import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -17,14 +18,17 @@ import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Checkable;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,6 +45,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -66,6 +71,11 @@ public class MainActivity extends AppCompatActivity{
     ToggleButton toggle;
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
+    String fileNamePrefix = "dp_";
+    String timeStampPattern = "ddMMyyHHmmss";
+    String fileNameExtension = ".csv";
+
+    String filename =  fileNamePrefix+ timeStampPattern + fileNameExtension;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,9 +88,16 @@ public class MainActivity extends AppCompatActivity{
         mListView = (LinearLayout) findViewById(R.id.sensor_list);
         initSensorListView();
 
-
-                mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
+        mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
+
+        ImageButton settingsButton = (ImageButton) findViewById(R.id.settigs_imagebutton);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new EditLabelDialog(MainActivity.this).show();;
+            }
+        });
 
         saveButtonHolder =  (FrameLayout) findViewById(R.id.save_button_holder);
 
@@ -222,11 +239,11 @@ public class MainActivity extends AppCompatActivity{
 
     private File getCsvOutputFile(File dir, Date date) {
 
-
         String timeStamp = new SimpleDateFormat("ddMMyyHHmmss").format(date);
+        filename = "dp_" + timeStamp + ".csv";
 
         // the name of the file to export with
-        String filename = "dp_" + timeStamp + ".csv";
+
         Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
 
         return new File(dir, filename);
@@ -1179,6 +1196,39 @@ public class MainActivity extends AppCompatActivity{
             super.setBackground(drawableFromTheme);
         }
 
+
+
+
+    }
+
+    private class EditLabelDialog extends AppCompatDialog {
+
+        public EditLabelDialog(Context context) {
+
+            super(context);
+
+            setContentView(R.layout.edit_label_dialog);
+
+            Button okButton = (Button) findViewById(R.id.btnSave);
+            okButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(MainActivity.this,"btnSave",Toast.LENGTH_SHORT).show();;
+                }
+            });
+
+
+            Button cancelButton = (Button) findViewById(R.id.btnCancel);
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(MainActivity.this,"btnCancel",Toast.LENGTH_SHORT).show();;
+                }
+            });
+
+
+
+        }
 
 
 

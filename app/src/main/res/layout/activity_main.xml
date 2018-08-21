@@ -51,6 +51,16 @@
 
                 </FrameLayout>
 
+                <ImageButton
+                    android:id="@+id/settigs_imagebutton"
+                    android:src="@drawable/ic_settings_white"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp" />
+
+
+
             </LinearLayout>
 
         </android.support.v7.widget.Toolbar>
