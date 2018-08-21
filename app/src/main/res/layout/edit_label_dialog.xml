@@ -16,8 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/edit_label"
-            android:textSize="16sp"
-            android:layout_gravity="center_horizontal" />
+            android:textSize="16sp" />
 
         <LinearLayout
             android:layout_marginTop="16dp"
@@ -26,6 +25,41 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:orientation="horizontal">
+
+
+            <FrameLayout
+                android:measureAllChildren="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:visibility="gone"
+                    android:padding="10dp"
+                    android:text="XXXX"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <EditText
+                    android:gravity="center"
+                    android:id="@+id/label_prefix"
+                    android:inputType="text"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:maxLines="1"
+                    style="@style/LabelNameEditText"
+                    android:layout_width="match_parent"
+                    android:hint="@string/file_label_prefix"
+                    />
+            </FrameLayout>
+
+            <TextView
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_gravity="center_vertical"
+                android:text="_"
+                android:textSize="16sp"
+                android:textColor="@android:color/black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
             <FrameLayout
                 android:layout_weight="1"
@@ -39,12 +73,15 @@
 
                 <EditText
                     android:gravity="center"
-                    android:id="@+id/label"
+                    android:id="@+id/date_pattern"
                     android:inputType="text"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
                     android:maxLines="1"
                     style="@style/LabelNameEditText"
+                    android:hint="@string/file_label_date_pattern"
                     />
             </FrameLayout>
+
 
 
             <TextView
@@ -84,7 +121,6 @@
                 android:layout_toLeftOf="@id/btnCancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-
 
 
         </RelativeLayout>

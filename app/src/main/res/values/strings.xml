@@ -30,9 +30,12 @@
     <string name="no_data_point">No data to save.</string>
     <string name="file_not_found">File not found.</string>
     <string name="band_connection_timout">Connection timount. Please try again.</string>
-    <string name="save">guardar</string>
-    <string name="cancel">cancelar</string>
-    <string name="edit_label">Editar etiqueta de archivo</string>
+    <string name="save">save</string>
+    <string name="cancel">cancel</string>
+    <string name="edit_label">File label edition</string>
     <string name="file_extension">.csv</string>
-    <string name="label">etiqueta</string>
+    <string name="label">newFileLabel</string>
+    <string name="file_label_prefix">prefix</string>
+    <string name="file_label_date_pattern">date pattern</string>
+    <string name="stamp_pattern_error">Date pattern error.</string>
 </resources>

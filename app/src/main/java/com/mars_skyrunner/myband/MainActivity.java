@@ -20,6 +20,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -27,6 +28,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Checkable;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -71,11 +73,11 @@ public class MainActivity extends AppCompatActivity{
     ToggleButton toggle;
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
-    String fileNamePrefix = "dp_";
+    String fileNamePrefix = "dp";
     String timeStampPattern = "ddMMyyHHmmss";
     String fileNameExtension = ".csv";
 
-    String filename =  fileNamePrefix+ timeStampPattern + fileNameExtension;
+    String filename  ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -239,10 +241,21 @@ public class MainActivity extends AppCompatActivity{
 
     private File getCsvOutputFile(File dir, Date date) {
 
-        String timeStamp = new SimpleDateFormat("ddMMyyHHmmss").format(date);
-        filename = "dp_" + timeStamp + ".csv";
-
         // the name of the file to export with
+
+        String displayDate ;
+
+        try{
+
+            displayDate = new SimpleDateFormat(timeStampPattern).format(date);
+
+        }catch(Exception ex){
+
+            displayDate = timeStampPattern;
+            Log.e(LOG_TAG,"getCsvOutputFile: " + ex.toString());
+        }
+
+        filename =  fileNamePrefix + "_"+ displayDate + fileNameExtension;
 
         Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
 
@@ -893,6 +906,8 @@ public class MainActivity extends AppCompatActivity{
 
             Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onLoadFinished ");
 
+            //TODO: DOS UNBOUND state me trabaron la app
+
             showLoadingView(false);
 
             String userMsg = "";
@@ -1205,15 +1220,59 @@ public class MainActivity extends AppCompatActivity{
 
         public EditLabelDialog(Context context) {
 
+            //TODO: DUDA : edit_label_dialog :  COLOCAR UN EDITTEXT EXCLUSIVO PARA fileNameExtension O NO
+
             super(context);
 
             setContentView(R.layout.edit_label_dialog);
+
+            final EditText prefixEditText = (EditText) findViewById(R.id.label_prefix);
+            prefixEditText.setHint(fileNamePrefix);
+
+            final EditText datePatternEditText = (EditText) findViewById(R.id.date_pattern);
+            datePatternEditText.setHint(timeStampPattern);
 
             Button okButton = (Button) findViewById(R.id.btnSave);
             okButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(MainActivity.this,"btnSave",Toast.LENGTH_SHORT).show();;
+
+                    String newPrefix = prefixEditText.getText().toString();
+                    String newPattern = datePatternEditText.getText().toString();
+
+                    if (!TextUtils.isEmpty(newPrefix)) {
+                        fileNamePrefix = newPrefix;
+                    }
+
+
+                    if (!TextUtils.isEmpty(newPattern)) {
+
+                        try{
+
+                            new SimpleDateFormat(newPattern).format(date);
+
+                        }catch(Exception ex){
+
+                            Snackbar exSnackBar = Snackbar.make(mMainLayout,
+                                    R.string.stamp_pattern_error, Snackbar.LENGTH_SHORT);
+                            exSnackBar.show();
+
+                            Log.e(LOG_TAG,"btnSave: " + ex.toString());
+
+                        }
+
+                        timeStampPattern = newPattern;
+                    }
+
+                    if (!TextUtils.isEmpty(newPrefix) || !TextUtils.isEmpty(newPattern) ) {
+                        Toast.makeText(MainActivity.this,"Label changed.",Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(MainActivity.this,"No changes made.",Toast.LENGTH_SHORT).show();
+                    }
+
+                    cancel();
+
+
                 }
             });
 
@@ -1222,7 +1281,7 @@ public class MainActivity extends AppCompatActivity{
             cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(MainActivity.this,"btnCancel",Toast.LENGTH_SHORT).show();;
+                    cancel();
                 }
             });
 
