@@ -50,7 +50,7 @@ public class BandConnectionService extends IntentService {
         while ( MainActivity.client != null  && bandConnection == ConnectionState.CONNECTED ) {
 
             bandConnection = MainActivity.client.getConnectionState();
-            Log.v(LOG_TAG, "bandConnection: " + bandConnection.toString());
+            //Log.v(LOG_TAG, "bandConnection: " + bandConnection.toString());
 
         }
 

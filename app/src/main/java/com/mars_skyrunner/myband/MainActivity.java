@@ -73,10 +73,9 @@ public class MainActivity extends AppCompatActivity{
     ToggleButton toggle;
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
-    String fileNamePrefix = "dp";
-    String timeStampPattern = "ddMMyyHHmmss";
+    String timeStampPattern = "ddMMyyyy";
     String fileNameExtension = ".csv";
-
+    String displayDate ;
     String filename  ;
 
     @Override
@@ -92,6 +91,9 @@ public class MainActivity extends AppCompatActivity{
 
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
+
+        date = new Date();
+        displayDate = new SimpleDateFormat(timeStampPattern).format(date);;
 
         ImageButton settingsButton = (ImageButton) findViewById(R.id.settigs_imagebutton);
         settingsButton.setOnClickListener(new View.OnClickListener() {
@@ -144,8 +146,6 @@ public class MainActivity extends AppCompatActivity{
                 Log.w(LOG_TAG, "saveDataButton isChecked(): " +saveDataButton.isChecked() );
 
                 if (bandSubscriptionTaskRunning) {
-
-                    date = new Date();
 
                     boolean sensorSelected = false;
 
@@ -243,8 +243,6 @@ public class MainActivity extends AppCompatActivity{
 
         // the name of the file to export with
 
-        String displayDate ;
-
         try{
 
             displayDate = new SimpleDateFormat(timeStampPattern).format(date);
@@ -255,7 +253,7 @@ public class MainActivity extends AppCompatActivity{
             Log.e(LOG_TAG,"getCsvOutputFile: " + ex.toString());
         }
 
-        filename =  fileNamePrefix + "_"+ displayDate + fileNameExtension;
+        filename =  displayDate + fileNameExtension;
 
         Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
 
@@ -705,22 +703,29 @@ public class MainActivity extends AppCompatActivity{
     protected void onStop() {
         super.onStop();
 
-        Log.v(LOG_TAG,"onStop()");
+        Log.w(LOG_TAG,"onStop()");
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        Log.w(LOG_TAG,"onStart()");
     }
 
     @Override
     protected void onPostResume() {
         super.onPostResume();
 
-        Log.v(LOG_TAG,"onPostResume()");
+        Log.w(LOG_TAG,"onPostResume()");
 
     }
 
     @Override
     protected void onResume() {
 
-        Log.v(LOG_TAG,"onResume()");
+        Log.w(LOG_TAG,"onResume()");
         super.onResume();
 
     }
@@ -739,15 +744,16 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onPause() {
         super.onPause();
-        if (client != null) {
-            try {
-
-                unregisterSensorListeners();
-
-            } catch (BandIOException e) {
-                Log.v(LOG_TAG, "onPause: BandIOException: " + e.getMessage());
-            }
-        }
+        Log.w(LOG_TAG, "onPause()");
+//        if (client != null) {
+//            try {
+//
+//                unregisterSensorListeners();
+//
+//            } catch (BandIOException e) {
+//                Log.v(LOG_TAG, "onPause: BandIOException: " + e.getMessage());
+//            }
+//        }
     }
 
 
@@ -1226,24 +1232,15 @@ public class MainActivity extends AppCompatActivity{
 
             setContentView(R.layout.edit_label_dialog);
 
-            final EditText prefixEditText = (EditText) findViewById(R.id.label_prefix);
-            prefixEditText.setHint(fileNamePrefix);
-
             final EditText datePatternEditText = (EditText) findViewById(R.id.date_pattern);
-            datePatternEditText.setHint(timeStampPattern);
+            datePatternEditText.setHint(displayDate);
 
             Button okButton = (Button) findViewById(R.id.btnSave);
             okButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    String newPrefix = prefixEditText.getText().toString();
                     String newPattern = datePatternEditText.getText().toString();
-
-                    if (!TextUtils.isEmpty(newPrefix)) {
-                        fileNamePrefix = newPrefix;
-                    }
-
 
                     if (!TextUtils.isEmpty(newPattern)) {
 
@@ -1264,7 +1261,7 @@ public class MainActivity extends AppCompatActivity{
                         timeStampPattern = newPattern;
                     }
 
-                    if (!TextUtils.isEmpty(newPrefix) || !TextUtils.isEmpty(newPattern) ) {
+                    if (!TextUtils.isEmpty(newPattern) ) {
                         Toast.makeText(MainActivity.this,"Label changed.",Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(MainActivity.this,"No changes made.",Toast.LENGTH_SHORT).show();
