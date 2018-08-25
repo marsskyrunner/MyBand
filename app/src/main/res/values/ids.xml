@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <item name="heart_rate_sensorview" type="id">heart_rate_sensorview</item>
     <item name="rr_interval_sensorview" type="id">rr_interval_sensorview</item>
     <item name="accelerometer_sensorview" type="id">accelerometer_sensorview</item>

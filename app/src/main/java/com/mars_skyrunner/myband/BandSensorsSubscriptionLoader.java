@@ -66,6 +66,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static com.mars_skyrunner.myband.MainActivity.client;
@@ -918,7 +919,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         ConnectionState state  = client.getConnectionState();
 
         try {
-            state = client.connect().await(1,java.util.concurrent.TimeUnit.MINUTES);
+            state = client.connect().await(10 , TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             Log.e(LOG_TAG,"TimeoutException: " + e.toString());
         }

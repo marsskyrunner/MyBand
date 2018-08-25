@@ -51,6 +51,8 @@ import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 public class MainActivity extends AppCompatActivity{
@@ -71,6 +73,8 @@ public class MainActivity extends AppCompatActivity{
     boolean saveClicked = false;
     FrameLayout holder, saveButtonHolder;
     ToggleButton toggle;
+
+    ImageButton settingsButton;
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
     String timeStampPattern = "ddMMyyyy";
@@ -81,6 +85,8 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.w(LOG_TAG,"onCreate()");
         setContentView(R.layout.activity_main);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -95,11 +101,13 @@ public class MainActivity extends AppCompatActivity{
         date = new Date();
         displayDate = new SimpleDateFormat(timeStampPattern).format(date);;
 
-        ImageButton settingsButton = (ImageButton) findViewById(R.id.settigs_imagebutton);
+
+        settingsButton = (ImageButton) findViewById(R.id.settigs_imagebutton);
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new EditLabelDialog(MainActivity.this).show();;
+               new EditLabelDialog(MainActivity.this).show();;
+
             }
         });
 
@@ -112,10 +120,10 @@ public class MainActivity extends AppCompatActivity{
         toggle = (ToggleButton) findViewById(R.id.togglebutton);
         holder =  (FrameLayout) findViewById(R.id.toggle_button_holder);
 
-        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
-        toggle.setText(getResources().getString(R.string.start));
         toggle.setTextOff(getResources().getString(R.string.start));
         toggle.setTextOn(getResources().getString(R.string.stop));
+
+        toggle.setChecked(false);
 
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -123,13 +131,26 @@ public class MainActivity extends AppCompatActivity{
                     // The toggle is enabled
                     Log.v(LOG_TAG,"ToggleButton startButtonClicked()");
 
-                    startButtonClicked();
+                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
+                    clearSensorTextViews();
+
+                    if(!bandSubscriptionTaskRunning){
+
+                        // Kick off the  loader
+                        getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
+
+                    }
+
 
                 } else {
                     // The toggle is disabled
                     Log.v(LOG_TAG,"ToggleButton stopButtonClicked()");
 
-                    stopButtonClicked();
+                    bandSubscriptionTaskRunning = false;
+                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
+                    resetSaveDataButton();
+                    clearSensorTextViews();
+                    disconnectBand();
 
                 }
             }
@@ -214,11 +235,15 @@ public class MainActivity extends AppCompatActivity{
         Log.v(LOG_TAG, "btnStart onClick");
 
         holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
-
         clearSensorTextViews();
 
-        // Kick off the  loader
-        getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
+        if(!bandSubscriptionTaskRunning){
+
+            // Kick off the  loader
+            getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
+
+        }
+
     }
 
     private void showLoadingView(boolean loadingState) {
@@ -228,14 +253,14 @@ public class MainActivity extends AppCompatActivity{
         if (loadingState) {
             findViewById(R.id.main_layout).setVisibility(View.GONE);
             saveDataButton.setVisibility(View.GONE);
+            settingsButton.setVisibility(View.GONE);
             findViewById(R.id.loading_layout).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.main_layout).setVisibility(View.VISIBLE);
             saveDataButton.setVisibility(View.VISIBLE);
+            settingsButton.setVisibility(View.VISIBLE);
             findViewById(R.id.loading_layout).setVisibility(View.GONE);
         }
-
-
 
     }
 
@@ -593,7 +618,9 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void resetToggleButton() {
-        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
+
+        Log.v(LOG_TAG,"resetToggleButton");
+
         toggle.setChecked(false);
 
     }
@@ -704,6 +731,7 @@ public class MainActivity extends AppCompatActivity{
         super.onStop();
 
         Log.w(LOG_TAG,"onStop()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
     }
 
@@ -712,6 +740,14 @@ public class MainActivity extends AppCompatActivity{
         super.onStart();
 
         Log.w(LOG_TAG,"onStart()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+
+        //This means MyApp is restarting
+        if(bandSubscriptionTaskRunning){
+
+            toggle.setChecked(true);
+
+        }
     }
 
     @Override
@@ -719,14 +755,16 @@ public class MainActivity extends AppCompatActivity{
         super.onPostResume();
 
         Log.w(LOG_TAG,"onPostResume()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
     }
 
     @Override
     protected void onResume() {
-
-        Log.w(LOG_TAG,"onResume()");
         super.onResume();
+        Log.w(LOG_TAG,"onResume()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+
 
     }
 
@@ -745,6 +783,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onPause() {
         super.onPause();
         Log.w(LOG_TAG, "onPause()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 //        if (client != null) {
 //            try {
 //
@@ -759,6 +798,9 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
+        Log.w(LOG_TAG,"onDestroy()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
         unregisterReceiver(resetSensorReadingReceiver);
         unregisterReceiver(displayVaueReceiver);
@@ -772,20 +814,32 @@ public class MainActivity extends AppCompatActivity{
         }
 
         disconnectBand();
-        super.onDestroy();
+
     }
 
     private void disconnectBand() {
+
+        Log.v(LOG_TAG,"disconnectBand()");
+
         if (client != null) {
+            Log.v(LOG_TAG,"client != null");
+
+            appendToUI("Band disconnected.",Constants.BAND_STATUS);
+
             try {
-                client.disconnect().await();
+                client.disconnect().await(3 , TimeUnit.SECONDS);
+
+            } catch (TimeoutException e) {
+                Log.e(LOG_TAG,"TimeoutException: " + e.toString());
             } catch (InterruptedException e) {
-                // Do nothing as this is happening during destroy
-                Log.e(LOG_TAG, "disconnectBand: InterruptedException: " + e.toString());
+                Log.e(LOG_TAG,"InterruptedException: " + e.toString());
             } catch (BandException e) {
-                // Do nothing as this is happening during destroy
-                Log.e(LOG_TAG, "disconnectBand: BandException: " + e.toString());
+                Log.e(LOG_TAG,"BandException: " + e.toString());
             }
+
+        }else{
+
+            Log.v(LOG_TAG,"client == null");
         }
     }
 
@@ -903,7 +957,6 @@ public class MainActivity extends AppCompatActivity{
 
             showLoadingView(true);
 
-            bandSubscriptionTaskRunning = true;
             return new BandSensorsSubscriptionLoader(MainActivity.this);
         }
 
@@ -912,14 +965,12 @@ public class MainActivity extends AppCompatActivity{
 
             Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onLoadFinished ");
 
-            //TODO: DOS UNBOUND state me trabaron la app
-
             showLoadingView(false);
 
             String userMsg = "";
 
             if(cs != null){
-
+                Log.v(LOG_TAG, "cs != null");
                 Log.v(LOG_TAG,cs.toString());
 
                 switch (cs){
@@ -963,8 +1014,16 @@ public class MainActivity extends AppCompatActivity{
                 Log.v(LOG_TAG,userMsg);
 
                 if(!cs.equals(ConnectionState.CONNECTED)){
+                    Log.v(LOG_TAG, "ConnectionState != CONNECTED");
                     resetToggleButton();
                     appendToUI(userMsg, Constants.BAND_STATUS);
+
+                }else{
+
+
+                    Log.v(LOG_TAG, "ConnectionState == CONNECTED");
+                    bandSubscriptionTaskRunning = true;
+
                 }
 
             }else{
@@ -972,10 +1031,10 @@ public class MainActivity extends AppCompatActivity{
                 //Band isnt paired with phone
                 resetToggleButton();
                 appendToUI("Band isn't paired with your phone.", Constants.BAND_STATUS);
+                Log.v(LOG_TAG, "cs == null");
+                Log.v(LOG_TAG, "Band isn't paired with your phone.");
 
             }
-
-
 
         }
 
