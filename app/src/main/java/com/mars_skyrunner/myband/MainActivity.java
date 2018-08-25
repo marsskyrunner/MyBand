@@ -87,6 +87,9 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
 
         Log.w(LOG_TAG,"onCreate()");
+
+        setTheme(R.style.AppTheme_NoActionBar);
+
         setContentView(R.layout.activity_main);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -127,6 +130,7 @@ public class MainActivity extends AppCompatActivity{
 
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
                 if (isChecked) {
                     // The toggle is enabled
                     Log.v(LOG_TAG,"ToggleButton startButtonClicked()");
@@ -748,6 +752,7 @@ public class MainActivity extends AppCompatActivity{
             toggle.setChecked(true);
 
         }
+
     }
 
     @Override
@@ -823,8 +828,6 @@ public class MainActivity extends AppCompatActivity{
 
         if (client != null) {
             Log.v(LOG_TAG,"client != null");
-
-            appendToUI("Band disconnected.",Constants.BAND_STATUS);
 
             try {
                 client.disconnect().await(3 , TimeUnit.SECONDS);
@@ -966,6 +969,9 @@ public class MainActivity extends AppCompatActivity{
             Log.v(LOG_TAG, "bandSensorSubscriptionLoader: onLoadFinished ");
 
             showLoadingView(false);
+
+
+            getLoaderManager().destroyLoader(loader.getId());
 
             String userMsg = "";
 
