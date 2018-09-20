@@ -1291,8 +1291,6 @@ public class MainActivity extends AppCompatActivity{
 
         public EditLabelDialog(Context context) {
 
-            //TODO: DUDA : edit_label_dialog :  COLOCAR UN EDITTEXT EXCLUSIVO PARA fileNameExtension O NO
-
             super(context);
 
             setContentView(R.layout.edit_label_dialog);
