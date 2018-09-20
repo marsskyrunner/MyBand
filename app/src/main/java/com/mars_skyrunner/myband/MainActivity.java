@@ -530,6 +530,7 @@ public class MainActivity extends AppCompatActivity{
 
     private void populateSensorList() {
 
+
         for (SensorReading sr : sensorReadings) {
 
             SensorReadingView v = new SensorReadingView(this, sr);
