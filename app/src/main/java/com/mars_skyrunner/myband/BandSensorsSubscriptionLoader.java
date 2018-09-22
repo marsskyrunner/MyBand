@@ -590,11 +590,6 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 try {
                     event = new StringBuilder()
-
-
-
-
-
                             .append( bandDistanceEvent.getMotionType().toString() + ",")
                             .append(String.format("%d,", bandDistanceEvent.getDistanceToday()))
                             .append(String.format("%f,", bandDistanceEvent.getPace()))
@@ -854,11 +849,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
         long currentTime = System.currentTimeMillis();
-        String mDate = new SimpleDateFormat("d MMM yyyy").format(currentTime);
-        String time = new SimpleDateFormat("HH:mm:ss").format(currentTime);
 
-        Log.v(LOG_TAG,"currentTime: " + time);
-        SensorReading sensorReading = new SensorReading(mContext,sensorName,sensorValue,sensorSampleRate,mDate,time);
+        SensorReading sensorReading = new SensorReading(mContext,sensorName,sensorValue,sensorSampleRate,currentTime);
 
 
         Intent sendObjectIntent = new Intent(mContext, DbInsertionService.class);

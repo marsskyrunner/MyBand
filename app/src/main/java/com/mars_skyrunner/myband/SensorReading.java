@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.text.SimpleDateFormat;
+
 public class SensorReading implements Parcelable {
 
     public String getSensorName() {
@@ -30,31 +32,89 @@ public class SensorReading implements Parcelable {
     String mSensorReadingRate;
     String mSensorName;
     String mSensorReading;
-    String mSensorReadingDate;
 
-    public String getSensorReadingDate() {
-        return mSensorReadingDate;
+    Context mContext;
+
+    String mSensorReadingYear;
+    String mSensorReadingMonth;
+    String mSensorReadingDay;
+
+
+    public String getmSensorReadingYear() {
+        return mSensorReadingYear;
     }
 
-    public String getSensorReadingTime() {
-        return mSensorReadingTime;
+    public void setmSensorReadingYear(String mSensorReadingYear) {
+        this.mSensorReadingYear = mSensorReadingYear;
     }
 
-    String mSensorReadingTime;
+    public String getmSensorReadingMonth() {
+        return mSensorReadingMonth;
+    }
+
+    public void setmSensorReadingMonth(String mSensorReadingMonth) {
+        this.mSensorReadingMonth = mSensorReadingMonth;
+    }
+
+    public String getmSensorReadingDay() {
+        return mSensorReadingDay;
+    }
+
+    public void setmSensorReadingDay(String mSensorReadingDay) {
+        this.mSensorReadingDay = mSensorReadingDay;
+    }
+
+    public String getmSensorReadingHH() {
+        return mSensorReadingHH;
+    }
+
+    public void setmSensorReadingHH(String mSensorReadingHH) {
+        this.mSensorReadingHH = mSensorReadingHH;
+    }
+
+    public String getmSensorReadingMM() {
+        return mSensorReadingMM;
+    }
+
+    public void setmSensorReadingMM(String mSensorReadingMM) {
+        this.mSensorReadingMM = mSensorReadingMM;
+    }
+
+    public String getmSensorReadingSS() {
+        return mSensorReadingSS;
+    }
+
+    public void setmSensorReadingSS(String mSensorReadingSS) {
+        this.mSensorReadingSS = mSensorReadingSS;
+    }
+
+    String mSensorReadingHH;
+    String mSensorReadingMM;
+    String mSensorReadingSS;
+
 
     public SensorReading(Context context, String sensorName, String sensorReading){
+        mContext = context;
         mSensorName = sensorName;
         mSensorReading = sensorReading;
     }
 
 
 
-    public SensorReading(Context context, String sensorName, String sensorReading, String rate, String  date, String time){
+    public SensorReading(Context context, String sensorName, String sensorReading, String rate, long time){
+        mContext = context;
         mSensorName = sensorName;
         mSensorReading = sensorReading;
         mSensorReadingRate = rate;
-        mSensorReadingDate = date;
-        mSensorReadingTime = time;
+
+        mSensorReadingYear = new SimpleDateFormat("yyyy").format(time);
+        mSensorReadingMonth = new SimpleDateFormat("MMM").format(time);
+        mSensorReadingDay = new SimpleDateFormat("dd").format(time);
+
+        mSensorReadingHH = new SimpleDateFormat("HH").format(time);
+        mSensorReadingMM = new SimpleDateFormat("mm").format(time);
+        mSensorReadingSS = new SimpleDateFormat("ss").format(time);
+
     }
 
 
@@ -62,8 +122,16 @@ public class SensorReading implements Parcelable {
         mSensorReadingRate = in.readString();
         mSensorName = in.readString();
         mSensorReading = in.readString();
-        mSensorReadingDate = in.readString();
-        mSensorReadingTime = in.readString();
+
+
+        mSensorReadingYear = in.readString();
+        mSensorReadingMonth = in.readString();
+        mSensorReadingDay = in.readString();
+
+        mSensorReadingHH = in.readString();
+        mSensorReadingMM = in.readString();
+        mSensorReadingSS = in.readString();
+
     }
 
     @Override
@@ -76,8 +144,16 @@ public class SensorReading implements Parcelable {
         dest.writeString(mSensorReadingRate);
         dest.writeString(mSensorName);
         dest.writeString(mSensorReading);
-        dest.writeString(mSensorReadingDate);
-        dest.writeString(mSensorReadingTime);
+
+
+        dest.writeString(mSensorReadingYear);
+        dest.writeString(mSensorReadingMonth);
+        dest.writeString(mSensorReadingDay);
+
+        dest.writeString(mSensorReadingHH);
+        dest.writeString(mSensorReadingMM);
+        dest.writeString(mSensorReadingSS);
+
     }
 
     @SuppressWarnings("unused")

@@ -84,19 +84,54 @@ public  final class SensorReadingContract {
 
 
         /**
-         * Date of the SensorReading.
+         * Day of the SensorReading.
          *
          * Type: TEXT
          */
-        public final static String COLUMN_READING_DATE ="date";
+        public final static String COLUMN_READING_DAY ="day";
+
+
 
 
         /**
-         * Time of the SensorReading.
+         * Month of the SensorReading.
          *
          * Type: TEXT
          */
-        public final static String COLUMN_READING_TIME = "time";
+        public final static String COLUMN_READING_MONTH = "month";
+
+
+        /**
+         * Year of the SensorReading.
+         *
+         * Type: TEXT
+         */
+        public final static String COLUMN_READING_YEAR = "year";
+
+
+        /**
+         * Hrs of the SensorReading.
+         *
+         * Type: TEXT
+         */
+        public final static String COLUMN_READING_HH = "HH";
+
+        /**
+         * Minutes of the SensorReading.
+         *
+         * Type: TEXT
+         */
+        public final static String COLUMN_READING_MM = "MM";
+
+
+        /**
+         * Seconds of the SensorReading.
+         *
+         * Type: TEXT
+         */
+
+        public final static String COLUMN_READING_SS =  "SS";
+
 
         /**
          * Name of the Sensor from the SensorReading.

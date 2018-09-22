@@ -162,12 +162,10 @@ public class SensorReadingView extends LinearLayout {
         addView(relativeLayoutHolder);
         addView(sensorValueTextView);
 
-
         //LayoutInflater TEST
-        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rootView = inflater.inflate(R.layout.sensor_list_item, this, false);
-        addView(rootView );
-
+//        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        View rootView = inflater.inflate(R.layout.sensor_list_item, this, false);
+//        addView(rootView );
 
     }
 

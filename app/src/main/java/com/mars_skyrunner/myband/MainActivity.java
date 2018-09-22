@@ -952,6 +952,7 @@ public class MainActivity extends AppCompatActivity{
 
 
     private LoaderManager.LoaderCallbacks<ConnectionState> bandSensorSubscriptionLoader
+
             = new LoaderManager.LoaderCallbacks<ConnectionState>() {
 
         @Override
@@ -1067,8 +1068,19 @@ public class MainActivity extends AppCompatActivity{
             // Define a projection that specifies the columns from the table we care about.
             String[] projection = {
                     ReadingEntry._ID,
-                    ReadingEntry.COLUMN_READING_DATE,
-                    ReadingEntry.COLUMN_READING_TIME,
+
+
+
+
+
+
+
+                    ReadingEntry.COLUMN_READING_YEAR,
+                    ReadingEntry.COLUMN_READING_MONTH,
+                    ReadingEntry.COLUMN_READING_DAY,
+                    ReadingEntry.COLUMN_READING_HH,
+                    ReadingEntry.COLUMN_READING_MM,
+                    ReadingEntry.COLUMN_READING_SS,
                     ReadingEntry.COLUMN_SAMPLE_RATE,
                     ReadingEntry.COLUMN_SENSOR_NAME,
                     ReadingEntry.COLUMN_SENSOR_VALUE};

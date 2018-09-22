@@ -41,8 +41,12 @@ public class SensorReadingsDbHelper extends SQLiteOpenHelper {
         // Create a String that contains the SQL statement to create the records table
         String SQL_CREATE_SENSOR_READING_TABLE =  "CREATE TABLE " + ReadingEntry.TABLE_NAME + " ("
                 + ReadingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + ReadingEntry.COLUMN_READING_DATE + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_READING_TIME + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_YEAR + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_MONTH + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_DAY + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_HH + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_MM + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_SS + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_NAME + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SAMPLE_RATE + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT NOT NULL )";
@@ -55,8 +59,12 @@ public class SensorReadingsDbHelper extends SQLiteOpenHelper {
         // Create a String that contains the SQL statement to create the records table
         String SQL_CREATE_MASTER_SENSOR_READING_TABLE =  "CREATE TABLE " + ReadingEntry.MASTER_TABLE_NAME + " ("
                 + ReadingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + ReadingEntry.COLUMN_READING_DATE + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_READING_TIME + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_YEAR + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_MONTH + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_DAY + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_HH + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_MM + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_READING_SS + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_NAME + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SAMPLE_RATE + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT NOT NULL )";
