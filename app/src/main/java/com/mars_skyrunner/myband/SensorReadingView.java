@@ -1,6 +1,7 @@
 package com.mars_skyrunner.myband;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -159,6 +161,12 @@ public class SensorReadingView extends LinearLayout {
 
         addView(relativeLayoutHolder);
         addView(sensorValueTextView);
+
+
+        //LayoutInflater TEST
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View rootView = inflater.inflate(R.layout.sensor_list_item, this, false);
+        addView(rootView );
 
 
     }

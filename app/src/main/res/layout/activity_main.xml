@@ -17,8 +17,6 @@
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
-            android:paddingLeft="16dp"
-
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
@@ -51,11 +49,30 @@
 
                 </FrameLayout>
 
+
+                <FrameLayout
+                    android:background="@drawable/save_button_off"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp">
+
+                    <ImageButton
+                        android:background="?android:attr/selectableItemBackground"
+                        android:id="@+id/settigs_imagebutton"
+                        android:src="@drawable/ic_settings_white"
+                        android:layout_gravity="center"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+
+                </FrameLayout>
+
             </LinearLayout>
 
         </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>
+
+
 
     <LinearLayout
         android:id="@+id/main_layout"
@@ -85,6 +102,7 @@
 
         <FrameLayout
             android:id="@+id/toggle_button_holder"
+            android:background="@drawable/toggle_button_on_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
@@ -107,7 +125,6 @@
 
     </LinearLayout>
 
-
     <LinearLayout
         android:id="@+id/loading_layout"
         android:visibility="gone"
@@ -116,34 +133,28 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <ImageView
-            android:layout_weight="1"
-            android:src="@drawable/uabc_logo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            <ImageView
+                android:layout_centerInParent="true"
+                android:src="@drawable/uabc_logo"
+                android:layout_width="150dp"
+                android:layout_height="150dp" />
 
-        <LinearLayout
-            android:layout_margin="48dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/PrimaryTextStyle"
-                android:text="@string/processing"
-                android:gravity="center_vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
 
             <ProgressBar
-                android:layout_gravity="center_horizontal"
-                android:layout_marginLeft="24dp"
-                android:layout_width="24dp"
-                android:layout_height="24dp" />
 
-        </LinearLayout>
+                style="@android:style/Widget.Holo.Light.ProgressBar.Small"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fadingEdgeLength="10dp"
+                android:indeterminateTint="@color/colorAccent" />
+
+        </RelativeLayout>
+
+
 
 
 

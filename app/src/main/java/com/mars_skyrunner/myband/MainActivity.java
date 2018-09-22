@@ -1,5 +1,6 @@
 package com.mars_skyrunner.myband;
 
+import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -17,14 +18,19 @@ import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Checkable;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,9 +47,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 public class MainActivity extends AppCompatActivity{
@@ -64,12 +73,23 @@ public class MainActivity extends AppCompatActivity{
     boolean saveClicked = false;
     FrameLayout holder, saveButtonHolder;
     ToggleButton toggle;
+
+    ImageButton settingsButton;
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
+    String timeStampPattern = "ddMMyyyy";
+    String fileNameExtension = ".csv";
+    String displayDate ;
+    String filename  ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.w(LOG_TAG,"onCreate()");
+
+        setTheme(R.style.AppTheme_NoActionBar);
+
         setContentView(R.layout.activity_main);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -78,9 +98,21 @@ public class MainActivity extends AppCompatActivity{
         mListView = (LinearLayout) findViewById(R.id.sensor_list);
         initSensorListView();
 
-
-                mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
+        mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
+
+        date = new Date();
+        displayDate = new SimpleDateFormat(timeStampPattern).format(date);;
+
+
+        settingsButton = (ImageButton) findViewById(R.id.settigs_imagebutton);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               new EditLabelDialog(MainActivity.this).show();;
+
+            }
+        });
 
         saveButtonHolder =  (FrameLayout) findViewById(R.id.save_button_holder);
 
@@ -91,24 +123,38 @@ public class MainActivity extends AppCompatActivity{
         toggle = (ToggleButton) findViewById(R.id.togglebutton);
         holder =  (FrameLayout) findViewById(R.id.toggle_button_holder);
 
-        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
-        toggle.setText(getResources().getString(R.string.start));
         toggle.setTextOff(getResources().getString(R.string.start));
         toggle.setTextOn(getResources().getString(R.string.stop));
 
+        toggle.setChecked(false);
+
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
                 if (isChecked) {
                     // The toggle is enabled
                     Log.v(LOG_TAG,"ToggleButton startButtonClicked()");
 
-                    startButtonClicked();
+                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
+                    clearSensorTextViews();
+
+                    if(!bandSubscriptionTaskRunning){
+
+                        // Kick off the  loader
+                        getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
+
+                    }
+
 
                 } else {
                     // The toggle is disabled
                     Log.v(LOG_TAG,"ToggleButton stopButtonClicked()");
 
-                    stopButtonClicked();
+                    bandSubscriptionTaskRunning = false;
+                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
+                    resetSaveDataButton();
+                    clearSensorTextViews();
+                    disconnectBand();
 
                 }
             }
@@ -125,8 +171,6 @@ public class MainActivity extends AppCompatActivity{
                 Log.w(LOG_TAG, "saveDataButton isChecked(): " +saveDataButton.isChecked() );
 
                 if (bandSubscriptionTaskRunning) {
-
-                    date = new Date();
 
                     boolean sensorSelected = false;
 
@@ -195,11 +239,15 @@ public class MainActivity extends AppCompatActivity{
         Log.v(LOG_TAG, "btnStart onClick");
 
         holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
-
         clearSensorTextViews();
 
-        // Kick off the  loader
-        getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
+        if(!bandSubscriptionTaskRunning){
+
+            // Kick off the  loader
+            getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
+
+        }
+
     }
 
     private void showLoadingView(boolean loadingState) {
@@ -209,24 +257,33 @@ public class MainActivity extends AppCompatActivity{
         if (loadingState) {
             findViewById(R.id.main_layout).setVisibility(View.GONE);
             saveDataButton.setVisibility(View.GONE);
+            settingsButton.setVisibility(View.GONE);
             findViewById(R.id.loading_layout).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.main_layout).setVisibility(View.VISIBLE);
             saveDataButton.setVisibility(View.VISIBLE);
+            settingsButton.setVisibility(View.VISIBLE);
             findViewById(R.id.loading_layout).setVisibility(View.GONE);
         }
-
-
 
     }
 
     private File getCsvOutputFile(File dir, Date date) {
 
-
-        String timeStamp = new SimpleDateFormat("ddMMyyHHmmss").format(date);
-
         // the name of the file to export with
-        String filename = "dp_" + timeStamp + ".csv";
+
+        try{
+
+            displayDate = new SimpleDateFormat(timeStampPattern).format(date);
+
+        }catch(Exception ex){
+
+            displayDate = timeStampPattern;
+            Log.e(LOG_TAG,"getCsvOutputFile: " + ex.toString());
+        }
+
+        filename =  displayDate + fileNameExtension;
+
         Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
 
         return new File(dir, filename);
@@ -473,6 +530,7 @@ public class MainActivity extends AppCompatActivity{
 
     private void populateSensorList() {
 
+
         for (SensorReading sr : sensorReadings) {
 
             SensorReadingView v = new SensorReadingView(this, sr);
@@ -565,7 +623,9 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void resetToggleButton() {
-        holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
+
+        Log.v(LOG_TAG,"resetToggleButton");
+
         toggle.setChecked(false);
 
     }
@@ -675,7 +735,24 @@ public class MainActivity extends AppCompatActivity{
     protected void onStop() {
         super.onStop();
 
-        Log.v(LOG_TAG,"onStop()");
+        Log.w(LOG_TAG,"onStop()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        Log.w(LOG_TAG,"onStart()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+
+        //This means MyApp is restarting
+        if(bandSubscriptionTaskRunning){
+
+            toggle.setChecked(true);
+
+        }
 
     }
 
@@ -683,15 +760,17 @@ public class MainActivity extends AppCompatActivity{
     protected void onPostResume() {
         super.onPostResume();
 
-        Log.v(LOG_TAG,"onPostResume()");
+        Log.w(LOG_TAG,"onPostResume()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
     }
 
     @Override
     protected void onResume() {
-
-        Log.v(LOG_TAG,"onResume()");
         super.onResume();
+        Log.w(LOG_TAG,"onResume()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+
 
     }
 
@@ -709,20 +788,25 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onPause() {
         super.onPause();
-        if (client != null) {
-            try {
-
-                unregisterSensorListeners();
-
-            } catch (BandIOException e) {
-                Log.v(LOG_TAG, "onPause: BandIOException: " + e.getMessage());
-            }
-        }
+        Log.w(LOG_TAG, "onPause()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+//        if (client != null) {
+//            try {
+//
+//                unregisterSensorListeners();
+//
+//            } catch (BandIOException e) {
+//                Log.v(LOG_TAG, "onPause: BandIOException: " + e.getMessage());
+//            }
+//        }
     }
 
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
+        Log.w(LOG_TAG,"onDestroy()");
+        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
         unregisterReceiver(resetSensorReadingReceiver);
         unregisterReceiver(displayVaueReceiver);
@@ -736,20 +820,30 @@ public class MainActivity extends AppCompatActivity{
         }
 
         disconnectBand();
-        super.onDestroy();
+
     }
 
     private void disconnectBand() {
+
+        Log.v(LOG_TAG,"disconnectBand()");
+
         if (client != null) {
+            Log.v(LOG_TAG,"client != null");
+
             try {
-                client.disconnect().await();
+                client.disconnect().await(3 , TimeUnit.SECONDS);
+
+            } catch (TimeoutException e) {
+                Log.e(LOG_TAG,"TimeoutException: " + e.toString());
             } catch (InterruptedException e) {
-                // Do nothing as this is happening during destroy
-                Log.e(LOG_TAG, "disconnectBand: InterruptedException: " + e.toString());
+                Log.e(LOG_TAG,"InterruptedException: " + e.toString());
             } catch (BandException e) {
-                // Do nothing as this is happening during destroy
-                Log.e(LOG_TAG, "disconnectBand: BandException: " + e.toString());
+                Log.e(LOG_TAG,"BandException: " + e.toString());
             }
+
+        }else{
+
+            Log.v(LOG_TAG,"client == null");
         }
     }
 
@@ -867,7 +961,6 @@ public class MainActivity extends AppCompatActivity{
 
             showLoadingView(true);
 
-            bandSubscriptionTaskRunning = true;
             return new BandSensorsSubscriptionLoader(MainActivity.this);
         }
 
@@ -878,10 +971,13 @@ public class MainActivity extends AppCompatActivity{
 
             showLoadingView(false);
 
+
+            getLoaderManager().destroyLoader(loader.getId());
+
             String userMsg = "";
 
             if(cs != null){
-
+                Log.v(LOG_TAG, "cs != null");
                 Log.v(LOG_TAG,cs.toString());
 
                 switch (cs){
@@ -925,8 +1021,16 @@ public class MainActivity extends AppCompatActivity{
                 Log.v(LOG_TAG,userMsg);
 
                 if(!cs.equals(ConnectionState.CONNECTED)){
+                    Log.v(LOG_TAG, "ConnectionState != CONNECTED");
                     resetToggleButton();
                     appendToUI(userMsg, Constants.BAND_STATUS);
+
+                }else{
+
+
+                    Log.v(LOG_TAG, "ConnectionState == CONNECTED");
+                    bandSubscriptionTaskRunning = true;
+
                 }
 
             }else{
@@ -934,10 +1038,10 @@ public class MainActivity extends AppCompatActivity{
                 //Band isnt paired with phone
                 resetToggleButton();
                 appendToUI("Band isn't paired with your phone.", Constants.BAND_STATUS);
+                Log.v(LOG_TAG, "cs == null");
+                Log.v(LOG_TAG, "Band isn't paired with your phone.");
 
             }
-
-
 
         }
 
@@ -1179,6 +1283,72 @@ public class MainActivity extends AppCompatActivity{
             super.setBackground(drawableFromTheme);
         }
 
+
+
+
+    }
+
+    private class EditLabelDialog extends AppCompatDialog {
+
+        public EditLabelDialog(Context context) {
+
+            super(context);
+
+            setContentView(R.layout.edit_label_dialog);
+
+            final EditText datePatternEditText = (EditText) findViewById(R.id.date_pattern);
+            datePatternEditText.setHint(displayDate);
+
+            Button okButton = (Button) findViewById(R.id.btnSave);
+            okButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    String newPattern = datePatternEditText.getText().toString();
+
+                    if (!TextUtils.isEmpty(newPattern)) {
+
+                        try{
+
+                            new SimpleDateFormat(newPattern).format(date);
+
+                        }catch(Exception ex){
+
+                            Snackbar exSnackBar = Snackbar.make(mMainLayout,
+                                    R.string.stamp_pattern_error, Snackbar.LENGTH_SHORT);
+                            exSnackBar.show();
+
+                            Log.e(LOG_TAG,"btnSave: " + ex.toString());
+
+                        }
+
+                        timeStampPattern = newPattern;
+                    }
+
+                    if (!TextUtils.isEmpty(newPattern) ) {
+                        Toast.makeText(MainActivity.this,"Label changed.",Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(MainActivity.this,"No changes made.",Toast.LENGTH_SHORT).show();
+                    }
+
+                    cancel();
+
+
+                }
+            });
+
+
+            Button cancelButton = (Button) findViewById(R.id.btnCancel);
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    cancel();
+                }
+            });
+
+
+
+        }
 
 
 

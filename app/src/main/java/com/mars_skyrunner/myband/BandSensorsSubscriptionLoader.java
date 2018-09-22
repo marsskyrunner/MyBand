@@ -156,7 +156,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 answer = ConnectionState.CONNECTED;
                 bandStts = "Band is connected.";
 
-               //Kicks off BandConnectionService
+                //Kicks off BandConnectionService
                 Intent sendObjectIntent = new Intent(mContext, BandConnectionService.class);
                 mContext.startService(sendObjectIntent);
 
@@ -441,6 +441,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
 
+//EVENT LISTENERS
+
 
     private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
         @Override
@@ -448,8 +450,10 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
             if (event != null) {
 
                 String sensorName = mContext.getResources().getString(R.string.heart_rate);
-                String sensorValue = String.format("%d beats per minute,"
-                        + "Quality = %s", event.getHeartRate(), event.getQuality());
+                String sensorValue =
+                        String.format("%d, %s", event.getHeartRate(), event.getQuality());
+                //1 : beats per minute
+                //2 : Quality
 
                 appendToUI(sensorValue, Constants.HEART_RATE);
                 //Log.w(LOG_TAG,sensorName + " checks SaveButton");
@@ -501,7 +505,9 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                         DecimalFormat df = new DecimalFormat("0.00");
 
                         String event = new StringBuilder()
-                                .append(df.format(temp) + " °C").toString();
+                                .append(df.format(temp)).toString();
+
+                        //1.  Temp in °C
 
                         appendToUI(event, Constants.SKIN_TEMPERATURE);
 
@@ -526,7 +532,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 long totalSteps = bandPedometerEvent.getTotalSteps();
 
                 String event = new StringBuilder()
-                        .append(String.format("TotalSteps = %d steps", totalSteps)).toString();
+                        .append(String.format("%d", totalSteps)).toString();
+                //1.TotalSteps = # steps
 
                 appendToUI(event, Constants.PEDOMETER);
 
@@ -551,9 +558,13 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
 
                 String event = new StringBuilder()
-                        .append(String.format("ωX = %f °/s, ", bandGyroscopeEvent.getAngularVelocityX()))
-                        .append(String.format("ωY = %f °/s, ", bandGyroscopeEvent.getAngularVelocityY()))
-                        .append(String.format("ωZ = %f °/s", bandGyroscopeEvent.getAngularVelocityZ())).toString();
+                        .append(String.format("%f,", bandGyroscopeEvent.getAngularVelocityX()))
+                        .append(String.format("%f,", bandGyroscopeEvent.getAngularVelocityY()))
+                        .append(String.format("%f", bandGyroscopeEvent.getAngularVelocityZ())).toString();
+
+                //1.ωX = in  °/s
+                //2.ωY = in  °/s
+                //3.ωZ = in  °/s
 
                 appendToUI(event, Constants.GYROSCOPE);
 
@@ -581,10 +592,18 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                     event = new StringBuilder()
 
 
-                            .append("Band MotionType = " + bandDistanceEvent.getMotionType().toString() + ",")
-                            .append(String.format("Total Distance Today = %d cm,", bandDistanceEvent.getDistanceToday()))
-                            .append(String.format("Band Pace = %f ms/m,", bandDistanceEvent.getPace()))
-                            .append(String.format("Band Speed = %f cm/s", bandDistanceEvent.getPace())).toString();
+
+
+
+                            .append( bandDistanceEvent.getMotionType().toString() + ",")
+                            .append(String.format("%d,", bandDistanceEvent.getDistanceToday()))
+                            .append(String.format("%f,", bandDistanceEvent.getPace()))
+                            .append(String.format("%f", bandDistanceEvent.getPace())).toString();
+
+                    //1.Band MotionType
+                    //2.Total Distance Today in cm
+                    //3.Band Pace in  ms/m
+                    //4.Band Speed in  cm/s
 
                 } catch (InvalidBandVersionException e) {
                     event = e.toString();
@@ -643,8 +662,10 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         public void onBandRRIntervalChanged(final BandRRIntervalEvent event) {
             if (event != null) {
 
-                String value = String.format("%.3f s", event.getInterval());
+                String value = String.format("%.3f", event.getInterval());
                 appendToUI(value, Constants.RR_INTERVAL);
+
+                //1.Interval in seconds
 
                 String sensorName = mContext.getResources().getString(R.string.rr_interval);
                 //7Log.w(LOG_TAG,sensorName + " checks SaveButton");
@@ -663,9 +684,10 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandCaloriesChanged(BandCaloriesEvent bandCaloriesEvent) {
             if (bandCaloriesEvent != null) {
-                String caloriesEvent = String.format("%d cals", bandCaloriesEvent.getCalories());
+                String caloriesEvent = String.format("%d", bandCaloriesEvent.getCalories());
                 appendToUI(caloriesEvent, Constants.CALORIES);
 
+                //1.Calories
 
                 String sensorName = mContext.getResources().getString(R.string.calories);
                 //Log.w(LOG_TAG,sensorName + " checks SaveButton");
@@ -684,8 +706,10 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandGsrChanged(final BandGsrEvent event) {
             if (event != null) {
-                String gsrEvent = String.format("%d kOhms", event.getResistance());
+                String gsrEvent = String.format("%d", event.getResistance());
                 appendToUI(gsrEvent, Constants.GSR);
+
+                //1.GSR in kOhms
 
                 if (saveDataButton.isChecked()) {
 
@@ -703,8 +727,12 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         public void onBandAccelerometerChanged(final BandAccelerometerEvent event) {
             if (event != null) {
 
-                String stts = String.format(" X = %.3f g, Y = %.3f g, Z = %.3f g", event.getAccelerationX(),
+                String stts = String.format("%.3f, %.3f,  %.3f ", event.getAccelerationX(),
                         event.getAccelerationY(), event.getAccelerationZ());
+
+                //1. X in g's
+                //2. Y in g's
+                //3. Z in g's
 
                 appendToUI(stts, Constants.ACCELEROMETER);
 
@@ -728,16 +756,32 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
             if (event != null) {
 
                 String value = new StringBuilder()
-                        .append(String.format("Total Gain = %d cm,", event.getTotalGain()))
-                        .append(String.format("Total Loss = %d cm,", event.getTotalLoss()))
-                        .append(String.format("Total Elevation Difference= %d cm,", (event.getTotalGain() - event.getTotalLoss())))
-                        .append(String.format("Stepping Gain = %d cm,", event.getSteppingGain()))
-                        .append(String.format("Stepping Loss = %d cm,", event.getSteppingLoss()))
-                        .append(String.format("Steps Ascended = %d,", event.getStepsAscended()))
-                        .append(String.format("Steps Descended = %d,", event.getStepsDescended()))
-                        .append(String.format("Rate = %f cm/s,", event.getRate()))
-                        .append(String.format("Flights of Stairs Ascended = %d,", event.getFlightsAscended()))
-                        .append(String.format("Flights of Stairs Descended = %d", event.getFlightsDescended())).toString();
+                        .append(String.format("%d,", event.getTotalGain()))
+                        .append(String.format("%d,", event.getTotalLoss()))
+                        .append(String.format("%d,", (event.getTotalGain() - event.getTotalLoss())))
+                        .append(String.format("%d,", event.getSteppingGain()))
+
+
+
+
+
+                        .append(String.format("%d,", event.getSteppingLoss()))
+                        .append(String.format("%d,", event.getStepsAscended()))
+                        .append(String.format("%d,", event.getStepsDescended()))
+                        .append(String.format("%f,", event.getRate()))
+                        .append(String.format("%d,", event.getFlightsAscended()))
+                        .append(String.format("%d", event.getFlightsDescended())).toString();
+
+                //1.Total Gain  in cms
+                //2.Total Loss in cms
+                //3.Total Elevation Difference in cms
+                //4.Stepping Gain in cms
+                //5. Stepping Loss in cms
+                //6.Steps Ascended
+                //7.Steps Descended
+                //8.Rate in cm/s
+                //9.Flights of Stairs Ascended
+                //10.Flights of Stairs Descended
 
                 appendToUI(value, Constants.ALTIMETER);
 
@@ -760,7 +804,9 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         public void onBandAmbientLightChanged(final BandAmbientLightEvent event) {
             if (event != null) {
 
-                String value =String.format("%d lux", event.getBrightness());
+                String value =String.format("%d", event.getBrightness());
+
+                //1.AmbientLight in lux
 
                 appendToUI(value, Constants.AMBIENT_LIGHT);
 
@@ -783,15 +829,17 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
             if (event != null) {
 
                 String barometerEvent =
-                        String.format("Air Pressure = %.3f hPa,"
-                                + "Temperature = %.2f degrees Celsius", event.getAirPressure(), event.getTemperature());
+                        String.format("%.3f, %.2f", event.getAirPressure(), event.getTemperature());
+
+                //1.Air Pressure in hPa
+                //2.Temperature in  Celsius
 
                 appendToUI(barometerEvent, Constants.BAROMETER);
 
 
                 String sensorName = mContext.getResources().getString(R.string.barometer);
 
-               //Log.w(LOG_TAG,sensorName + " checks SaveButton");
+                //Log.w(LOG_TAG,sensorName + " checks SaveButton");
 
                 if (saveDataButton.isChecked()) {
 
@@ -829,7 +877,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
         switch (sensorName) {
             case "heart rate":
-                sampleRate = "1 hz";
+                sampleRate = "1"; // hz
                 break;
 
             case "rr interval":
@@ -837,23 +885,23 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 break;
 
             case "accelerometer":
-                sampleRate = accSampleRateSelection + " hz";
+                sampleRate = accSampleRateSelection;  // hz
                 break;
 
             case "altimeter":
-                sampleRate = "1 hz";
+                sampleRate = "1"; // hz
                 break;
 
             case "ambient light":
-                sampleRate = "2 hz";
+                sampleRate = "2"; // hz
                 break;
 
             case "barometer":
-                sampleRate = "1 hz";
+                sampleRate = "1"; // hz
                 break;
 
             case "GSR":
-                sampleRate = gsrSampleRateSelection + " hz";
+                sampleRate = gsrSampleRateSelection ; // hz
                 break;
 
             case "calories":
@@ -869,7 +917,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 //                break;
 
             case "gyroscope":
-                sampleRate = gyroSampleRateSelection + " hz";
+                sampleRate = gyroSampleRateSelection; // hz
                 break;
 
             case "pedometer":
@@ -877,11 +925,11 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 break;
 
             case "skin temperature":
-                sampleRate = "1 hz";
+                sampleRate = "1"; // hz
                 break;
 
             case "uv level":
-                sampleRate = "1 hz";
+                sampleRate = "1"; // hz
                 break;
 
         }
@@ -1060,7 +1108,6 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
             resetReadingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             mContext.sendBroadcast(resetReadingsIntent);
         }
-
 
     }
 }
