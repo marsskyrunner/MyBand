@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity{
     String timeStampPattern = "ddMMyyyy";
     String fileNameExtension = ".csv";
     String displayDate ;
+    String labelPrefix = "";
     String filename  ;
 
     @Override
@@ -102,8 +103,7 @@ public class MainActivity extends AppCompatActivity{
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
 
         date = new Date();
-        displayDate = new SimpleDateFormat(timeStampPattern).format(date);;
-
+        displayDate = new SimpleDateFormat("yyMMdd_HHmmSS").format(date);
 
         settingsButton = (ImageButton) findViewById(R.id.settigs_imagebutton);
         settingsButton.setOnClickListener(new View.OnClickListener() {
@@ -272,17 +272,7 @@ public class MainActivity extends AppCompatActivity{
 
         // the name of the file to export with
 
-        try{
-
-            displayDate = new SimpleDateFormat(timeStampPattern).format(date);
-
-        }catch(Exception ex){
-
-            displayDate = timeStampPattern;
-            Log.e(LOG_TAG,"getCsvOutputFile: " + ex.toString());
-        }
-
-        filename =  displayDate + fileNameExtension;
+        filename =  labelPrefix + displayDate + fileNameExtension;
 
         Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
 
@@ -1309,44 +1299,31 @@ public class MainActivity extends AppCompatActivity{
             setContentView(R.layout.edit_label_dialog);
 
             final EditText datePatternEditText = (EditText) findViewById(R.id.date_pattern);
-            datePatternEditText.setHint(displayDate);
+            datePatternEditText.setHint(labelPrefix);
+
+            TextView dateTextView = (TextView) findViewById(R.id.date_text_view);
+            dateTextView.setText(displayDate);
+
 
             Button okButton = (Button) findViewById(R.id.btnSave);
             okButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    String newPattern = datePatternEditText.getText().toString();
+                    String newPrefix = datePatternEditText.getText().toString();
 
-                    if (!TextUtils.isEmpty(newPattern)) {
+                    if (!TextUtils.isEmpty(newPrefix)) {
 
-                        try{
-
-                            displayDate = new SimpleDateFormat(newPattern).format(date);
-
-                        }catch(Exception ex){
-
-                            displayDate = newPattern ;
-
-                            Snackbar exSnackBar = Snackbar.make(mMainLayout,
-                                    R.string.stamp_pattern_error, Snackbar.LENGTH_SHORT);
-                            exSnackBar.show();
-
-                            Log.e(LOG_TAG,"btnSave: " + ex.toString());
-
-                        }
-
-                        timeStampPattern = newPattern;
+                        labelPrefix = newPrefix;
                     }
 
-                    if (!TextUtils.isEmpty(newPattern) ) {
+                    if (!TextUtils.isEmpty(newPrefix) ) {
                         Toast.makeText(MainActivity.this,"Label changed.",Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(MainActivity.this,"No changes made.",Toast.LENGTH_SHORT).show();
                     }
 
                     cancel();
-
 
                 }
             });
