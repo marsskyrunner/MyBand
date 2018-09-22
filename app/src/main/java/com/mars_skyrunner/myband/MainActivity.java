@@ -1322,9 +1322,11 @@ public class MainActivity extends AppCompatActivity{
 
                         try{
 
-                            new SimpleDateFormat(newPattern).format(date);
+                            displayDate = new SimpleDateFormat(newPattern).format(date);
 
                         }catch(Exception ex){
+
+                            displayDate = newPattern ;
 
                             Snackbar exSnackBar = Snackbar.make(mMainLayout,
                                     R.string.stamp_pattern_error, Snackbar.LENGTH_SHORT);
