@@ -88,7 +88,7 @@ public  final class SensorReadingContract {
          *
          * Type: TEXT
          */
-        public final static String COLUMN_READING_DAY ="day";
+        public final static String COLUMN_READING_DAY ="DAY";
 
 
 
@@ -98,7 +98,7 @@ public  final class SensorReadingContract {
          *
          * Type: TEXT
          */
-        public final static String COLUMN_READING_MONTH = "month";
+        public final static String COLUMN_READING_MONTH = "MONTH";
 
 
         /**
@@ -106,7 +106,7 @@ public  final class SensorReadingContract {
          *
          * Type: TEXT
          */
-        public final static String COLUMN_READING_YEAR = "year";
+        public final static String COLUMN_READING_YEAR = "YEAR";
 
 
         /**

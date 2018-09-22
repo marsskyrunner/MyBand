@@ -102,13 +102,14 @@ public class SensorReading implements Parcelable {
 
 
     public SensorReading(Context context, String sensorName, String sensorReading, String rate, long time){
+
         mContext = context;
         mSensorName = sensorName;
         mSensorReading = sensorReading;
         mSensorReadingRate = rate;
 
         mSensorReadingYear = new SimpleDateFormat("yyyy").format(time);
-        mSensorReadingMonth = new SimpleDateFormat("MMM").format(time);
+        mSensorReadingMonth = new SimpleDateFormat("MM").format(time);
         mSensorReadingDay = new SimpleDateFormat("dd").format(time);
 
         mSensorReadingHH = new SimpleDateFormat("HH").format(time);
