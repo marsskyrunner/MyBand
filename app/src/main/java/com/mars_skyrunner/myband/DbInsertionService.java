@@ -49,8 +49,16 @@ public class DbInsertionService extends IntentService {
         // and sensorReadings values are the values.
 
         ContentValues values = new ContentValues();
-        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_DATE, receivedSensor.getSensorReadingDate());
-        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_TIME, receivedSensor.getSensorReadingTime());
+        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_YEAR, receivedSensor.getmSensorReadingYear());
+        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_MONTH, receivedSensor.getmSensorReadingMonth());
+        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_DAY, receivedSensor.getmSensorReadingDay());
+
+        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_HH, receivedSensor.getmSensorReadingHH());
+        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_MM, receivedSensor.getmSensorReadingMM());
+        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_SS, receivedSensor.getmSensorReadingSS());
+
+
+
         values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_NAME, receivedSensor.getSensorName());
         values.put(SensorReadingContract.ReadingEntry.COLUMN_SAMPLE_RATE,  receivedSensor.getSensorReadingRate());
         values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE, receivedSensor.getSensorReading());
