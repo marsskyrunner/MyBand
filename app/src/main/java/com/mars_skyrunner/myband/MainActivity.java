@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.security.Provider;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,6 +83,8 @@ public class MainActivity extends AppCompatActivity{
     String displayDate ;
     String labelPrefix = "";
     String filename  ;
+
+    File outputDirectory = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -936,10 +939,17 @@ public class MainActivity extends AppCompatActivity{
                 Log.v(LOG_TAG, "resolveActivity NO");
             }
 
+
         }
     }
 
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.v(LOG_TAG,"onActivityResult");
+    }
 
     private LoaderManager.LoaderCallbacks<ConnectionState> bandSensorSubscriptionLoader
 
@@ -1051,6 +1061,13 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
 
+
+            //TODO: PARA SEPARAR EN DIFERENTES ARCHIVOS, PRIMERO MANDAR LLAMAR  A TODOS LOS REGISTROS
+            //QUE TENGAN FECUENCIA DE 1HZ Y CREAR CSV, DESPUES LOS DE 2 , Y ASI SUCESIVAMENTE HASTA
+            //QUE SE HAYAN CREADO LOS CSVS PARA CADA FRECUENCIA, ENTONCES ABRIR ARCHIVO
+            //TODO: EN EL SNACKBAR, MANDAR A ABRIR LA CARPETA DESTINO, EN VEZ DEL ARCHIVO , DE ESA
+            //MANERA, SE PODRAN VER TODOS LOS ARCHIVOS CSVS CREADOS
+
             Log.v(LOG_TAG, "saveDataCursorLoader: onCreateLoader");
 
             showLoadingView(true);
@@ -1058,7 +1075,6 @@ public class MainActivity extends AppCompatActivity{
             // Define a projection that specifies the columns from the table we care about.
             String[] projection = {
                     ReadingEntry._ID,
-
 
 
 
@@ -1078,12 +1094,14 @@ public class MainActivity extends AppCompatActivity{
             String sortOrder = ReadingEntry._ID;
 
             // This loader will execute the ContentProvider's query method on a background thread
+            String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=?";
+            String[] selectionArgs = { "1" };
 
             return new CursorLoader(MainActivity.this,   // Parent activity context
                     ReadingEntry.CONTENT_URI,   // Provider content URI to query
                     projection,             // Columns to include in the resulting Cursor
-                    null,                   //  selection clause
-                    null,                   //  selection arguments
+                    selection,                   //  selection clause
+                    selectionArgs,                   //  selection arguments
                     sortOrder);                  //  sort order
 
         }
@@ -1098,8 +1116,8 @@ public class MainActivity extends AppCompatActivity{
             switch (loader.getId()) {
                 case Constants.CREATE_CSV_LOADER:
 
-                    File dir = getOutputDirectory();
-                    saveFile = getCsvOutputFile(dir, date);
+                    outputDirectory = getOutputDirectory();
+                    saveFile = getCsvOutputFile(outputDirectory, date);
 
                     FileWriter fw = null;
 
@@ -1184,7 +1202,7 @@ public class MainActivity extends AppCompatActivity{
 
                             //shows "OPEN CSV" action on a snackbar
                             Snackbar mySnackbar = Snackbar.make(mMainLayout,
-                                    R.string.open_csv_file, Snackbar.LENGTH_LONG);
+                                    R.string.open_folder, Snackbar.LENGTH_LONG);
                             mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
                             mySnackbar.show();
 

@@ -38,4 +38,5 @@
     <string name="file_label_prefix">prefix</string>
     <string name="file_label_date_pattern">date pattern</string>
     <string name="stamp_pattern_error">Date pattern error.</string>
+    <string name="open_folder">Open folder</string>
 </resources>
