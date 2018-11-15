@@ -39,11 +39,11 @@ public class DbInsertionService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        Log.v(LOG_TAG,"onHandleIntent"  );
+        //Log.v(LOG_TAG,"onHandleIntent"  );
 
         SensorReading receivedSensor = intent.getParcelableExtra(Constants.SERVICE_EXTRA);
 
-        Log.v(LOG_TAG,"receivedSensor: " + receivedSensor.getSensorName() );
+        //Log.v(LOG_TAG,"receivedSensor: " + receivedSensor.getSensorName() );
 
         // Create a ContentValues object where column names are the keys,
         // and sensorReadings values are the values.
@@ -99,7 +99,7 @@ public class DbInsertionService extends IntentService {
 
 
         // If the new content URI is null, then there was an error with insertion.
-        Log.w(LOG_TAG,"newUri:" + result);
+        //Log.w(LOG_TAG,"newUri:" + result);
 
 
 

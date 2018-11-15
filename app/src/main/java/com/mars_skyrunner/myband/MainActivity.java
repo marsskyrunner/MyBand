@@ -86,6 +86,8 @@ public class MainActivity extends AppCompatActivity{
 
     File outputDirectory = null;
 
+    int csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -228,10 +230,9 @@ public class MainActivity extends AppCompatActivity{
         //Register broadcast receiver to save SensorReading objects from BandSensorsSubscriptionLoader
         registerReceiver(sensorReadingObjectReceiver, new IntentFilter(Constants.SENSOR_READING_OBJECT_RECEIVER));
 
-
-        //Register broadcast receiver to save SensorReading objects from BandSensorsSubscriptionLoader
+        //Register broadcast receiver to create csv file from BandConnectionService
+        //in case that MS band has been disconnected while recording data
         registerReceiver(createCSVReceiver, new IntentFilter(Constants.CREATE_CSV_RECEIVER));
-
 
 
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
@@ -271,11 +272,11 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
-    private File getCsvOutputFile(File dir, Date date) {
+    private File getCsvOutputFile(File dir, String samplingRate) {
 
         // the name of the file to export with
 
-        filename =  labelPrefix + displayDate + fileNameExtension;
+        filename =  labelPrefix + displayDate + samplingRate + fileNameExtension;
 
         Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
 
@@ -859,15 +860,16 @@ public class MainActivity extends AppCompatActivity{
     };
 
 
-
-
-
     private BroadcastReceiver  createCSVReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
 
             Log.v(LOG_TAG,"createCSVReceiver onReceive");
+
+            csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
+
+            Log.v(LOG_TAG,"csvFileCounter: " + csvFileCounter);
 
             // Kick off saveDataCursorLoader
             getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
@@ -905,8 +907,8 @@ public class MainActivity extends AppCompatActivity{
             String sensor = intent.getStringExtra(Constants.SENSOR);
             String value = intent.getStringExtra(Constants.VALUE);
 
-            Log.v(LOG_TAG, "displayVaueReceiver: sensor: " + sensor);
-            Log.v(LOG_TAG, "displayVaueReceiver: value: " + value);
+            //Log.v(LOG_TAG, "displayVaueReceiver: sensor: " + sensor);
+            //Log.v(LOG_TAG, "displayVaueReceiver: value: " + value);
 
             appendToUI(value,sensor);
 
@@ -1061,7 +1063,6 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
 
-
             //TODO: PARA SEPARAR EN DIFERENTES ARCHIVOS, PRIMERO MANDAR LLAMAR  A TODOS LOS REGISTROS
             //QUE TENGAN FECUENCIA DE 1HZ Y CREAR CSV, DESPUES LOS DE 2 , Y ASI SUCESIVAMENTE HASTA
             //QUE SE HAYAN CREADO LOS CSVS PARA CADA FRECUENCIA, ENTONCES ABRIR ARCHIVO
@@ -1070,17 +1071,10 @@ public class MainActivity extends AppCompatActivity{
 
             Log.v(LOG_TAG, "saveDataCursorLoader: onCreateLoader");
 
-            showLoadingView(true);
 
             // Define a projection that specifies the columns from the table we care about.
             String[] projection = {
                     ReadingEntry._ID,
-
-
-
-
-
-
                     ReadingEntry.COLUMN_READING_YEAR,
                     ReadingEntry.COLUMN_READING_MONTH,
                     ReadingEntry.COLUMN_READING_DAY,
@@ -1095,7 +1089,11 @@ public class MainActivity extends AppCompatActivity{
 
             // This loader will execute the ContentProvider's query method on a background thread
             String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=?";
-            String[] selectionArgs = { "1" };
+
+            Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
+            Log.v(LOG_TAG, "COLUMN_SAMPLE_RATE : " + Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
+
+            String[] selectionArgs = { Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]};
 
             return new CursorLoader(MainActivity.this,   // Parent activity context
                     ReadingEntry.CONTENT_URI,   // Provider content URI to query
@@ -1111,29 +1109,29 @@ public class MainActivity extends AppCompatActivity{
 
             Log.v(LOG_TAG, "saveDataCursorLoader: onLoadFinished");
 
-            showLoadingView(false);
-
             switch (loader.getId()) {
                 case Constants.CREATE_CSV_LOADER:
 
                     outputDirectory = getOutputDirectory();
-                    saveFile = getCsvOutputFile(outputDirectory, date);
+
+                    String srLabel = getSensorSRlabel(Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
+
+                    Log.v(LOG_TAG,"srLabel: " + srLabel);
 
                     FileWriter fw = null;
 
                     try {
 
-                        fw = new FileWriter(saveFile);
-
-                        BufferedWriter bw = new BufferedWriter(fw);
-
                         int rowcount = c.getCount();
                         int colcount = c.getColumnCount();
 
-                        //Log.w(LOG_TAG, "rowcount: " + rowcount);
-                        //Log.w(LOG_TAG, "colcount: " + colcount);
-
                         if (rowcount > 0) {
+
+                            saveFile = getCsvOutputFile(outputDirectory, srLabel);
+
+                            fw = new FileWriter(saveFile);
+
+                            BufferedWriter bw = new BufferedWriter(fw);
 
                             c.moveToFirst();
 
@@ -1173,7 +1171,6 @@ public class MainActivity extends AppCompatActivity{
                                         fileValue = cellValue;
                                     }
 
-                                    //Log.w(LOG_TAG, "fileValue: " + fileValue);
                                     bw.write(fileValue);
 
                                 }
@@ -1185,11 +1182,6 @@ public class MainActivity extends AppCompatActivity{
 
                             Log.w(LOG_TAG, "Datapoint Exported Successfully.");
 
-                            showLoadingView(false);
-
-                            //Show success message
-                            Toast.makeText(MainActivity.this, getString(R.string.sensor_data_saving_success), Toast.LENGTH_SHORT).show();
-
 
                             //If SaveDatapoint button is clicked while MSBand still connected, it saves the
                             //newest values
@@ -1200,11 +1192,7 @@ public class MainActivity extends AppCompatActivity{
                             //CSV file viewer, it does not create a new one
                             getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
 
-                            //shows "OPEN CSV" action on a snackbar
-                            Snackbar mySnackbar = Snackbar.make(mMainLayout,
-                                    R.string.open_folder, Snackbar.LENGTH_LONG);
-                            mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
-                            mySnackbar.show();
+
 
 
                         }
@@ -1214,6 +1202,24 @@ public class MainActivity extends AppCompatActivity{
                         Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
                     }
                     break;
+            }
+
+            Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
+
+            if(csvFileCounter == 1){
+
+                showLoadingView(false);
+                //shows "OPEN CSV" action on a snackbar
+                Snackbar mySnackbar = Snackbar.make(mMainLayout,
+                        R.string.open_folder, Snackbar.LENGTH_LONG);
+                mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
+                mySnackbar.show();
+
+            }else{
+
+                csvFileCounter -= 1 ;
+                // Kick off saveDataCursorLoader
+                getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
             }
 
         }
@@ -1227,9 +1233,49 @@ public class MainActivity extends AppCompatActivity{
 
     };
 
+    private String getSensorSRlabel(String sensorSR) {
+
+        String label = "";
+
+        switch(sensorSR){
+
+            case Constants.SR_1:
+                label = "SR1";
+                break;
+
+            case Constants.SR_2:
+                label = "SR2";
+                break;
+
+            case Constants.SR_5:
+                label = "SR5";
+                break;
+
+            case Constants.SR_8:
+                label = "SR8";
+                break;
+
+            case Constants.SR_31:
+                label = "SR31";
+                break;
+
+            case Constants.SR_62:
+                label = "SR62";
+                break;
+
+            case Constants.SR_02:
+                label = "SR02";
+                break;
+
+            case Constants.SR_VALUE_CHANGE:
+                label = "SRVC";
+                break;
 
 
+        }
 
+        return label;
+    }
 
 
     public class SaveButton extends android.support.v7.widget.AppCompatImageButton implements Checkable {
@@ -1243,7 +1289,7 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public void setChecked(boolean b) {
             isChecked = b;
-            Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
+            //Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
 
             if(b){
                 // reset temporary table
@@ -1251,7 +1297,11 @@ public class MainActivity extends AppCompatActivity{
 
             }else{
 
-                Log.v(LOG_TAG,"SaveButton " + b + " , bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+                //Log.v(LOG_TAG,"SaveButton " + b + " , bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+
+                csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
+
+                Log.v(LOG_TAG,"csvFileCounter: " + csvFileCounter);
 
                 if(bandSubscriptionTaskRunning){
 
