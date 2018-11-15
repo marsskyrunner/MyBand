@@ -276,7 +276,7 @@ public class MainActivity extends AppCompatActivity{
 
         // the name of the file to export with
 
-        filename =  labelPrefix + displayDate + samplingRate + fileNameExtension;
+        filename =  labelPrefix + displayDate + "_"+ samplingRate + fileNameExtension;
 
         Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
 
@@ -1112,12 +1112,6 @@ public class MainActivity extends AppCompatActivity{
             switch (loader.getId()) {
                 case Constants.CREATE_CSV_LOADER:
 
-                    outputDirectory = getOutputDirectory();
-
-                    String srLabel = getSensorSRlabel(Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
-
-                    Log.v(LOG_TAG,"srLabel: " + srLabel);
-
                     FileWriter fw = null;
 
                     try {
@@ -1126,6 +1120,12 @@ public class MainActivity extends AppCompatActivity{
                         int colcount = c.getColumnCount();
 
                         if (rowcount > 0) {
+
+                            outputDirectory = getOutputDirectory();
+
+                            String srLabel = getSensorSRlabel(Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
+
+                            Log.v(LOG_TAG,"srLabel: " + srLabel);
 
                             saveFile = getCsvOutputFile(outputDirectory, srLabel);
 
@@ -1206,7 +1206,7 @@ public class MainActivity extends AppCompatActivity{
 
             Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
 
-            if(csvFileCounter == 1){
+            if(csvFileCounter == 0){
 
                 showLoadingView(false);
                 //shows "OPEN CSV" action on a snackbar
@@ -1315,7 +1315,7 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public boolean isChecked() {
 
-            Log.v(LOG_TAG,"SaveButton: isChecked: " + isChecked);
+            //Log.v(LOG_TAG,"SaveButton: isChecked: " + isChecked);
 
             return isChecked;
         }
@@ -1323,7 +1323,7 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public void toggle() {
 
-            Log.v(LOG_TAG,"SaveButton: toggle");
+            //Log.v(LOG_TAG,"SaveButton: toggle");
 
         }
 

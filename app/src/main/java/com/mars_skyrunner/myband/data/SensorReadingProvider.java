@@ -75,10 +75,10 @@ public class SensorReadingProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
 
-        Log.w(LOG_TAG, "Cursor query ");
+        //Log.w(LOG_TAG, "Cursor query ");
 
         String projectionString = "";
-        Log.w(LOG_TAG, "projection.length:  " + projection.length);
+        //Log.w(LOG_TAG, "projection.length:  " + projection.length);
 
         for(int i = 0; i < projection.length ; i++ ){
 
@@ -87,7 +87,7 @@ public class SensorReadingProvider extends ContentProvider {
         }
 
 
-        Log.w(LOG_TAG, "projectionString:  " + projectionString);
+        //Log.w(LOG_TAG, "projectionString:  " + projectionString);
 
         // Get readable database
         SQLiteDatabase database = mDbHelper.getReadableDatabase();
