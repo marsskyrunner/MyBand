@@ -1,5 +1,7 @@
 package com.mars_skyrunner.myband;
 
+import java.util.ArrayList;
+
 public class Constants {
 
 
@@ -56,6 +58,23 @@ public class Constants {
 
     public static final String INSERT_SENSOR_READING = packageName + ".INSERT_SENSOR_READING";
     public static final String CREATE_CSV_RECEIVER = packageName + ".CREATE_CSV_RECEIVER";
+
+    public static final String SR_1 = "1";
+    public static final String SR_2 = "2";
+    public static final String SR_VALUE_CHANGE = "Value change";
+    public static final String SR_8 = "8";
+    public static final String SR_31 = "31";
+    public static final String SR_62 = "62";
+    public static final String SR_5 = "5";
+    public static final String SR_02 = "0.2";
+
+    public static final String[] SAMPLE_RATE_OPTIONS ={
+
+            SR_1,SR_2,SR_5,SR_8,SR_31,SR_62,SR_02,SR_VALUE_CHANGE
+
+    };
+
+
 
 
     public Constants(){
