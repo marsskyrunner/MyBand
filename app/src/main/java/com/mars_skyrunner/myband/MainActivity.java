@@ -1063,12 +1063,6 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
 
-            //TODO: PARA SEPARAR EN DIFERENTES ARCHIVOS, PRIMERO MANDAR LLAMAR  A TODOS LOS REGISTROS
-            //QUE TENGAN FECUENCIA DE 1HZ Y CREAR CSV, DESPUES LOS DE 2 , Y ASI SUCESIVAMENTE HASTA
-            //QUE SE HAYAN CREADO LOS CSVS PARA CADA FRECUENCIA, ENTONCES ABRIR ARCHIVO
-            //TODO: EN EL SNACKBAR, MANDAR A ABRIR LA CARPETA DESTINO, EN VEZ DEL ARCHIVO , DE ESA
-            //MANERA, SE PODRAN VER TODOS LOS ARCHIVOS CSVS CREADOS
-
             Log.v(LOG_TAG, "saveDataCursorLoader: onCreateLoader");
 
 
@@ -1211,8 +1205,8 @@ public class MainActivity extends AppCompatActivity{
                 showLoadingView(false);
                 //shows "OPEN CSV" action on a snackbar
                 Snackbar mySnackbar = Snackbar.make(mMainLayout,
-                        R.string.open_folder, Snackbar.LENGTH_LONG);
-                mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
+                        "Files saved at" + outputDirectory.getAbsolutePath().toString(), Snackbar.LENGTH_LONG);
+                //mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
                 mySnackbar.show();
 
             }else{
