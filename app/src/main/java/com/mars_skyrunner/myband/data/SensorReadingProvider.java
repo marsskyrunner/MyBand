@@ -229,9 +229,9 @@ public class SensorReadingProvider extends ContentProvider {
 
 
         // Check that the sensorName is not null
-        String sensorName = values.getAsString(ReadingEntry.COLUMN_SENSOR_NAME);
+        String sensorName = values.getAsString(ReadingEntry.COLUMN_SENSOR_ID);
         if (sensorName == null) {
-            throw new IllegalArgumentException("SensorReading requires a sensor name");
+            throw new IllegalArgumentException("SensorReading requires a sensor id");
         }
 
         // Check that the sensorName is not null
@@ -393,10 +393,10 @@ public class SensorReadingProvider extends ContentProvider {
 
         }
 
-        // If the {@link ReadingEntry#COLUMN_SENSOR_NAME} key is present,
+        // If the {@link ReadingEntry#_COLUMN_SENSOR_ID} key is present,
         // check that the time text is not null.
-        if (values.containsKey(ReadingEntry.COLUMN_SENSOR_NAME)) {
-            String text = values.getAsString(ReadingEntry.COLUMN_SENSOR_NAME);
+        if (values.containsKey(ReadingEntry.COLUMN_SENSOR_ID)) {
+            String text = values.getAsString(ReadingEntry.COLUMN_SENSOR_ID);
             if (text == null) {
                 throw new IllegalArgumentException("SensorReading requires a sensor name");
             }

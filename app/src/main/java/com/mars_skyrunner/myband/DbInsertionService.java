@@ -59,7 +59,7 @@ public class DbInsertionService extends IntentService {
 
 
 
-        values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_NAME, receivedSensor.getSensorName());
+        values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_ID, receivedSensor.getSensorID());
         values.put(SensorReadingContract.ReadingEntry.COLUMN_SAMPLE_RATE,  receivedSensor.getSensorReadingRate());
         values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE, receivedSensor.getSensorReading());
 

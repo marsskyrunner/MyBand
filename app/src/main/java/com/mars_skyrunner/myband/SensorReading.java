@@ -9,11 +9,78 @@ import java.text.SimpleDateFormat;
 public class SensorReading implements Parcelable {
 
     public String getSensorName() {
-        return mSensorName;
-    }
 
-    public void setSensorName(String mSensorName) {
-        this.mSensorName = mSensorName;
+        switch(mSensorID){
+
+
+
+            case Constants.HEART_RATE_SENSOR_ID:
+
+                return Constants.HEART_RATE_SENSOR_LABEL;
+
+            case Constants.RR_INTERVAL_SENSOR_ID:
+
+                return Constants.RR_INTERVAL_SENSOR_LABEL;
+
+            case Constants.ACCELEROMETER_SENSOR_ID:
+
+                return Constants.ACCELEROMETER_SENSOR_LABEL;
+
+            case Constants.ALTIMETER_SENSOR_ID:
+
+                return Constants.ALTIMETER_SENSOR_LABEL;
+
+            case Constants.AMBIENT_LIGHT_SENSOR_ID:
+
+                return Constants.AMBIENT_LIGHT_SENSOR_LABEL;
+
+            case Constants.BAROMETER_SENSOR_ID:
+
+                return Constants.BAROMETER_SENSOR_LABEL;
+
+            case Constants.GSR_SENSOR_ID:
+
+                return Constants.GSR_SENSOR_LABEL;
+
+            case Constants.CALORIES_SENSOR_ID:
+
+                return Constants.CALORIES_SENSOR_LABEL;
+
+            case Constants.DISTANCE_SENSOR_ID:
+
+                return Constants.DISTANCE_SENSOR_LABEL;
+
+            case Constants.GYROSCOPE_SENSOR_ID:
+
+                return Constants.GYROSCOPE_SENSOR_LABEL;
+
+            case Constants.PEDOMETER_SENSOR_ID:
+
+                return Constants.PEDOMETER_SENSOR_LABEL;
+
+            case Constants.SKIN_TEMPERATURE_SENSOR_ID:
+
+                return Constants.SKIN_TEMPERATURE_SENSOR_LABEL;
+
+            case Constants.UV_LEVEL_SENSOR_ID:
+
+                return Constants.UV_LEVEL_SENSOR_LABEL;
+
+            case Constants.BAND_STATUS_SENSOR_ID:
+
+                return Constants.BAND_STATUS_SENSOR_LABEL;
+
+            case Constants.BAND_CONTACT_SENSOR_ID:
+
+                return Constants.BAND_CONTACT_SENSOR_LABEL;
+
+
+
+
+
+        }
+
+        return null;
     }
 
     public String getSensorReading() {
@@ -30,7 +97,7 @@ public class SensorReading implements Parcelable {
     }
 
     String mSensorReadingRate;
-    String mSensorName;
+    int mSensorID;
     String mSensorReading;
 
     Context mContext;
@@ -93,18 +160,18 @@ public class SensorReading implements Parcelable {
     String mSensorReadingSS;
 
 
-    public SensorReading(Context context, String sensorName, String sensorReading){
+    public SensorReading(Context context, int sensorID, String sensorReading){
         mContext = context;
-        mSensorName = sensorName;
+        mSensorID = sensorID;
         mSensorReading = sensorReading;
     }
 
 
 
-    public SensorReading(Context context, String sensorName, String sensorReading, String rate, long time){
+    public SensorReading(Context context, int sensorID, String sensorReading, String rate, long time){
 
         mContext = context;
-        mSensorName = sensorName;
+        mSensorID = sensorID;
         mSensorReading = sensorReading;
         mSensorReadingRate = rate;
 
@@ -121,7 +188,7 @@ public class SensorReading implements Parcelable {
 
     protected SensorReading(Parcel in) {
         mSensorReadingRate = in.readString();
-        mSensorName = in.readString();
+        mSensorID = in.readInt();
         mSensorReading = in.readString();
 
 
@@ -143,7 +210,7 @@ public class SensorReading implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mSensorReadingRate);
-        dest.writeString(mSensorName);
+        dest.writeInt(mSensorID);
         dest.writeString(mSensorReading);
 
 
@@ -169,4 +236,8 @@ public class SensorReading implements Parcelable {
             return new SensorReading[size];
         }
     };
+
+    public int  getSensorID() {
+        return mSensorID;
+    }
 }

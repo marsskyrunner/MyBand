@@ -56,7 +56,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     public static BandClient client = null;
     final String LOG_TAG = "MainActivity";
@@ -80,9 +80,9 @@ public class MainActivity extends AppCompatActivity{
 
     String timeStampPattern = "ddMMyyyy";
     String fileNameExtension = ".csv";
-    String displayDate ;
+    String displayDate;
     String labelPrefix = "";
-    String filename  ;
+    String filename;
 
     File outputDirectory = null;
 
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.w(LOG_TAG,"onCreate()");
+        Log.w(LOG_TAG, "onCreate()");
 
         setTheme(R.style.AppTheme_NoActionBar);
 
@@ -114,19 +114,20 @@ public class MainActivity extends AppCompatActivity{
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               new EditLabelDialog(MainActivity.this).show();;
+                new EditLabelDialog(MainActivity.this).show();
+                ;
 
             }
         });
 
-        saveButtonHolder =  (FrameLayout) findViewById(R.id.save_button_holder);
+        saveButtonHolder = (FrameLayout) findViewById(R.id.save_button_holder);
 
         saveDataButton = new SaveButton(this);
         saveDataButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_system_update_alt_white_24dp));
         saveButtonHolder.addView(saveDataButton);
 
         toggle = (ToggleButton) findViewById(R.id.togglebutton);
-        holder =  (FrameLayout) findViewById(R.id.toggle_button_holder);
+        holder = (FrameLayout) findViewById(R.id.toggle_button_holder);
 
         toggle.setTextOff(getResources().getString(R.string.start));
         toggle.setTextOn(getResources().getString(R.string.stop));
@@ -138,12 +139,12 @@ public class MainActivity extends AppCompatActivity{
 
                 if (isChecked) {
                     // The toggle is enabled
-                    Log.v(LOG_TAG,"ToggleButton startButtonClicked()");
+                    Log.v(LOG_TAG, "ToggleButton startButtonClicked()");
 
                     holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
                     clearSensorTextViews();
 
-                    if(!bandSubscriptionTaskRunning){
+                    if (!bandSubscriptionTaskRunning) {
 
                         // Kick off the  loader
                         getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity{
 
                 } else {
                     // The toggle is disabled
-                    Log.v(LOG_TAG,"ToggleButton stopButtonClicked()");
+                    Log.v(LOG_TAG, "ToggleButton stopButtonClicked()");
 
                     bandSubscriptionTaskRunning = false;
                     holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
@@ -171,9 +172,9 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
 
-                Log.w(LOG_TAG, "saveDataButton : " +bandSubscriptionTaskRunning);
+                Log.v(LOG_TAG, "saveDataButton : " + bandSubscriptionTaskRunning);
 
-                Log.w(LOG_TAG, "saveDataButton isChecked(): " +saveDataButton.isChecked() );
+                Log.v(LOG_TAG, "saveDataButton isChecked(): " + saveDataButton.isChecked());
 
                 if (bandSubscriptionTaskRunning) {
 
@@ -183,29 +184,30 @@ public class MainActivity extends AppCompatActivity{
 
                     for (SensorReading sr : sensorReadings) {
 
-                        if(!sr.getSensorName().equals("band contact")){
-                            SensorReadingView sensorReadingView = getSensorReadingView(sr);
+                        Log.v(LOG_TAG, "Check checkbox of " + sr.getSensorName());
 
-                            Log.v(LOG_TAG,sr.getSensorName() + " : " + sensorReadingView.getSensorCheckBox().isChecked());
+                        SensorReadingView sensorReadingView = getSensorReadingView(sr);
 
-                            if (sensorReadingView.getSensorCheckBox().isChecked()) {
+                        Log.v(LOG_TAG, sr.getSensorName() + " : " + sensorReadingView.getSensorCheckBox().isChecked());
 
-                                sensorSelected = true;
+                        if (sensorReadingView.getSensorCheckBox().isChecked()) {
 
-                            }
+                            sensorSelected = true;
+
                         }
+
 
                     }
 
-                    if(!sensorSelected){
+                    if (!sensorSelected) {
                         stopButtonClicked();
                         //Band is connected, but no sensor is selected to take any data point
                         Toast.makeText(MainActivity.this, getResources().getString(R.string.no_data_point), Toast.LENGTH_SHORT).show();
 
-                    }else{
-                        if(saveDataButton.isChecked()){
+                    } else {
+                        if (saveDataButton.isChecked()) {
                             resetSaveDataButton();
-                        }else{
+                        } else {
                             saveDataButton.setChecked(true);
                             saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_on));
                         }
@@ -245,7 +247,7 @@ public class MainActivity extends AppCompatActivity{
         holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
         clearSensorTextViews();
 
-        if(!bandSubscriptionTaskRunning){
+        if (!bandSubscriptionTaskRunning) {
 
             // Kick off the  loader
             getLoaderManager().restartLoader(Constants.BAND_SUSCRIPTION_LOADER, null, bandSensorSubscriptionLoader);
@@ -276,7 +278,7 @@ public class MainActivity extends AppCompatActivity{
 
         // the name of the file to export with
 
-        filename =  labelPrefix + displayDate + "_"+ samplingRate + fileNameExtension;
+        filename = labelPrefix + displayDate + "_" + samplingRate + fileNameExtension;
 
         Log.v(LOG_TAG, "getCsvOutputFile: filename: " + filename);
 
@@ -336,89 +338,6 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    private String getSensorSampleRate(SensorReading sr) {
-
-        String value = "";
-        int resourceID = 0;
-
-        //Log.v(LOG_TAG, "getSensorSampleRate: sr.getSensorName(): " + sr.getSensorName());
-
-        switch (sr.getSensorName()) {
-            case "heart rate":
-                resourceID = R.id.heart_rate_sensorview;
-                break;
-
-            case "rr interval":
-                resourceID = R.id.rr_interval_sensorview;
-                break;
-
-            case "accelerometer":
-                resourceID = R.id.accelerometer_sensorview;
-                break;
-
-            case "altimeter":
-                resourceID = R.id.altimeter_sensorview;
-                break;
-
-            case "ambient light":
-                resourceID = R.id.ambient_light_sensorview;
-                break;
-
-            case "barometer":
-                resourceID = R.id.barometer_sensorview;
-                break;
-
-            case "GSR":
-                resourceID = R.id.gsr_sensorview;
-                break;
-
-            case "calories":
-                resourceID = R.id.calories_sensorview;
-                break;
-
-            case "distance":
-                resourceID = R.id.distance_sensorview;
-                break;
-
-//            case "band contact":
-//                resourceID = R.id.band_contact_sensorview;
-//                break;
-
-            case "gyroscope":
-                resourceID = R.id.gyroscope_sensorview;
-                break;
-
-            case "pedometer":
-                resourceID = R.id.pedometer_sensorview;
-                break;
-
-            case "skin temperature":
-                resourceID = R.id.skin_temperature_sensorview;
-                break;
-
-            case "uv level":
-                resourceID = R.id.uv_sensorview;
-                break;
-
-            default:
-                resourceID = 0;
-                break;
-        }
-
-        SensorReadingView sensorReadingView = null;
-
-        if (resourceID != 0) {
-            sensorReadingView = findViewById(resourceID);
-            value = sensorReadingView.getSampleRate();
-        }
-
-
-        //Log.v(LOG_TAG, "getSensorSampleRate: " + value);
-
-        return value;
-    }
-
-
     private SensorReadingView getSensorReadingView(SensorReading sr) {
 
         String value;
@@ -427,59 +346,60 @@ public class MainActivity extends AppCompatActivity{
         //Log.v(LOG_TAG,"getSensorReadingView: sr.getSensorName(): " + sr.getSensorName());
 
         switch (sr.getSensorName()) {
-            case "heart rate":
+            case Constants.HEART_RATE_SENSOR_LABEL:
                 resourceID = R.id.heart_rate_sensorview;
                 break;
 
-            case "rr interval":
+            case Constants.RR_INTERVAL_SENSOR_LABEL:
                 resourceID = R.id.rr_interval_sensorview;
                 break;
 
-            case "accelerometer":
+
+            case Constants.ACCELEROMETER_SENSOR_LABEL:
                 resourceID = R.id.accelerometer_sensorview;
                 break;
 
-            case "altimeter":
+            case Constants.ALTIMETER_SENSOR_LABEL:
                 resourceID = R.id.altimeter_sensorview;
                 break;
 
-            case "ambient light":
+            case Constants.AMBIENT_LIGHT_SENSOR_LABEL:
                 resourceID = R.id.ambient_light_sensorview;
                 break;
 
-            case "barometer":
+            case Constants.BAROMETER_SENSOR_LABEL:
                 resourceID = R.id.barometer_sensorview;
                 break;
 
-            case "GSR":
+            case Constants.GSR_SENSOR_LABEL:
                 resourceID = R.id.gsr_sensorview;
                 break;
 
-            case "calories":
+            case Constants.CALORIES_SENSOR_LABEL:
                 resourceID = R.id.calories_sensorview;
                 break;
 
-            case "distance":
+            case Constants.DISTANCE_SENSOR_LABEL:
                 resourceID = R.id.distance_sensorview;
                 break;
 
-//            case "band contact":
-//                resourceID = R.id.band_contact_sensorview;
-//                break;
+            case Constants.BAND_CONTACT_SENSOR_LABEL:
+                resourceID = R.id.band_contact_sensorview;
+                break;
 
-            case "gyroscope":
+            case Constants.GYROSCOPE_SENSOR_LABEL:
                 resourceID = R.id.gyroscope_sensorview;
                 break;
 
-            case "pedometer":
+            case Constants.PEDOMETER_SENSOR_LABEL:
                 resourceID = R.id.pedometer_sensorview;
                 break;
 
-            case "skin temperature":
+            case Constants.SKIN_TEMPERATURE_SENSOR_LABEL:
                 resourceID = R.id.skin_temperature_sensorview;
                 break;
 
-            case "uv level":
+            case Constants.UV_LEVEL_SENSOR_LABEL:
                 resourceID = R.id.uv_sensorview;
                 break;
 
@@ -503,30 +423,33 @@ public class MainActivity extends AppCompatActivity{
     private void initSensorListView() {
 
         sensorReadings = new ArrayList<>();
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.heart_rate), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.rr_interval), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.accelerometer), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.altimeter), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.ambient_light), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.barometer), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.gsr), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.calories), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.distance), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.contact), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.gyroscope), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.pedometer), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.skin_temperature), ""));
-        sensorReadings.add(new SensorReading(this, getResources().getString(R.string.uv), ""));
+        sensorReadings.add(new SensorReading(this, Constants.HEART_RATE_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.RR_INTERVAL_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.ACCELEROMETER_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.ALTIMETER_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.AMBIENT_LIGHT_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.BAROMETER_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.GSR_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.CALORIES_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.DISTANCE_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.GYROSCOPE_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.PEDOMETER_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.SKIN_TEMPERATURE_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.UV_LEVEL_SENSOR_ID, ""));
+        sensorReadings.add(new SensorReading(this, Constants.BAND_CONTACT_SENSOR_ID, ""));
 
         populateSensorList();
 
     }
 
     private void populateSensorList() {
+        Log.v(LOG_TAG, "populateSensorList() ");
 
 
         for (SensorReading sr : sensorReadings) {
 
+
+            Log.v(LOG_TAG, "SENSOR : " + sr.getSensorName());
             SensorReadingView v = new SensorReadingView(this, sr);
             mListView.addView(v);
 
@@ -537,59 +460,59 @@ public class MainActivity extends AppCompatActivity{
             View sensorView = mListView.getChildAt(i);
 
             switch (i) {
-                case Constants.HEART_RATE_SENSOR:
+                case Constants.HEART_RATE_SENSOR_ID - 1:
                     sensorView.setId(R.id.heart_rate_sensorview);
                     break;
 
-                case Constants.RR_INTERVAL_SENSOR:
+                case Constants.RR_INTERVAL_SENSOR_ID - 1:
                     sensorView.setId(R.id.rr_interval_sensorview);
                     break;
 
-                case Constants.ACCELEROMETER_SENSOR:
+                case Constants.ACCELEROMETER_SENSOR_ID - 1:
                     sensorView.setId(R.id.accelerometer_sensorview);
                     break;
 
-                case Constants.ALTIMETER_SENSOR:
+                case Constants.ALTIMETER_SENSOR_ID - 1:
                     sensorView.setId(R.id.altimeter_sensorview);
                     break;
 
-                case Constants.AMBIENT_LIGHT_SENSOR:
+                case Constants.AMBIENT_LIGHT_SENSOR_ID - 1:
                     sensorView.setId(R.id.ambient_light_sensorview);
                     break;
 
-                case Constants.BAROMETER_SENSOR:
+                case Constants.BAROMETER_SENSOR_ID - 1:
                     sensorView.setId(R.id.barometer_sensorview);
                     break;
 
-                case Constants.GSR_SENSOR:
+                case Constants.GSR_SENSOR_ID - 1:
                     sensorView.setId(R.id.gsr_sensorview);
                     break;
 
-                case Constants.CALORIES_SENSOR:
+                case Constants.CALORIES_SENSOR_ID - 1:
                     sensorView.setId(R.id.calories_sensorview);
                     break;
 
-                case Constants.DISTANCE_SENSOR:
+                case Constants.DISTANCE_SENSOR_ID - 1:
                     sensorView.setId(R.id.distance_sensorview);
                     break;
 
-                case Constants.BAND_CONTACT_SENSOR:
+                case Constants.BAND_CONTACT_SENSOR_ID - 1:
                     sensorView.setId(R.id.contact_sensorview);
                     break;
 
-                case Constants.GYROSCOPE_SENSOR:
+                case Constants.GYROSCOPE_SENSOR_ID - 1:
                     sensorView.setId(R.id.gyroscope_sensorview);
                     break;
 
-                case Constants.PEDOMETER_SENSOR:
+                case Constants.PEDOMETER_SENSOR_ID - 1:
                     sensorView.setId(R.id.pedometer_sensorview);
                     break;
 
-                case Constants.SKIN_TEMPERATURE_SENSOR:
+                case Constants.SKIN_TEMPERATURE_SENSOR_ID - 1:
                     sensorView.setId(R.id.skin_temperature_sensorview);
                     break;
 
-                case Constants.UV_LEVEL_SENSOR:
+                case Constants.UV_LEVEL_SENSOR_ID - 1:
                     sensorView.setId(R.id.uv_sensorview);
                     break;
 
@@ -618,14 +541,14 @@ public class MainActivity extends AppCompatActivity{
 
     private void resetToggleButton() {
 
-        Log.v(LOG_TAG,"resetToggleButton");
+        Log.v(LOG_TAG, "resetToggleButton");
 
         toggle.setChecked(false);
 
     }
 
 
-    private void appendToUI(final String string, final String requestCode) {
+    private void appendToUI(final String string, String requestCode) {
 
         View v;
         TextView sensorValueTextView = null;
@@ -636,25 +559,21 @@ public class MainActivity extends AppCompatActivity{
                 sensorValueTextView = bandStatusTxt;
                 break;
 
-
             case Constants.UV_LEVEL:
 
                 v = findViewById(R.id.uv_sensorview);
                 sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
                 break;
 
-
             case Constants.SKIN_TEMPERATURE:
                 v = findViewById(R.id.skin_temperature_sensorview);
                 sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
                 break;
 
-
             case Constants.PEDOMETER:
                 v = findViewById(R.id.pedometer_sensorview);
                 sensorValueTextView = (TextView) v.findViewById(R.id.sensor_value);
                 break;
-
 
             case Constants.GYROSCOPE:
                 v = findViewById(R.id.gyroscope_sensorview);
@@ -729,8 +648,8 @@ public class MainActivity extends AppCompatActivity{
     protected void onStop() {
         super.onStop();
 
-        Log.w(LOG_TAG,"onStop()");
-        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+        Log.w(LOG_TAG, "onStop()");
+        Log.w(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
     }
 
@@ -738,11 +657,11 @@ public class MainActivity extends AppCompatActivity{
     protected void onStart() {
         super.onStart();
 
-        Log.w(LOG_TAG,"onStart()");
-        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+        Log.w(LOG_TAG, "onStart()");
+        Log.w(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
         //This means MyApp is restarting
-        if(bandSubscriptionTaskRunning){
+        if (bandSubscriptionTaskRunning) {
 
             toggle.setChecked(true);
 
@@ -754,16 +673,16 @@ public class MainActivity extends AppCompatActivity{
     protected void onPostResume() {
         super.onPostResume();
 
-        Log.w(LOG_TAG,"onPostResume()");
-        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+        Log.w(LOG_TAG, "onPostResume()");
+        Log.w(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.w(LOG_TAG,"onResume()");
-        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+        Log.w(LOG_TAG, "onResume()");
+        Log.w(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
 
     }
@@ -783,7 +702,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onPause() {
         super.onPause();
         Log.w(LOG_TAG, "onPause()");
-        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+        Log.w(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 //        if (client != null) {
 //            try {
 //
@@ -799,8 +718,8 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.w(LOG_TAG,"onDestroy()");
-        Log.w(LOG_TAG,"bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+        Log.w(LOG_TAG, "onDestroy()");
+        Log.w(LOG_TAG, "bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
         unregisterReceiver(resetSensorReadingReceiver);
         unregisterReceiver(displayVaueReceiver);
@@ -819,25 +738,25 @@ public class MainActivity extends AppCompatActivity{
 
     private void disconnectBand() {
 
-        Log.v(LOG_TAG,"disconnectBand()");
+        Log.v(LOG_TAG, "disconnectBand()");
 
         if (client != null) {
-            Log.v(LOG_TAG,"client != null");
+            Log.v(LOG_TAG, "client != null");
 
             try {
-                client.disconnect().await(3 , TimeUnit.SECONDS);
+                client.disconnect().await(3, TimeUnit.SECONDS);
 
             } catch (TimeoutException e) {
-                Log.e(LOG_TAG,"TimeoutException: " + e.toString());
+                Log.e(LOG_TAG, "TimeoutException: " + e.toString());
             } catch (InterruptedException e) {
-                Log.e(LOG_TAG,"InterruptedException: " + e.toString());
+                Log.e(LOG_TAG, "InterruptedException: " + e.toString());
             } catch (BandException e) {
-                Log.e(LOG_TAG,"BandException: " + e.toString());
+                Log.e(LOG_TAG, "BandException: " + e.toString());
             }
 
-        }else{
+        } else {
 
-            Log.v(LOG_TAG,"client == null");
+            Log.v(LOG_TAG, "client == null");
         }
     }
 
@@ -860,16 +779,16 @@ public class MainActivity extends AppCompatActivity{
     };
 
 
-    private BroadcastReceiver  createCSVReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver createCSVReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            Log.v(LOG_TAG,"createCSVReceiver onReceive");
+            Log.v(LOG_TAG, "createCSVReceiver onReceive");
 
             csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
 
-            Log.v(LOG_TAG,"csvFileCounter: " + csvFileCounter);
+            Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
 
             // Kick off saveDataCursorLoader
             getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
@@ -879,14 +798,14 @@ public class MainActivity extends AppCompatActivity{
     };
 
 
-    private BroadcastReceiver  sensorReadingObjectReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver sensorReadingObjectReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
 
             SensorReading receivedSensor = intent.getParcelableExtra(Constants.SERVICE_EXTRA);
 
-            Log.w(LOG_TAG, "sensorReadingObjectReceiver : onReceive:  "  + receivedSensor.getSensorName());
+            Log.w(LOG_TAG, "sensorReadingObjectReceiver : onReceive:  " + receivedSensor.getSensorName());
 
             //values.add(receivedSensor);
 
@@ -907,10 +826,10 @@ public class MainActivity extends AppCompatActivity{
             String sensor = intent.getStringExtra(Constants.SENSOR);
             String value = intent.getStringExtra(Constants.VALUE);
 
-            //Log.v(LOG_TAG, "displayVaueReceiver: sensor: " + sensor);
-            //Log.v(LOG_TAG, "displayVaueReceiver: value: " + value);
+            Log.v(LOG_TAG, "displayVaueReceiver: sensor: " + sensor);
+            Log.v(LOG_TAG, "displayVaueReceiver: value: " + value);
 
-            appendToUI(value,sensor);
+            appendToUI(value, sensor);
 
         }
 
@@ -950,7 +869,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        Log.v(LOG_TAG,"onActivityResult");
+        Log.v(LOG_TAG, "onActivityResult");
     }
 
     private LoaderManager.LoaderCallbacks<ConnectionState> bandSensorSubscriptionLoader
@@ -979,11 +898,11 @@ public class MainActivity extends AppCompatActivity{
 
             String userMsg = "";
 
-            if(cs != null){
+            if (cs != null) {
                 Log.v(LOG_TAG, "cs != null");
-                Log.v(LOG_TAG,cs.toString());
+                Log.v(LOG_TAG, cs.toString());
 
-                switch (cs){
+                switch (cs) {
 
                     case CONNECTED:
 
@@ -1021,14 +940,14 @@ public class MainActivity extends AppCompatActivity{
 
                 }
 
-                Log.v(LOG_TAG,userMsg);
+                Log.v(LOG_TAG, userMsg);
 
-                if(!cs.equals(ConnectionState.CONNECTED)){
+                if (!cs.equals(ConnectionState.CONNECTED)) {
                     Log.v(LOG_TAG, "ConnectionState != CONNECTED");
                     resetToggleButton();
                     appendToUI(userMsg, Constants.BAND_STATUS);
 
-                }else{
+                } else {
 
 
                     Log.v(LOG_TAG, "ConnectionState == CONNECTED");
@@ -1036,7 +955,7 @@ public class MainActivity extends AppCompatActivity{
 
                 }
 
-            }else{
+            } else {
 
                 //Band isnt paired with phone
                 resetToggleButton();
@@ -1076,7 +995,7 @@ public class MainActivity extends AppCompatActivity{
                     ReadingEntry.COLUMN_READING_MM,
                     ReadingEntry.COLUMN_READING_SS,
                     ReadingEntry.COLUMN_SAMPLE_RATE,
-                    ReadingEntry.COLUMN_SENSOR_NAME,
+                    ReadingEntry.COLUMN_SENSOR_ID,
                     ReadingEntry.COLUMN_SENSOR_VALUE};
 
             String sortOrder = ReadingEntry._ID;
@@ -1087,7 +1006,7 @@ public class MainActivity extends AppCompatActivity{
             Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
             Log.v(LOG_TAG, "COLUMN_SAMPLE_RATE : " + Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
 
-            String[] selectionArgs = { Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]};
+            String[] selectionArgs = {Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]};
 
             return new CursorLoader(MainActivity.this,   // Parent activity context
                     ReadingEntry.CONTENT_URI,   // Provider content URI to query
@@ -1119,7 +1038,7 @@ public class MainActivity extends AppCompatActivity{
 
                             String srLabel = getSensorSRlabel(Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
 
-                            Log.v(LOG_TAG,"srLabel: " + srLabel);
+                            Log.v(LOG_TAG, "srLabel: " + srLabel);
 
                             saveFile = getCsvOutputFile(outputDirectory, srLabel);
 
@@ -1187,8 +1106,6 @@ public class MainActivity extends AppCompatActivity{
                             getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
 
 
-
-
                         }
 
                     } catch (IOException e) {
@@ -1200,7 +1117,7 @@ public class MainActivity extends AppCompatActivity{
 
             Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
 
-            if(csvFileCounter == 0){
+            if (csvFileCounter == 0) {
 
                 showLoadingView(false);
                 //shows "OPEN CSV" action on a snackbar
@@ -1209,9 +1126,9 @@ public class MainActivity extends AppCompatActivity{
                 //mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
                 mySnackbar.show();
 
-            }else{
+            } else {
 
-                csvFileCounter -= 1 ;
+                csvFileCounter -= 1;
                 // Kick off saveDataCursorLoader
                 getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
             }
@@ -1231,7 +1148,7 @@ public class MainActivity extends AppCompatActivity{
 
         String label = "";
 
-        switch(sensorSR){
+        switch (sensorSR) {
 
             case Constants.SR_1:
                 label = "SR1";
@@ -1285,19 +1202,19 @@ public class MainActivity extends AppCompatActivity{
             isChecked = b;
             //Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
 
-            if(b){
+            if (b) {
                 // reset temporary table
-                getContentResolver().delete(SensorReadingContract.ReadingEntry.CONTENT_URI,null,null);
+                getContentResolver().delete(SensorReadingContract.ReadingEntry.CONTENT_URI, null, null);
 
-            }else{
+            } else {
 
                 //Log.v(LOG_TAG,"SaveButton " + b + " , bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
                 csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
 
-                Log.v(LOG_TAG,"csvFileCounter: " + csvFileCounter);
+                Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
 
-                if(bandSubscriptionTaskRunning){
+                if (bandSubscriptionTaskRunning) {
 
                     // Kick off saveDataCursorLoader
                     getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
@@ -1328,7 +1245,7 @@ public class MainActivity extends AppCompatActivity{
             // Create an array of the attributes we want to resolve
             // using values from a theme
             // android.R.attr.selectableItemBackground requires API LEVEL 11
-            int[] attrs = new int[] { android.R.attr.selectableItemBackground /* index 0 */};
+            int[] attrs = new int[]{android.R.attr.selectableItemBackground /* index 0 */};
 
             // Obtain the styled attributes. 'themedContext' is a context with a
             // theme, typically the current Activity (i.e. 'this')
@@ -1346,8 +1263,6 @@ public class MainActivity extends AppCompatActivity{
             // imageButton.setBackgroundDrawable(drawableFromTheme);
             super.setBackground(drawableFromTheme);
         }
-
-
 
 
     }
@@ -1379,10 +1294,10 @@ public class MainActivity extends AppCompatActivity{
                         labelPrefix = newPrefix;
                     }
 
-                    if (!TextUtils.isEmpty(newPrefix) ) {
-                        Toast.makeText(MainActivity.this,"Label changed.",Toast.LENGTH_SHORT).show();
-                    }else{
-                        Toast.makeText(MainActivity.this,"No changes made.",Toast.LENGTH_SHORT).show();
+                    if (!TextUtils.isEmpty(newPrefix)) {
+                        Toast.makeText(MainActivity.this, "Label changed.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "No changes made.", Toast.LENGTH_SHORT).show();
                     }
 
                     cancel();
@@ -1400,9 +1315,7 @@ public class MainActivity extends AppCompatActivity{
             });
 
 
-
         }
-
 
 
     }
