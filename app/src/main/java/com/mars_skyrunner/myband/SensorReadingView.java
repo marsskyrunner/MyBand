@@ -259,8 +259,8 @@ public class SensorReadingView extends LinearLayout {
 
         switch (sensorName){
 
-            case Constants.ACCELEROMETER:
-            case Constants.GYROSCOPE:
+            case Constants.ACCELEROMETER_SENSOR_LABEL:
+            case Constants.GYROSCOPE_SENSOR_LABEL:
                 options.add("8");
                 options.add("31");
                 options.add("62");

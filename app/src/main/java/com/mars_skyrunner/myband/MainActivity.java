@@ -196,7 +196,6 @@ public class MainActivity extends AppCompatActivity {
 
                         }
 
-
                     }
 
                     if (!sensorSelected) {
@@ -277,6 +276,9 @@ public class MainActivity extends AppCompatActivity {
     private File getCsvOutputFile(File dir, String samplingRate) {
 
         // the name of the file to export with
+
+        date = new Date();
+        displayDate = new SimpleDateFormat("yyMMdd_HHmmSS").format(date);
 
         filename = labelPrefix + displayDate + "_" + samplingRate + fileNameExtension;
 
@@ -497,7 +499,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case Constants.BAND_CONTACT_SENSOR_ID - 1:
-                    sensorView.setId(R.id.contact_sensorview);
+                    sensorView.setId(R.id.band_contact_sensorview);
                     break;
 
                 case Constants.GYROSCOPE_SENSOR_ID - 1:
@@ -636,12 +638,6 @@ public class MainActivity extends AppCompatActivity {
 
         sensorValueTextView.setText(string);
 
-
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -1048,20 +1044,20 @@ public class MainActivity extends AppCompatActivity {
 
                             c.moveToFirst();
 
-                            for (int i = 0; i < colcount; i++) {
+//                            for (int i = 0; i < colcount; i++) {
+//
+//                                if (i != (colcount - 1)) {
+//
+//                                    bw.write(c.getColumnName(i) + ",");
+//
+//                                } else {
+//
+//                                    bw.write(c.getColumnName(i));
+//
+//                                }
+//                            }
 
-                                if (i != (colcount - 1)) {
-
-                                    bw.write(c.getColumnName(i) + ",");
-
-                                } else {
-
-                                    bw.write(c.getColumnName(i));
-
-                                }
-                            }
-
-                            bw.newLine();
+//                            bw.newLine();
 
                             for (int i = 0; i < rowcount; i++) {
 

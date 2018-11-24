@@ -41,11 +41,16 @@ public class Constants {
     public static final int GSR_SENSOR_ID = 7;
     public static final int CALORIES_SENSOR_ID  = 8;
     public static final int DISTANCE_SENSOR_ID = 9;
-    public static final int BAND_CONTACT_SENSOR_ID = 10;
-    public static final int GYROSCOPE_SENSOR_ID = 11;
-    public static final int PEDOMETER_SENSOR_ID = 12;
-    public static final int SKIN_TEMPERATURE_SENSOR_ID = 13;
-    public static final int UV_LEVEL_SENSOR_ID = 14;
+
+    public static final int GYROSCOPE_SENSOR_ID = 10;
+    public static final int PEDOMETER_SENSOR_ID = 11;
+    public static final int SKIN_TEMPERATURE_SENSOR_ID = 12;
+    public static final int UV_LEVEL_SENSOR_ID = 13;
+    public static final int BAND_CONTACT_SENSOR_ID = 14;
+
+
+
+
     public static final int BAND_STATUS_SENSOR_ID = 15;
 
 

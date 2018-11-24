@@ -161,7 +161,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 Intent sendObjectIntent = new Intent(mContext, BandConnectionService.class);
                 mContext.startService(sendObjectIntent);
 
-                Log.v(LOG_TAG, "getConnectedBandClient(): bandStts: " + bandStts);
+                Log.v(LOG_TAG, "bandStts: " + bandStts);
 
 
                 CheckBox hrSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.HEART_RATE_SENSOR_ID - 1).findViewById(R.id.sensor_checkbox);
@@ -488,7 +488,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
     private BandUVEventListener mUVEventListener = new BandUVEventListener() {
         @Override
-        public void onBandUVChanged(BandUVEvent bandUVEvent) {
+        public void onBandUVChanged(BandUVEvent bandUVEvent) {//TODO:LOS REGISTROS DE UV SON HECHOS CADA MINUTO
             if (bandUVEvent != null) {
 
                 UVIndexLevel level = bandUVEvent.getUVIndexLevel();
@@ -515,7 +515,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 @Override
                 public void onBandSkinTemperatureChanged(BandSkinTemperatureEvent bandSkinTemperatureEvent) {
-                    if (bandSkinTemperatureEvent != null) {
+                    if (bandSkinTemperatureEvent != null) {//TODO: LOS REGISTROS DE SKINTEMP SON HECHOS CADA 30SEG
 
                         double temp = bandSkinTemperatureEvent.getTemperature();
                         DecimalFormat df = new DecimalFormat("0.00");
@@ -547,6 +547,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 String sensorValue = new StringBuilder()
                         .append(String.format("%d", totalSteps)).toString();
                 //1.TotalSteps = # steps
+
+                Log.v(LOG_TAG,"mPedometerEventListener");
 
                 appendToUI(sensorValue, Constants.PEDOMETER);
 
@@ -625,6 +627,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
     };
 
     private void appendToUI(String value, String sensor) {
+
+        Log.v(LOG_TAG,"appendToUI: sensor " + sensor + " , value : " + value);
 
         Intent appendToUiIntent = new Intent(Constants.DISPLAY_VALUE);
         appendToUiIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
