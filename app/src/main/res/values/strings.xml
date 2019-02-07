@@ -42,4 +42,5 @@
     <string name="csv_mode_option">CSV output file:</string>
     <string name="frequency_based_csv">Frequency based</string>
     <string name="time_based_csv">Time based</string>
+    <string name="csv_mode_key">com.mars_skyrunner.myband.CSV_KEY</string>
 </resources>

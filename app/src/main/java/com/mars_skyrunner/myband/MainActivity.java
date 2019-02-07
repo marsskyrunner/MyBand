@@ -9,6 +9,7 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     File outputDirectory = null;
 
     int csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -982,6 +984,12 @@ public class MainActivity extends AppCompatActivity {
             Log.v(LOG_TAG, "saveDataCursorLoader: onCreateLoader");
 
 
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
+            int csvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
+
+            //TODO: IF csvMode = 1 , THEN doEverything implemented by now
+
             // Define a projection that specifies the columns from the table we care about.
             String[] projection = {
                     ReadingEntry._ID,
@@ -1278,29 +1286,57 @@ public class MainActivity extends AppCompatActivity {
             TextView dateTextView = (TextView) findViewById(R.id.date_text_view);
             dateTextView.setText(displayDate);
 
-            RadioGroup radioGroup = (RadioGroup) findViewById(R.id.csv_options_rg);
+            final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
+            int csvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
+            int rbID = 0;
+
+            switch (csvMode){
+
+                case 0:
+                    rbID = R.id.frequency_rb;
+                    break;
+
+                case 1:
+                    rbID = R.id.time_rb;
+                    break;
+
+            }
+
+
+            RadioGroup radioGroup = (RadioGroup) findViewById(R.id.csv_options_rg);
+            radioGroup.check(rbID);
             radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 
                 @Override
                 public void onCheckedChanged(RadioGroup group, int checkedId) {
                     // find which radio button is selected
 
+                    int csvOutputFileMode;
+
+
+                    SharedPreferences.Editor editor = sharedPref.edit();
+
                     switch(checkedId){
 
                         case R.id.frequency_rb:
 
-                            Toast.makeText(MainActivity.this, "frequency_rb", Toast.LENGTH_SHORT).show();
+                            csvOutputFileMode = 0;
+                            editor.putInt(getString(R.string.csv_mode_key), csvOutputFileMode);
 
                             break;
 
                         case R.id.time_rb:
 
-                            Toast.makeText(MainActivity.this, "time_rb", Toast.LENGTH_SHORT).show();
+                            csvOutputFileMode = 1;
+                            editor.putInt(getString(R.string.csv_mode_key), csvOutputFileMode);
 
                             break;
 
                     }
+
+                    editor.commit();
 
                 }
 

@@ -25,8 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/csv_mode"
-            android:id="@+id/csv_options_rg"
-            android:checkedButton="@+id/frequency_rb" >
+            android:id="@+id/csv_options_rg" >
 
             <RadioButton
                 android:layout_width="wrap_content"
