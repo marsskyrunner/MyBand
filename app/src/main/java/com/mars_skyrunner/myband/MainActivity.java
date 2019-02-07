@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     File outputDirectory = null;
 
     int csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
+    int prevCsvMode;
 
 
     @Override
@@ -100,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
         setTheme(R.style.AppTheme_NoActionBar);
 
         setContentView(R.layout.activity_main);
+
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
+        prevCsvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -1350,15 +1355,27 @@ public class MainActivity extends AppCompatActivity {
 
                     String newPrefix = datePatternEditText.getText().toString();
 
-                    if (!TextUtils.isEmpty(newPrefix)) {
+                    SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                    int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
+                    int newCsvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
-                        labelPrefix = newPrefix;
-                    }
 
-                    if (!TextUtils.isEmpty(newPrefix)) {
-                        Toast.makeText(MainActivity.this, "Label changed.", Toast.LENGTH_SHORT).show();
-                    } else {
+                    if (TextUtils.isEmpty(newPrefix) && (prevCsvMode == newCsvMode)) {
+
                         Toast.makeText(MainActivity.this, "No changes made.", Toast.LENGTH_SHORT).show();
+
+                    } else {
+
+                        if(prevCsvMode != newCsvMode){
+                            prevCsvMode = newCsvMode;
+                        }
+
+                        if (!TextUtils.isEmpty(newPrefix)) {
+                            labelPrefix = newPrefix;
+                        }
+
+                        Toast.makeText(MainActivity.this, "Changes saved.", Toast.LENGTH_SHORT).show();
+
                     }
 
                     cancel();
