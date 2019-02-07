@@ -32,6 +32,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -1276,6 +1277,34 @@ public class MainActivity extends AppCompatActivity {
 
             TextView dateTextView = (TextView) findViewById(R.id.date_text_view);
             dateTextView.setText(displayDate);
+
+            RadioGroup radioGroup = (RadioGroup) findViewById(R.id.csv_options_rg);
+
+            radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+
+                @Override
+                public void onCheckedChanged(RadioGroup group, int checkedId) {
+                    // find which radio button is selected
+
+                    switch(checkedId){
+
+                        case R.id.frequency_rb:
+
+                            Toast.makeText(MainActivity.this, "frequency_rb", Toast.LENGTH_SHORT).show();
+
+                            break;
+
+                        case R.id.time_rb:
+
+                            Toast.makeText(MainActivity.this, "time_rb", Toast.LENGTH_SHORT).show();
+
+                            break;
+
+                    }
+
+                }
+
+            });
 
 
             Button okButton = (Button) findViewById(R.id.btnSave);
