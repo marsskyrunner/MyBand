@@ -47,7 +47,7 @@ public class SensorReadingsDbHelper extends SQLiteOpenHelper {
                 + ReadingEntry.COLUMN_READING_HH + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_READING_MM + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_READING_SS + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_SENSOR_NAME + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_SENSOR_ID + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SAMPLE_RATE + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT NOT NULL )";
 
@@ -65,7 +65,7 @@ public class SensorReadingsDbHelper extends SQLiteOpenHelper {
                 + ReadingEntry.COLUMN_READING_HH + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_READING_MM + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_READING_SS + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_SENSOR_NAME + " TEXT NOT NULL, "
+                + ReadingEntry.COLUMN_SENSOR_ID + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SAMPLE_RATE + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT NOT NULL )";
 

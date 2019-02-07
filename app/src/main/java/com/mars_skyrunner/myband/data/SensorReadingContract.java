@@ -138,7 +138,7 @@ public  final class SensorReadingContract {
          *
          * Type: TEXT
          */
-        public final static String COLUMN_SENSOR_NAME = "sensor_name";
+        public final static String COLUMN_SENSOR_ID = "sensor_id";
 
         /**
          * Value of the Sensor from the SensorReading.

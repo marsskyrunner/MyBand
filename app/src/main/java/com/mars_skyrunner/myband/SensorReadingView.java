@@ -161,12 +161,6 @@ public class SensorReadingView extends LinearLayout {
 
         addView(relativeLayoutHolder);
         addView(sensorValueTextView);
-
-        //LayoutInflater TEST
-//        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//        View rootView = inflater.inflate(R.layout.sensor_list_item, this, false);
-//        addView(rootView );
-
     }
 
     private RelativeLayout getSampleRateDisplay(String sensorName) {
@@ -180,9 +174,9 @@ public class SensorReadingView extends LinearLayout {
 
 
         //if the sensor is Accelerometer, Gyrometer or GSR, sample rate can be set
-        if(sensorName.equals(mContext.getResources().getString(R.string.accelerometer))
-                || sensorName.equals(mContext.getResources().getString(R.string.gyroscope))
-                || sensorName.equals(mContext.getResources().getString(R.string.gsr))){
+        if(sensorName.equals(Constants.ACCELEROMETER_SENSOR_LABEL)
+                || sensorName.equals(Constants.GYROSCOPE_SENSOR_LABEL)
+                || sensorName.equals(Constants.GSR_SENSOR_LABEL)){
 
             TextView unitsTextView = getUnitsTextView();
             Spinner sampleRateSettingView = getSampleRateSettingSpinner(sensorName);
@@ -205,11 +199,11 @@ public class SensorReadingView extends LinearLayout {
 
             TextView unitsTextView = getUnitsTextView();
 
-            if(sensorName.equals(mContext.getResources().getString(R.string.heart_rate))
-                    || sensorName.equals(mContext.getResources().getString(R.string.skin_temperature))
-                    || sensorName.equals(mContext.getResources().getString(R.string.barometer))
-                    || sensorName.equals(mContext.getResources().getString(R.string.altimeter))
-                    || sensorName.equals(mContext.getResources().getString(R.string.uv))){
+            if(sensorName.equals(Constants.HEART_RATE_SENSOR_LABEL)
+                    || sensorName.equals(Constants.SKIN_TEMPERATURE_SENSOR_LABEL)
+                    || sensorName.equals(Constants.BAROMETER_SENSOR_LABEL)
+                    || sensorName.equals(Constants.ALTIMETER_SENSOR_LABEL)
+                    || sensorName.equals(Constants.UV_LEVEL_SENSOR_LABEL)){
 
                 sampleRate = "1 hz";
 
@@ -222,7 +216,7 @@ public class SensorReadingView extends LinearLayout {
 
                 //if the sensor is Ambient Light, sample rate is 2hz
 
-                if(sensorName.equals(mContext.getResources().getString(R.string.ambient_light))){
+                if(sensorName.equals(Constants.AMBIENT_LIGHT_SENSOR_LABEL)){
 
                     sampleRate = "2 hz";
 
@@ -265,14 +259,14 @@ public class SensorReadingView extends LinearLayout {
 
         switch (sensorName){
 
-            case "accelerometer":
-            case "gyroscope":
+            case Constants.ACCELEROMETER_SENSOR_LABEL:
+            case Constants.GYROSCOPE_SENSOR_LABEL:
                 options.add("8");
                 options.add("31");
                 options.add("62");
                 break;
 
-            case "GSR":
+            case Constants.GSR_SENSOR_LABEL:
                 options.add("5");
                 options.add("0.2");
                 break;

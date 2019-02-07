@@ -28,21 +28,50 @@ public class Constants {
     public static final String AMBIENT_LIGHT = "com.mars_skyrunner.myband.AMBIENT_LIGHT";
     public static final String DISTANCE = "com.mars_skyrunner.myband.DISTANCE";
 
-    public static final int HEART_RATE_SENSOR = 0;
-    public static final int RR_INTERVAL_SENSOR = 1;
-    public static final int ACCELEROMETER_SENSOR = 2;
-    public static final int ALTIMETER_SENSOR = 3;
-    public static final int AMBIENT_LIGHT_SENSOR = 4;
-    public static final int BAROMETER_SENSOR = 5;
-    public static final int GSR_SENSOR = 6;
-    public static final int CALORIES_SENSOR  = 7;
-    public static final int DISTANCE_SENSOR = 8;
-    public static final int BAND_CONTACT_SENSOR = 9;
-    public static final int GYROSCOPE_SENSOR = 10;
-    public static final int PEDOMETER_SENSOR = 11;
-    public static final int SKIN_TEMPERATURE_SENSOR = 12;
-    public static final int UV_LEVEL_SENSOR = 13;
-    public static final int BAND_STATUS_SENSOR = 14;
+
+    public static final int HEART_RATE_AQUIRING = 1;
+    public static final int HEART_RATE_LOCKED = 2;
+
+    public static final int HEART_RATE_SENSOR_ID = 1;
+    public static final int RR_INTERVAL_SENSOR_ID = 2;
+    public static final int ACCELEROMETER_SENSOR_ID = 3;
+    public static final int ALTIMETER_SENSOR_ID = 4;
+    public static final int AMBIENT_LIGHT_SENSOR_ID = 5;
+    public static final int BAROMETER_SENSOR_ID = 6;
+    public static final int GSR_SENSOR_ID = 7;
+    public static final int CALORIES_SENSOR_ID  = 8;
+    public static final int DISTANCE_SENSOR_ID = 9;
+
+    public static final int GYROSCOPE_SENSOR_ID = 10;
+    public static final int PEDOMETER_SENSOR_ID = 11;
+    public static final int SKIN_TEMPERATURE_SENSOR_ID = 12;
+    public static final int UV_LEVEL_SENSOR_ID = 13;
+    public static final int BAND_CONTACT_SENSOR_ID = 14;
+
+
+
+
+    public static final int BAND_STATUS_SENSOR_ID = 15;
+
+
+    public static final String HEART_RATE_SENSOR_LABEL =  "heart rate";
+    public static final String RR_INTERVAL_SENSOR_LABEL = "rr interval";
+    public static final String ACCELEROMETER_SENSOR_LABEL = "accelerometer";
+    public static final String ALTIMETER_SENSOR_LABEL = "altimeter";
+    public static final String AMBIENT_LIGHT_SENSOR_LABEL = "ambient light";
+    public static final String BAROMETER_SENSOR_LABEL = "barometer";
+    public static final String GSR_SENSOR_LABEL = "gsr";
+    public static final String CALORIES_SENSOR_LABEL  = "calories";
+    public static final String DISTANCE_SENSOR_LABEL = "distance";
+    public static final String BAND_CONTACT_SENSOR_LABEL = "contact";
+    public static final String GYROSCOPE_SENSOR_LABEL = "gyroscope";
+    public static final String PEDOMETER_SENSOR_LABEL = "pedometer";
+    public static final String SKIN_TEMPERATURE_SENSOR_LABEL = "skin temperature";
+    public static final String UV_LEVEL_SENSOR_LABEL = "uv";
+    public static final String BAND_STATUS_SENSOR_LABEL = "status";
+
+
+
     public static final String SENSOR = packageName + ".SENSOR";
     public static final String VALUE = packageName + ".VALUE";
     public static final String DISPLAY_VALUE = packageName + ".DISPLAY_VALUE";
