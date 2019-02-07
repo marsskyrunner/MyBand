@@ -29,6 +29,8 @@ public class Constants {
     public static final String DISTANCE = "com.mars_skyrunner.myband.DISTANCE";
 
 
+
+
     public static final int HEART_RATE_AQUIRING = 1;
     public static final int HEART_RATE_LOCKED = 2;
 

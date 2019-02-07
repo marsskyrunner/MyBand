@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new EditLabelDialog(MainActivity.this).show();
+                new SettingsDialog(MainActivity.this).show();
                 ;
 
             }
@@ -1263,9 +1263,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private class EditLabelDialog extends AppCompatDialog {
+    private class SettingsDialog extends AppCompatDialog {
 
-        public EditLabelDialog(Context context) {
+        public SettingsDialog(Context context) {
 
             super(context);
 

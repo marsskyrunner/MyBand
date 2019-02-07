@@ -12,6 +12,37 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/csv_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/csv_mode_option"
+            android:textSize="16sp" />
+
+
+        <RadioGroup
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/csv_mode"
+            android:id="@+id/csv_options_rg"
+            android:checkedButton="@+id/frequency_rb" >
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/frequency_rb"
+                android:text="@string/frequency_based_csv" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/time_rb"
+                android:text="@string/time_based_csv" />
+
+        </RadioGroup>
+
+        <TextView
             android:id="@+id/textDialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
