@@ -1104,6 +1104,22 @@ public class MainActivity extends AppCompatActivity {
 
                                     String fileValue = "";
 
+                                    if(j == 1){ //Time column
+
+                                        long time = Long.parseLong(cellValue.trim());
+
+                                        String year = new SimpleDateFormat("yyyy").format(time);
+                                        String month = new SimpleDateFormat("MM").format(time);
+                                        String day = new SimpleDateFormat("dd").format(time);
+                                        String hour = new SimpleDateFormat("HH").format(time);
+                                        String minute = new SimpleDateFormat("mm").format(time);
+                                        String sec = new SimpleDateFormat("ss").format(time);
+
+                                        cellValue = year + "," + month + "," + day + ","+ hour + ","+ minute + ","+ sec ;
+                                    }
+
+
+
                                     if (j != (colcount - 1)) {
 
                                         Log.w(LOG_TAG, j + " != " + (colcount - 1));
