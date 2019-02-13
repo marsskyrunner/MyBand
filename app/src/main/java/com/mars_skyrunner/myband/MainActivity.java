@@ -53,6 +53,7 @@ import java.lang.ref.WeakReference;
 import java.security.Provider;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
         prevCsvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
@@ -123,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 new SettingsDialog(MainActivity.this).show();
-                ;
+
 
             }
         });
@@ -993,38 +995,56 @@ public class MainActivity extends AppCompatActivity {
             int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
             int csvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
-            //TODO: IF csvMode = 1 , THEN doEverything implemented by now
+            switch(csvMode){
 
-            // Define a projection that specifies the columns from the table we care about.
-            String[] projection = {
-                    ReadingEntry._ID,
-                    ReadingEntry.COLUMN_READING_YEAR,
-                    ReadingEntry.COLUMN_READING_MONTH,
-                    ReadingEntry.COLUMN_READING_DAY,
-                    ReadingEntry.COLUMN_READING_HH,
-                    ReadingEntry.COLUMN_READING_MM,
-                    ReadingEntry.COLUMN_READING_SS,
-                    ReadingEntry.COLUMN_SAMPLE_RATE,
-                    ReadingEntry.COLUMN_SENSOR_ID,
-                    ReadingEntry.COLUMN_SENSOR_VALUE};
+                case 0:
 
-            String sortOrder = ReadingEntry._ID;
+                    //TODO: IF csvMode = 1 , THEN doEverything implemented by now
 
-            // This loader will execute the ContentProvider's query method on a background thread
-            String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=?";
+                    // Define a projection that specifies the columns from the table we care about.
+                    String[] projection = {
+                            ReadingEntry._ID,
+                            ReadingEntry.COLUMN_TIME,
+//                            ReadingEntry.COLUMN_READING_YEAR,
+//                            ReadingEntry.COLUMN_READING_MONTH,
+//                            ReadingEntry.COLUMN_READING_DAY,
+//                            ReadingEntry.COLUMN_READING_HH,
+//                            ReadingEntry.COLUMN_READING_MM,
+//                            ReadingEntry.COLUMN_READING_SS,
+                            ReadingEntry.COLUMN_SAMPLE_RATE,
+                            ReadingEntry.COLUMN_SENSOR_ID,
+                            ReadingEntry.COLUMN_SENSOR_VALUE};
 
-            Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
-            Log.v(LOG_TAG, "COLUMN_SAMPLE_RATE : " + Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
+                    String sortOrder = ReadingEntry._ID;
 
-            String[] selectionArgs = {Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]};
+                    // This loader will execute the ContentProvider's query method on a background thread
+                    String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=?";
 
-            return new CursorLoader(MainActivity.this,   // Parent activity context
-                    ReadingEntry.CONTENT_URI,   // Provider content URI to query
-                    projection,             // Columns to include in the resulting Cursor
-                    selection,                   //  selection clause
-                    selectionArgs,                   //  selection arguments
-                    sortOrder);                  //  sort order
+                    Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
+                    Log.v(LOG_TAG, "COLUMN_SAMPLE_RATE : " + Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
 
+                    String[] selectionArgs = {Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]};
+
+                    return new CursorLoader(MainActivity.this,   // Parent activity context
+                            ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                            projection,             // Columns to include in the resulting Cursor
+                            selection,                   //  selection clause
+                            selectionArgs,                   //  selection arguments
+                            sortOrder);                  //  sort order
+
+
+                case 1:
+
+
+
+                    Toast.makeText(MainActivity.this,"Time Base option selected",Toast.LENGTH_SHORT).show();
+
+                    return null;
+
+            }
+
+
+            return null;
         }
 
         @Override

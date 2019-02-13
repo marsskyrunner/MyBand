@@ -88,8 +88,15 @@ public  final class SensorReadingContract {
          *
          * Type: TEXT
          */
-        public final static String COLUMN_READING_DAY ="DAY";
+        public final static String COLUMN_TIME = "TIME";
 
+
+        /**
+         * Day of the SensorReading.
+         *
+         * Type: TEXT
+         */
+        public final static String COLUMN_READING_DAY ="DAY";
 
 
 

@@ -190,43 +190,43 @@ public class SensorReadingProvider extends ContentProvider {
     private Uri insertReading(Uri uri, ContentValues values) {
 
         Log.w(LOG_TAG,"insertReading : ContentValues: " + values.toString());
-
-        // Check that the year is not null
-        String year = values.getAsString(ReadingEntry.COLUMN_READING_YEAR);
-        if (year == null) {
-            throw new IllegalArgumentException("SensorReading requires a year");
-        }
-
-        // Check that the month is not null
-        String month = values.getAsString(ReadingEntry.COLUMN_READING_MONTH);
-        if (month == null) {
-            throw new IllegalArgumentException("SensorReading requires a month");
-        }
-
-        // Check that the day is not null
-        String day = values.getAsString(ReadingEntry.COLUMN_READING_DAY);
-        if (day == null) {
-            throw new IllegalArgumentException("SensorReading requires a day");
-        }
-
-        // Check that the hour is not null
-        String hh = values.getAsString(ReadingEntry.COLUMN_READING_HH);
-        if (hh == null) {
-            throw new IllegalArgumentException("SensorReading requires an hour");
-        }
-
-        // Check that the MINUTES is not null
-        String mm = values.getAsString(ReadingEntry.COLUMN_READING_MM);
-        if (mm == null) {
-            throw new IllegalArgumentException("SensorReading requires minutes");
-        }
-
-        // Check that the seconds is not null
-        String ss = values.getAsString(ReadingEntry.COLUMN_READING_SS);
-        if (ss == null) {
-            throw new IllegalArgumentException("SensorReading requires seconds");
-        }
-
+//
+//        // Check that the year is not null
+//        String year = values.getAsString(ReadingEntry.COLUMN_READING_YEAR);
+//        if (year == null) {
+//            throw new IllegalArgumentException("SensorReading requires a year");
+//        }
+//
+//        // Check that the month is not null
+//        String month = values.getAsString(ReadingEntry.COLUMN_READING_MONTH);
+//        if (month == null) {
+//            throw new IllegalArgumentException("SensorReading requires a month");
+//        }
+//
+//        // Check that the day is not null
+//        String day = values.getAsString(ReadingEntry.COLUMN_READING_DAY);
+//        if (day == null) {
+//            throw new IllegalArgumentException("SensorReading requires a day");
+//        }
+//
+//        // Check that the hour is not null
+//        String hh = values.getAsString(ReadingEntry.COLUMN_READING_HH);
+//        if (hh == null) {
+//            throw new IllegalArgumentException("SensorReading requires an hour");
+//        }
+//
+//        // Check that the MINUTES is not null
+//        String mm = values.getAsString(ReadingEntry.COLUMN_READING_MM);
+//        if (mm == null) {
+//            throw new IllegalArgumentException("SensorReading requires minutes");
+//        }
+//
+//        // Check that the seconds is not null
+//        String ss = values.getAsString(ReadingEntry.COLUMN_READING_SS);
+//        if (ss == null) {
+//            throw new IllegalArgumentException("SensorReading requires seconds");
+//        }
+//
 
         // Check that the sensorName is not null
         String sensorName = values.getAsString(ReadingEntry.COLUMN_SENSOR_ID);
@@ -326,72 +326,72 @@ public class SensorReadingProvider extends ContentProvider {
 
 
 
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_YEAR)) {
-
-            // Check that the year is not null
-            String year = values.getAsString(ReadingEntry.COLUMN_READING_YEAR);
-            if (year == null) {
-                throw new IllegalArgumentException("SensorReading requires a year");
-            }
-
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_MONTH)) {
-
-            // Check that the month is not null
-            String month = values.getAsString(ReadingEntry.COLUMN_READING_MONTH);
-            if (month == null) {
-                throw new IllegalArgumentException("SensorReading requires a month");
-            }
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_DAY)) {
-
-            // Check that the day is not null
-            String day = values.getAsString(ReadingEntry.COLUMN_READING_DAY);
-            if (day == null) {
-                throw new IllegalArgumentException("SensorReading requires a day");
-            }
-
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_HH)) {
-
-            // Check that the hour is not null
-            String hh = values.getAsString(ReadingEntry.COLUMN_READING_HH);
-            if (hh == null) {
-                throw new IllegalArgumentException("SensorReading requires an hour");
-            }
-
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_MM)) {
-
-            // Check that the MINUTES is not null
-            String mm = values.getAsString(ReadingEntry.COLUMN_READING_MM);
-            if (mm == null) {
-                throw new IllegalArgumentException("SensorReading requires minutes");
-            }
-
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_SS)) {
-
-            // Check that the seconds is not null
-            String ss = values.getAsString(ReadingEntry.COLUMN_READING_SS);
-            if (ss == null) {
-                throw new IllegalArgumentException("SensorReading requires seconds");
-            }
-
-
-        }
+//
+//
+//        if (values.containsKey(ReadingEntry.COLUMN_READING_YEAR)) {
+//
+//            // Check that the year is not null
+//            String year = values.getAsString(ReadingEntry.COLUMN_READING_YEAR);
+//            if (year == null) {
+//                throw new IllegalArgumentException("SensorReading requires a year");
+//            }
+//
+//        }
+//
+//
+//        if (values.containsKey(ReadingEntry.COLUMN_READING_MONTH)) {
+//
+//            // Check that the month is not null
+//            String month = values.getAsString(ReadingEntry.COLUMN_READING_MONTH);
+//            if (month == null) {
+//                throw new IllegalArgumentException("SensorReading requires a month");
+//            }
+//        }
+//
+//
+//        if (values.containsKey(ReadingEntry.COLUMN_READING_DAY)) {
+//
+//            // Check that the day is not null
+//            String day = values.getAsString(ReadingEntry.COLUMN_READING_DAY);
+//            if (day == null) {
+//                throw new IllegalArgumentException("SensorReading requires a day");
+//            }
+//
+//        }
+//
+//
+//        if (values.containsKey(ReadingEntry.COLUMN_READING_HH)) {
+//
+//            // Check that the hour is not null
+//            String hh = values.getAsString(ReadingEntry.COLUMN_READING_HH);
+//            if (hh == null) {
+//                throw new IllegalArgumentException("SensorReading requires an hour");
+//            }
+//
+//        }
+//
+//
+//        if (values.containsKey(ReadingEntry.COLUMN_READING_MM)) {
+//
+//            // Check that the MINUTES is not null
+//            String mm = values.getAsString(ReadingEntry.COLUMN_READING_MM);
+//            if (mm == null) {
+//                throw new IllegalArgumentException("SensorReading requires minutes");
+//            }
+//
+//        }
+//
+//
+//        if (values.containsKey(ReadingEntry.COLUMN_READING_SS)) {
+//
+//            // Check that the seconds is not null
+//            String ss = values.getAsString(ReadingEntry.COLUMN_READING_SS);
+//            if (ss == null) {
+//                throw new IllegalArgumentException("SensorReading requires seconds");
+//            }
+//
+//
+//        }
 
         // If the {@link ReadingEntry#_COLUMN_SENSOR_ID} key is present,
         // check that the time text is not null.
