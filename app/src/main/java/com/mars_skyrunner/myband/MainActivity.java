@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<SensorReading> sensorReadings;
     File saveFile;
     Date date;
+    long timeBasedCSVDate = 0;
     public static boolean bandSubscriptionTaskRunning = false;
 
     public static SaveButton saveDataButton;
@@ -103,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
         prevCsvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
+
 
         date = new Date();
         displayDate = new SimpleDateFormat("yyMMdd_HHmmSS").format(date);
@@ -995,22 +996,15 @@ public class MainActivity extends AppCompatActivity {
             int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
             int csvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
-            switch(csvMode){
+
+            switch (csvMode) {
 
                 case 0:
-
-                    //TODO: IF csvMode = 1 , THEN doEverything implemented by now
 
                     // Define a projection that specifies the columns from the table we care about.
                     String[] projection = {
                             ReadingEntry._ID,
                             ReadingEntry.COLUMN_TIME,
-//                            ReadingEntry.COLUMN_READING_YEAR,
-//                            ReadingEntry.COLUMN_READING_MONTH,
-//                            ReadingEntry.COLUMN_READING_DAY,
-//                            ReadingEntry.COLUMN_READING_HH,
-//                            ReadingEntry.COLUMN_READING_MM,
-//                            ReadingEntry.COLUMN_READING_SS,
                             ReadingEntry.COLUMN_SAMPLE_RATE,
                             ReadingEntry.COLUMN_SENSOR_ID,
                             ReadingEntry.COLUMN_SENSOR_VALUE};
@@ -1033,13 +1027,33 @@ public class MainActivity extends AppCompatActivity {
                             sortOrder);                  //  sort order
 
 
+
                 case 1:
 
+                    Toast.makeText(MainActivity.this, "Time Base option selected: " + bundle.getLong(Constants.SENSOR_TIME), Toast.LENGTH_SHORT).show();
 
+                    // Define a projection that specifies the columns from the table we care about.
+                    String[] projection2 = {
+                            ReadingEntry._ID,
+                            ReadingEntry.COLUMN_TIME,
+                            ReadingEntry.COLUMN_SAMPLE_RATE,
+                            ReadingEntry.COLUMN_SENSOR_ID,
+                            ReadingEntry.COLUMN_SENSOR_VALUE};
 
-                    Toast.makeText(MainActivity.this,"Time Base option selected",Toast.LENGTH_SHORT).show();
+                    String sortOrder2 = ReadingEntry._ID;
 
-                    return null;
+                    // This loader will execute the ContentProvider's query method on a background thread
+                    String selection2 = ReadingEntry.COLUMN_TIME + ">=?";
+
+                    String[] selectionArgs2 = {("" + bundle.getLong(Constants.SENSOR_TIME))};
+
+                    return new CursorLoader(MainActivity.this,   // Parent activity context
+                            ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                            projection2,             // Columns to include in the resulting Cursor
+                            selection2,                   //  selection clause
+                            selectionArgs2,                   //  selection arguments
+                            sortOrder2);                  //  sort order
+
 
             }
 
@@ -1052,31 +1066,41 @@ public class MainActivity extends AppCompatActivity {
 
             Log.v(LOG_TAG, "saveDataCursorLoader: onLoadFinished");
 
+
             switch (loader.getId()) {
+
                 case Constants.CREATE_CSV_LOADER:
 
-                    FileWriter fw = null;
+                    SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                    int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
+                    int csvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
-                    try {
+                    switch (csvMode) {
 
-                        int rowcount = c.getCount();
-                        int colcount = c.getColumnCount();
+                        case 0:
 
-                        if (rowcount > 0) {
+                            FileWriter fw = null;
 
-                            outputDirectory = getOutputDirectory();
+                            try {
 
-                            String srLabel = getSensorSRlabel(Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
+                                int rowcount = c.getCount();
+                                int colcount = c.getColumnCount();
 
-                            Log.v(LOG_TAG, "srLabel: " + srLabel);
+                                if (rowcount > 0) {
 
-                            saveFile = getCsvOutputFile(outputDirectory, srLabel);
+                                    outputDirectory = getOutputDirectory();
 
-                            fw = new FileWriter(saveFile);
+                                    String srLabel = getSensorSRlabel(Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
 
-                            BufferedWriter bw = new BufferedWriter(fw);
+                                    Log.v(LOG_TAG, "srLabel: " + srLabel);
 
-                            c.moveToFirst();
+                                    saveFile = getCsvOutputFile(outputDirectory, srLabel);
+
+                                    fw = new FileWriter(saveFile);
+
+                                    BufferedWriter bw = new BufferedWriter(fw);
+
+                                    c.moveToFirst();
 
 //                            for (int i = 0; i < colcount; i++) {
 //
@@ -1093,72 +1117,82 @@ public class MainActivity extends AppCompatActivity {
 
 //                            bw.newLine();
 
-                            for (int i = 0; i < rowcount; i++) {
+                                    for (int i = 0; i < rowcount; i++) {
 
-                                c.moveToPosition(i);
+                                        c.moveToPosition(i);
 
-                                for (int j = 0; j < colcount; j++) {
+                                        for (int j = 0; j < colcount; j++) {
 
-                                    String cellValue = c.getString(j);
-                                    Log.w(LOG_TAG, j + " : " + i + " = " + cellValue);
+                                            String cellValue = c.getString(j);
+                                            Log.w(LOG_TAG, j + " : " + i + " = " + cellValue);
 
-                                    String fileValue = "";
+                                            String fileValue = "";
 
-                                    if(j == 1){ //Time column
+                                            if (j == 1) { //Time column
 
-                                        long time = Long.parseLong(cellValue.trim());
+                                                long time = Long.parseLong(cellValue.trim());
 
-                                        String year = new SimpleDateFormat("yyyy").format(time);
-                                        String month = new SimpleDateFormat("MM").format(time);
-                                        String day = new SimpleDateFormat("dd").format(time);
-                                        String hour = new SimpleDateFormat("HH").format(time);
-                                        String minute = new SimpleDateFormat("mm").format(time);
-                                        String sec = new SimpleDateFormat("ss").format(time);
+                                                String year = new SimpleDateFormat("yyyy").format(time);
+                                                String month = new SimpleDateFormat("MM").format(time);
+                                                String day = new SimpleDateFormat("dd").format(time);
+                                                String hour = new SimpleDateFormat("HH").format(time);
+                                                String minute = new SimpleDateFormat("mm").format(time);
+                                                String sec = new SimpleDateFormat("ss").format(time);
 
-                                        cellValue = year + "," + month + "," + day + ","+ hour + ","+ minute + ","+ sec ;
+                                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+                                            }
+
+                                            if (j != (colcount - 1)) {
+
+                                                Log.w(LOG_TAG, j + " != " + (colcount - 1));
+                                                fileValue = cellValue + ",";
+
+                                            } else {
+                                                Log.w(LOG_TAG, j + " == " + (colcount - 1));
+                                                fileValue = cellValue;
+                                            }
+
+                                            bw.write(fileValue);
+
+                                        }
+
+                                        bw.newLine();
                                     }
 
+                                    bw.flush();
+
+                                    Log.w(LOG_TAG, "Datapoint Exported Successfully.");
 
 
-                                    if (j != (colcount - 1)) {
+                                    //If SaveDatapoint button is clicked while MSBand still connected, it saves the
+                                    //newest values
+                                    values.clear();
 
-                                        Log.w(LOG_TAG, j + " != " + (colcount - 1));
-                                        fileValue = cellValue + ",";
 
-                                    } else {
-                                        Log.w(LOG_TAG, j + " == " + (colcount - 1));
-                                        fileValue = cellValue;
-                                    }
+                                    //Save datapoint loader destroyed, so that if user comes back from
+                                    //CSV file viewer, it does not create a new one
+                                    getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
 
-                                    bw.write(fileValue);
 
                                 }
 
-                                bw.newLine();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
                             }
 
-                            bw.flush();
+                            break;
 
-                            Log.w(LOG_TAG, "Datapoint Exported Successfully.");
-
-
-                            //If SaveDatapoint button is clicked while MSBand still connected, it saves the
-                            //newest values
-                            values.clear();
+                        case 1:
 
 
-                            //Save datapoint loader destroyed, so that if user comes back from
-                            //CSV file viewer, it does not create a new one
-                            getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
+
+                            break;
 
 
-                        }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
                     }
-                    break;
+
+
             }
 
             Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
@@ -1239,8 +1273,11 @@ public class MainActivity extends AppCompatActivity {
 
         boolean isChecked = false;
 
+
         public SaveButton(Context context) {
             super(context);
+
+
         }
 
         @Override
@@ -1248,9 +1285,21 @@ public class MainActivity extends AppCompatActivity {
             isChecked = b;
             //Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
 
+
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
+            int csvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
+
             if (b) {
                 // reset temporary table
                 getContentResolver().delete(SensorReadingContract.ReadingEntry.CONTENT_URI, null, null);
+
+                if (csvMode == 1) {
+
+                    timeBasedCSVDate = System.currentTimeMillis();
+
+                }
+
 
             } else {
 
@@ -1263,7 +1312,19 @@ public class MainActivity extends AppCompatActivity {
                 if (bandSubscriptionTaskRunning) {
 
                     // Kick off saveDataCursorLoader
-                    getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
+
+                    if (csvMode == 1) {
+
+                        timeBasedCSVDate = System.currentTimeMillis();
+
+                    }
+
+                    Bundle extraBundle = new Bundle();
+                    extraBundle.putLong(Constants.SENSOR_TIME, timeBasedCSVDate);
+
+
+                    getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, extraBundle, saveDataCursorLoader);
+
                 }
 
             }
@@ -1333,7 +1394,7 @@ public class MainActivity extends AppCompatActivity {
 
             int rbID = 0;
 
-            switch (csvMode){
+            switch (csvMode) {
 
                 case 0:
                     rbID = R.id.frequency_rb;
@@ -1359,7 +1420,7 @@ public class MainActivity extends AppCompatActivity {
 
                     SharedPreferences.Editor editor = sharedPref.edit();
 
-                    switch(checkedId){
+                    switch (checkedId) {
 
                         case R.id.frequency_rb:
 
@@ -1402,7 +1463,7 @@ public class MainActivity extends AppCompatActivity {
 
                     } else {
 
-                        if(prevCsvMode != newCsvMode){
+                        if (prevCsvMode != newCsvMode) {
                             prevCsvMode = newCsvMode;
                         }
 
