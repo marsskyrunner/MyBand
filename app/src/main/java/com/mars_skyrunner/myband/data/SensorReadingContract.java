@@ -34,7 +34,7 @@ public  final class SensorReadingContract {
 
     public static final String PATH_READINGS = "readings";
 
-    public static final String PATH_MASTER_READINGS = "master_readings";
+//    public static final String PATH_MASTER_READINGS = "master_readings";
 
     /**
      * Inner class that defines constant values for the SensorReadings database table.
@@ -46,8 +46,8 @@ public  final class SensorReadingContract {
         /** The content URI to access the sensor data in the provider */
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_READINGS);
 
-        /** The content URI to access the sensor reading data in the provider */
-        public static final Uri MASTER_CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_MASTER_READINGS);
+//        /** The content URI to access the sensor reading data in the provider */
+//        public static final Uri MASTER_CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_MASTER_READINGS);
 
 
 
@@ -70,9 +70,9 @@ public  final class SensorReadingContract {
 
 
 
-        /** Name of master database table for sensor readings */
-        public final static String MASTER_TABLE_NAME = "master_readings_table";
-
+//        /** Name of master database table for sensor readings */
+//        public final static String MASTER_TABLE_NAME = "master_readings_table";
+//
 
         /**
          * Unique ID number for the SensorReading (only for use in the database table).
@@ -89,55 +89,6 @@ public  final class SensorReadingContract {
          * Type: TEXT
          */
         public final static String COLUMN_TIME = "TIME";
-
-
-        /**
-         * Day of the SensorReading.
-         *
-         * Type: TEXT
-         */
-        public final static String COLUMN_READING_DAY ="DAY";
-
-
-
-        /**
-         * Month of the SensorReading.
-         *
-         * Type: TEXT
-         */
-        public final static String COLUMN_READING_MONTH = "MONTH";
-
-
-        /**
-         * Year of the SensorReading.
-         *
-         * Type: TEXT
-         */
-        public final static String COLUMN_READING_YEAR = "YEAR";
-
-
-        /**
-         * Hrs of the SensorReading.
-         *
-         * Type: TEXT
-         */
-        public final static String COLUMN_READING_HH = "HH";
-
-        /**
-         * Minutes of the SensorReading.
-         *
-         * Type: TEXT
-         */
-        public final static String COLUMN_READING_MM = "MM";
-
-
-        /**
-         * Seconds of the SensorReading.
-         *
-         * Type: TEXT
-         */
-
-        public final static String COLUMN_READING_SS =  "SS";
 
 
         /**

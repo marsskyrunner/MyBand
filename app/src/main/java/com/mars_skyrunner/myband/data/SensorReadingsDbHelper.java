@@ -42,12 +42,6 @@ public class SensorReadingsDbHelper extends SQLiteOpenHelper {
         String SQL_CREATE_SENSOR_READING_TABLE =  "CREATE TABLE " + ReadingEntry.TABLE_NAME + " ("
                 + ReadingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + ReadingEntry.COLUMN_TIME + " INTEGER NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_YEAR + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_MONTH + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_DAY + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_HH + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_MM + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_SS + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_ID + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SAMPLE_RATE + " TEXT NOT NULL, "
                 + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT NOT NULL )";
@@ -57,26 +51,20 @@ public class SensorReadingsDbHelper extends SQLiteOpenHelper {
         // Execute the SQL statement
         db.execSQL(SQL_CREATE_SENSOR_READING_TABLE);
 
-        // Create a String that contains the SQL statement to create the records table
-        String SQL_CREATE_MASTER_SENSOR_READING_TABLE =  "CREATE TABLE " + ReadingEntry.MASTER_TABLE_NAME + " ("
-                + ReadingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + ReadingEntry.COLUMN_TIME + " INTEGER NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_YEAR + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_MONTH + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_DAY + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_HH + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_MM + " TEXT NOT NULL, "
-//                + ReadingEntry.COLUMN_READING_SS + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_SENSOR_ID + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_SAMPLE_RATE + " TEXT NOT NULL, "
-                + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT NOT NULL )";
-
-        Log.w(LOG_TAG,"SQL_CREATE_SENSOR_READING_TABLE: " + SQL_CREATE_SENSOR_READING_TABLE);
-
-
-
-        // Execute the SQL statement
-        db.execSQL(SQL_CREATE_MASTER_SENSOR_READING_TABLE);
+//        // Create a String that contains the SQL statement to create the records table
+//        String SQL_CREATE_MASTER_SENSOR_READING_TABLE =  "CREATE TABLE " + ReadingEntry.MASTER_TABLE_NAME + " ("
+//                + ReadingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+//                + ReadingEntry.COLUMN_TIME + " INTEGER NOT NULL, "
+//                + ReadingEntry.COLUMN_SENSOR_ID + " TEXT NOT NULL, "
+//                + ReadingEntry.COLUMN_SAMPLE_RATE + " TEXT NOT NULL, "
+//                + ReadingEntry.COLUMN_SENSOR_VALUE + " TEXT NOT NULL )";
+//
+//        Log.w(LOG_TAG,"SQL_CREATE_SENSOR_READING_TABLE: " + SQL_CREATE_SENSOR_READING_TABLE);
+//
+//
+//
+//        // Execute the SQL statement
+//        db.execSQL(SQL_CREATE_MASTER_SENSOR_READING_TABLE);
 
     }
 

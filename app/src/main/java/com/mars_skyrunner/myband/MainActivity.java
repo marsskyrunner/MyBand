@@ -1012,12 +1012,18 @@ public class MainActivity extends AppCompatActivity {
                     String sortOrder = ReadingEntry._ID;
 
                     // This loader will execute the ContentProvider's query method on a background thread
-                    String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=?";
+                    String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " +  ReadingEntry.COLUMN_TIME + ">?";
 
+                    Log.v(LOG_TAG, "selection: " + selection);
                     Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
                     Log.v(LOG_TAG, "COLUMN_SAMPLE_RATE : " + Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]);
 
-                    String[] selectionArgs = {Constants.SAMPLE_RATE_OPTIONS[csvFileCounter]};
+                    String saveTimeSelecionArg = "" + timeBasedCSVDate;
+
+                    String[] selectionArgs = {Constants.SAMPLE_RATE_OPTIONS[csvFileCounter] , saveTimeSelecionArg};
+
+                    Log.v(LOG_TAG, "selectionArgs1: " + selectionArgs[0] );
+                    Log.v(LOG_TAG, "selectionArgs2: " + selectionArgs[1] );
 
                     return new CursorLoader(MainActivity.this,   // Parent activity context
                             ReadingEntry.CONTENT_URI,   // Provider content URI to query
@@ -1030,7 +1036,7 @@ public class MainActivity extends AppCompatActivity {
 
                 case 1:
 
-                    Long saveTime = bundle.getLong(Constants.SENSOR_TIME);
+
 
                     //Toast.makeText(MainActivity.this, "Time Base option selected: " + saveTime, Toast.LENGTH_SHORT).show();
 
@@ -1047,7 +1053,7 @@ public class MainActivity extends AppCompatActivity {
                     String selection2 = ReadingEntry.COLUMN_TIME + ">?";
                     //String selection2 = null;
 
-                    String selectionArg = "" + saveTime;
+                    String selectionArg = "" + timeBasedCSVDate;
 
                     String[] selectionArgs2 = {selectionArg};
                     //String[] selectionArgs2 = null;
@@ -1414,19 +1420,11 @@ public class MainActivity extends AppCompatActivity {
             int csvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
             if (b) {
-                // reset temporary table
-                getContentResolver().delete(SensorReadingContract.ReadingEntry.CONTENT_URI, null, null);
 
-                if (csvMode == 1) {
-
-                    timeBasedCSVDate = System.currentTimeMillis();
-
-                }
-
+                timeBasedCSVDate = System.currentTimeMillis();
 
             } else {
 
-                //Log.v(LOG_TAG,"SaveButton " + b + " , bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
                 csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
 
@@ -1435,8 +1433,6 @@ public class MainActivity extends AppCompatActivity {
                 if (bandSubscriptionTaskRunning) {
 
                     // Kick off saveDataCursorLoader
-
-
 
                     Bundle extraBundle = new Bundle();
                     extraBundle.putLong(Constants.SENSOR_TIME, timeBasedCSVDate);
