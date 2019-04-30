@@ -6,7 +6,45 @@ import android.os.Parcelable;
 
 import java.text.SimpleDateFormat;
 
-public class SensorReading implements Parcelable {
+public class SensorReading  implements  Parcelable{
+
+    public SensorReading(Context context, int sensorID, String sensorReading){
+        mContext = context;
+        mSensorID = sensorID;
+        mSensorReading = sensorReading;
+    }
+
+
+
+    public SensorReading(Context context, int sensorID, String sensorReading, String rate, long time){
+
+        mContext = context;
+        mSensorID = sensorID;
+        mSensorReading = sensorReading;
+        mSensorReadingRate = rate;
+        mSensorReadingTime = time;
+    }
+
+    protected SensorReading(Parcel in) {
+        mSensorReadingRate = in.readString();
+        mSensorID = in.readInt();
+        mSensorReading = in.readString();
+        mSensorReadingTime = in.readLong();
+    }
+
+    public static final Creator<SensorReading> CREATOR = new Creator<SensorReading>() {
+        @Override
+        public SensorReading createFromParcel(Parcel in) {
+            return new SensorReading(in);
+        }
+
+        @Override
+        public SensorReading[] newArray(int size) {
+            return new SensorReading[size];
+        }
+    };
+
+
 
     public String getSensorName() {
 
@@ -91,6 +129,9 @@ public class SensorReading implements Parcelable {
         this.mSensorReading = mSensorReading;
     }
 
+    public long getSensorTime() {
+        return mSensorReadingTime;
+    }
 
     public String getSensorReadingRate() {
         return mSensorReadingRate;
@@ -99,107 +140,45 @@ public class SensorReading implements Parcelable {
     String mSensorReadingRate;
     int mSensorID;
     String mSensorReading;
-
     Context mContext;
-
-    String mSensorReadingYear;
-    String mSensorReadingMonth;
-    String mSensorReadingDay;
+    long mSensorReadingTime;
 
 
-    public String getmSensorReadingYear() {
-        return mSensorReadingYear;
+    public String getSensorReadingYear() {
+
+        return new SimpleDateFormat("yyyy").format(mSensorReadingTime);
     }
 
-    public void setmSensorReadingYear(String mSensorReadingYear) {
-        this.mSensorReadingYear = mSensorReadingYear;
+    public String getSensorReadingMonth() {
+        return  new SimpleDateFormat("MM").format(mSensorReadingTime);
     }
 
-    public String getmSensorReadingMonth() {
-        return mSensorReadingMonth;
+    public String getSensorReadingDay() {
+        return  new SimpleDateFormat("dd").format(mSensorReadingTime);
     }
 
-    public void setmSensorReadingMonth(String mSensorReadingMonth) {
-        this.mSensorReadingMonth = mSensorReadingMonth;
-    }
 
-    public String getmSensorReadingDay() {
-        return mSensorReadingDay;
-    }
-
-    public void setmSensorReadingDay(String mSensorReadingDay) {
-        this.mSensorReadingDay = mSensorReadingDay;
-    }
-
-    public String getmSensorReadingHH() {
-        return mSensorReadingHH;
-    }
-
-    public void setmSensorReadingHH(String mSensorReadingHH) {
-        this.mSensorReadingHH = mSensorReadingHH;
-    }
-
-    public String getmSensorReadingMM() {
-        return mSensorReadingMM;
-    }
-
-    public void setmSensorReadingMM(String mSensorReadingMM) {
-        this.mSensorReadingMM = mSensorReadingMM;
-    }
-
-    public String getmSensorReadingSS() {
-        return mSensorReadingSS;
-    }
-
-    public void setmSensorReadingSS(String mSensorReadingSS) {
-        this.mSensorReadingSS = mSensorReadingSS;
-    }
-
-    String mSensorReadingHH;
-    String mSensorReadingMM;
-    String mSensorReadingSS;
-
-
-    public SensorReading(Context context, int sensorID, String sensorReading){
-        mContext = context;
-        mSensorID = sensorID;
-        mSensorReading = sensorReading;
+    public String getSensorReadingHH() {
+        return new SimpleDateFormat("HH").format(mSensorReadingTime);
     }
 
 
 
-    public SensorReading(Context context, int sensorID, String sensorReading, String rate, long time){
-
-        mContext = context;
-        mSensorID = sensorID;
-        mSensorReading = sensorReading;
-        mSensorReadingRate = rate;
-
-        mSensorReadingYear = new SimpleDateFormat("yyyy").format(time);
-        mSensorReadingMonth = new SimpleDateFormat("MM").format(time);
-        mSensorReadingDay = new SimpleDateFormat("dd").format(time);
-
-        mSensorReadingHH = new SimpleDateFormat("HH").format(time);
-        mSensorReadingMM = new SimpleDateFormat("mm").format(time);
-        mSensorReadingSS = new SimpleDateFormat("ss").format(time);
-
+    public String getSensorReadingMM() {
+        return new SimpleDateFormat("mm").format(mSensorReadingTime);
     }
 
 
-    protected SensorReading(Parcel in) {
-        mSensorReadingRate = in.readString();
-        mSensorID = in.readInt();
-        mSensorReading = in.readString();
+    public String getSensorReadingSS() {
+        return new SimpleDateFormat("ss").format(mSensorReadingTime);
+    }
 
 
-        mSensorReadingYear = in.readString();
-        mSensorReadingMonth = in.readString();
-        mSensorReadingDay = in.readString();
 
-        mSensorReadingHH = in.readString();
-        mSensorReadingMM = in.readString();
-        mSensorReadingSS = in.readString();
 
+
+    public int  getSensorID() {
+        return mSensorID;
     }
 
     @Override
@@ -208,36 +187,10 @@ public class SensorReading implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mSensorReadingRate);
-        dest.writeInt(mSensorID);
-        dest.writeString(mSensorReading);
-
-
-        dest.writeString(mSensorReadingYear);
-        dest.writeString(mSensorReadingMonth);
-        dest.writeString(mSensorReadingDay);
-
-        dest.writeString(mSensorReadingHH);
-        dest.writeString(mSensorReadingMM);
-        dest.writeString(mSensorReadingSS);
-
-    }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<SensorReading> CREATOR = new Parcelable.Creator<SensorReading>() {
-        @Override
-        public SensorReading createFromParcel(Parcel in) {
-            return new SensorReading(in);
-        }
-
-        @Override
-        public SensorReading[] newArray(int size) {
-            return new SensorReading[size];
-        }
-    };
-
-    public int  getSensorID() {
-        return mSensorID;
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(mSensorReadingRate);
+        parcel.writeInt(mSensorID);
+        parcel.writeString(mSensorReading);
+        parcel.writeLong(mSensorReadingTime);
     }
 }

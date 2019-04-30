@@ -33,15 +33,15 @@ public class SensorReadingProvider extends ContentProvider {
      */
     private static final int READING_ID = 101;
 
-    /**
-     * URI matcher code for the content URI for the readings table
-     */
-    private static final int MASTER_READINGS = 102;
-
-    /**
-     * URI matcher code for the content URI for a single reading in the readings table
-     */
-    private static final int MASTER_READING_ID = 103;
+//    /**
+//     * URI matcher code for the content URI for the readings table
+//     */
+//    private static final int MASTER_READINGS = 102;
+//
+//    /**
+//     * URI matcher code for the content URI for a single reading in the readings table
+//     */
+//    private static final int MASTER_READING_ID = 103;
 
 
     /**
@@ -55,8 +55,8 @@ public class SensorReadingProvider extends ContentProvider {
     static {
         sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_READINGS, READINGS);
         sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_READINGS + "/#", READING_ID);
-        sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_MASTER_READINGS, MASTER_READINGS);
-        sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_MASTER_READINGS + "/#", MASTER_READING_ID);
+//        sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_MASTER_READINGS, MASTER_READINGS);
+//        sUriMatcher.addURI(SensorReadingContract.CONTENT_AUTHORITY, SensorReadingContract.PATH_MASTER_READINGS + "/#", MASTER_READING_ID);
 
     }
 
@@ -132,27 +132,27 @@ public class SensorReadingProvider extends ContentProvider {
                 cursor = database.query(ReadingEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
-
-            case MASTER_READINGS:
-
-                Log.w(LOG_TAG, "sUriMatcher:  MASTER_READINGS");
-
-                // For the readings code, query the readings table directly with the given
-                // projection, selection, selection arguments, and sort order. The cursor
-                // could contain multiple rows of the readings table.
-                cursor = database.query(ReadingEntry.MASTER_TABLE_NAME, projection, selection, selectionArgs,
-                        null, null, sortOrder);
-                break;
-
-            case MASTER_READING_ID:
-                Log.w(LOG_TAG, "sUriMatcher:  MASTER_READING_ID");
-
-                selection = ReadingEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-
-                cursor = database.query(ReadingEntry.MASTER_TABLE_NAME, projection, selection, selectionArgs,
-                        null, null, sortOrder);
-                break;
+//
+//            case MASTER_READINGS:
+//
+//                Log.w(LOG_TAG, "sUriMatcher:  MASTER_READINGS");
+//
+//                // For the readings code, query the readings table directly with the given
+//                // projection, selection, selection arguments, and sort order. The cursor
+//                // could contain multiple rows of the readings table.
+//                cursor = database.query(ReadingEntry.MASTER_TABLE_NAME, projection, selection, selectionArgs,
+//                        null, null, sortOrder);
+//                break;
+//
+//            case MASTER_READING_ID:
+//                Log.w(LOG_TAG, "sUriMatcher:  MASTER_READING_ID");
+//
+//                selection = ReadingEntry._ID + "=?";
+//                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+//
+//                cursor = database.query(ReadingEntry.MASTER_TABLE_NAME, projection, selection, selectionArgs,
+//                        null, null, sortOrder);
+//                break;
 
 
             default:
@@ -174,7 +174,7 @@ public class SensorReadingProvider extends ContentProvider {
         
         switch (match) {
             case READINGS:
-            case MASTER_READINGS:
+//            case MASTER_READINGS:
                 Log.w(LOG_TAG,"insert readings/master_readings");
                 return insertReading(uri, contentValues);
 
@@ -190,43 +190,43 @@ public class SensorReadingProvider extends ContentProvider {
     private Uri insertReading(Uri uri, ContentValues values) {
 
         Log.w(LOG_TAG,"insertReading : ContentValues: " + values.toString());
-
-        // Check that the year is not null
-        String year = values.getAsString(ReadingEntry.COLUMN_READING_YEAR);
-        if (year == null) {
-            throw new IllegalArgumentException("SensorReading requires a year");
-        }
-
-        // Check that the month is not null
-        String month = values.getAsString(ReadingEntry.COLUMN_READING_MONTH);
-        if (month == null) {
-            throw new IllegalArgumentException("SensorReading requires a month");
-        }
-
-        // Check that the day is not null
-        String day = values.getAsString(ReadingEntry.COLUMN_READING_DAY);
-        if (day == null) {
-            throw new IllegalArgumentException("SensorReading requires a day");
-        }
-
-        // Check that the hour is not null
-        String hh = values.getAsString(ReadingEntry.COLUMN_READING_HH);
-        if (hh == null) {
-            throw new IllegalArgumentException("SensorReading requires an hour");
-        }
-
-        // Check that the MINUTES is not null
-        String mm = values.getAsString(ReadingEntry.COLUMN_READING_MM);
-        if (mm == null) {
-            throw new IllegalArgumentException("SensorReading requires minutes");
-        }
-
-        // Check that the seconds is not null
-        String ss = values.getAsString(ReadingEntry.COLUMN_READING_SS);
-        if (ss == null) {
-            throw new IllegalArgumentException("SensorReading requires seconds");
-        }
-
+//
+//        // Check that the year is not null
+//        String year = values.getAsString(ReadingEntry.COLUMN_READING_YEAR);
+//        if (year == null) {
+//            throw new IllegalArgumentException("SensorReading requires a year");
+//        }
+//
+//        // Check that the month is not null
+//        String month = values.getAsString(ReadingEntry.COLUMN_READING_MONTH);
+//        if (month == null) {
+//            throw new IllegalArgumentException("SensorReading requires a month");
+//        }
+//
+//        // Check that the day is not null
+//        String day = values.getAsString(ReadingEntry.COLUMN_READING_DAY);
+//        if (day == null) {
+//            throw new IllegalArgumentException("SensorReading requires a day");
+//        }
+//
+//        // Check that the hour is not null
+//        String hh = values.getAsString(ReadingEntry.COLUMN_READING_HH);
+//        if (hh == null) {
+//            throw new IllegalArgumentException("SensorReading requires an hour");
+//        }
+//
+//        // Check that the MINUTES is not null
+//        String mm = values.getAsString(ReadingEntry.COLUMN_READING_MM);
+//        if (mm == null) {
+//            throw new IllegalArgumentException("SensorReading requires minutes");
+//        }
+//
+//        // Check that the seconds is not null
+//        String ss = values.getAsString(ReadingEntry.COLUMN_READING_SS);
+//        if (ss == null) {
+//            throw new IllegalArgumentException("SensorReading requires seconds");
+//        }
+//
 
         // Check that the sensorName is not null
         String sensorName = values.getAsString(ReadingEntry.COLUMN_SENSOR_ID);
@@ -260,10 +260,10 @@ public class SensorReadingProvider extends ContentProvider {
                 tableName = ReadingEntry.TABLE_NAME;
                 break;
 
-            case MASTER_READINGS:
-            case MASTER_READING_ID:
-                tableName = ReadingEntry.MASTER_TABLE_NAME;
-                break;
+//            case MASTER_READINGS:
+//            case MASTER_READING_ID:
+////                tableName = ReadingEntry.MASTER_TABLE_NAME;
+//                break;
 
 
             default:
@@ -298,11 +298,11 @@ public class SensorReadingProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case READINGS:
-            case MASTER_READINGS:
+//            case MASTER_READINGS:
                 return updateSensorReading(uri, contentValues, selection, selectionArgs);
 
             case READING_ID:
-            case MASTER_READING_ID:
+//            case MASTER_READING_ID:
                 selection = ReadingEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 return updateSensorReading(uri, contentValues, selection, selectionArgs);
@@ -324,74 +324,6 @@ public class SensorReadingProvider extends ContentProvider {
         // check that the date value is not null.
 
 
-
-
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_YEAR)) {
-
-            // Check that the year is not null
-            String year = values.getAsString(ReadingEntry.COLUMN_READING_YEAR);
-            if (year == null) {
-                throw new IllegalArgumentException("SensorReading requires a year");
-            }
-
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_MONTH)) {
-
-            // Check that the month is not null
-            String month = values.getAsString(ReadingEntry.COLUMN_READING_MONTH);
-            if (month == null) {
-                throw new IllegalArgumentException("SensorReading requires a month");
-            }
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_DAY)) {
-
-            // Check that the day is not null
-            String day = values.getAsString(ReadingEntry.COLUMN_READING_DAY);
-            if (day == null) {
-                throw new IllegalArgumentException("SensorReading requires a day");
-            }
-
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_HH)) {
-
-            // Check that the hour is not null
-            String hh = values.getAsString(ReadingEntry.COLUMN_READING_HH);
-            if (hh == null) {
-                throw new IllegalArgumentException("SensorReading requires an hour");
-            }
-
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_MM)) {
-
-            // Check that the MINUTES is not null
-            String mm = values.getAsString(ReadingEntry.COLUMN_READING_MM);
-            if (mm == null) {
-                throw new IllegalArgumentException("SensorReading requires minutes");
-            }
-
-        }
-
-
-        if (values.containsKey(ReadingEntry.COLUMN_READING_SS)) {
-
-            // Check that the seconds is not null
-            String ss = values.getAsString(ReadingEntry.COLUMN_READING_SS);
-            if (ss == null) {
-                throw new IllegalArgumentException("SensorReading requires seconds");
-            }
-
-
-        }
 
         // If the {@link ReadingEntry#_COLUMN_SENSOR_ID} key is present,
         // check that the time text is not null.
@@ -438,11 +370,11 @@ public class SensorReadingProvider extends ContentProvider {
             case READING_ID:
                 tableName = ReadingEntry.TABLE_NAME;
                 break;
-
-            case MASTER_READINGS:
-            case MASTER_READING_ID:
-                tableName = ReadingEntry.MASTER_TABLE_NAME;
-                break;
+//
+//            case MASTER_READINGS:
+//            case MASTER_READING_ID:
+//                tableName = ReadingEntry.MASTER_TABLE_NAME;
+//                break;
 
 
             default:
@@ -486,17 +418,17 @@ public class SensorReadingProvider extends ContentProvider {
                 rowsDeleted = database.delete(ReadingEntry.TABLE_NAME, selection, selectionArgs);
                 break;
 
-            case MASTER_READINGS:
-                // Delete all rows that match the selection and selection args
-                rowsDeleted = database.delete(ReadingEntry.MASTER_TABLE_NAME, selection, selectionArgs);
-                break;
-
-            case MASTER_READING_ID:
-                // Delete a single row given by the ID in the URI
-                selection = ReadingEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                rowsDeleted = database.delete(ReadingEntry.MASTER_TABLE_NAME, selection, selectionArgs);
-                break;
+//            case MASTER_READINGS:
+//                // Delete all rows that match the selection and selection args
+//                rowsDeleted = database.delete(ReadingEntry.MASTER_TABLE_NAME, selection, selectionArgs);
+//                break;
+//
+//            case MASTER_READING_ID:
+//                // Delete a single row given by the ID in the URI
+//                selection = ReadingEntry._ID + "=?";
+//                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+//                rowsDeleted = database.delete(ReadingEntry.MASTER_TABLE_NAME, selection, selectionArgs);
+//                break;
 
 
             default:
@@ -518,11 +450,11 @@ public class SensorReadingProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         switch (match) {
 
-            case MASTER_READINGS:
+//            case MASTER_READINGS:
             case READINGS:
                 return ReadingEntry.CONTENT_LIST_TYPE;
 
-            case MASTER_READING_ID:
+//            case MASTER_READING_ID:
             case READING_ID:
                 return ReadingEntry.CONTENT_ITEM_TYPE;
 

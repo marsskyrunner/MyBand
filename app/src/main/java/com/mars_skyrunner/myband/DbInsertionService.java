@@ -49,37 +49,29 @@ public class DbInsertionService extends IntentService {
         // and sensorReadings values are the values.
 
         ContentValues values = new ContentValues();
-        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_YEAR, receivedSensor.getmSensorReadingYear());
-        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_MONTH, receivedSensor.getmSensorReadingMonth());
-        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_DAY, receivedSensor.getmSensorReadingDay());
 
-        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_HH, receivedSensor.getmSensorReadingHH());
-        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_MM, receivedSensor.getmSensorReadingMM());
-        values.put(SensorReadingContract.ReadingEntry.COLUMN_READING_SS, receivedSensor.getmSensorReadingSS());
-
-
-
+        values.put(SensorReadingContract.ReadingEntry.COLUMN_TIME, "" + receivedSensor.getSensorTime());
         values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_ID, receivedSensor.getSensorID());
         values.put(SensorReadingContract.ReadingEntry.COLUMN_SAMPLE_RATE,  receivedSensor.getSensorReadingRate());
         values.put(SensorReadingContract.ReadingEntry.COLUMN_SENSOR_VALUE, receivedSensor.getSensorReading());
 
         // Insert sensorReadings into master Database
-        Uri masterUri = mContext.getContentResolver().insert(SensorReadingContract.ReadingEntry.MASTER_CONTENT_URI, values);
+      //  Uri masterUri = mContext.getContentResolver().insert(SensorReadingContract.ReadingEntry.MASTER_CONTENT_URI, values);
 
         String result = "";
-        // Show a toast message depending on whether or not the insertion was successful.
-        if (masterUri == null) {
-
-            result = "masterUri"  + mContext.getResources().getString(R.string.sensor_data_saving_failed);
-
-
-        } else {
-
-            result =  "masterUri" + mContext.getResources().getString(R.string.sensor_data_saving_success);
-
-        }
-
-        Log.w(LOG_TAG,"masterUri:" + result);
+//        // Show a toast message depending on whether or not the insertion was successful.
+//        if (masterUri == null) {
+//
+//            result = "masterUri"  + mContext.getResources().getString(R.string.sensor_data_saving_failed);
+//
+//
+//        } else {
+//
+//            result =  "masterUri" + mContext.getResources().getString(R.string.sensor_data_saving_success);
+//
+//        }
+//
+//        Log.w(LOG_TAG,"masterUri:" + result);
 
 
         Uri newUri;
@@ -99,7 +91,7 @@ public class DbInsertionService extends IntentService {
 
 
         // If the new content URI is null, then there was an error with insertion.
-        //Log.w(LOG_TAG,"newUri:" + result);
+        Log.w(LOG_TAG,"newUri:" + result);
 
 
 

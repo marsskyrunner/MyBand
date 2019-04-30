@@ -29,6 +29,8 @@ public class Constants {
     public static final String DISTANCE = "com.mars_skyrunner.myband.DISTANCE";
 
 
+
+
     public static final int HEART_RATE_AQUIRING = 1;
     public static final int HEART_RATE_LOCKED = 2;
 
@@ -88,18 +90,20 @@ public class Constants {
     public static final String INSERT_SENSOR_READING = packageName + ".INSERT_SENSOR_READING";
     public static final String CREATE_CSV_RECEIVER = packageName + ".CREATE_CSV_RECEIVER";
 
+    public static final String SR_02 = "0.2";
     public static final String SR_1 = "1";
     public static final String SR_2 = "2";
-    public static final String SR_VALUE_CHANGE = "Value change";
+    public static final String SR_5 = "5";
     public static final String SR_8 = "8";
     public static final String SR_31 = "31";
     public static final String SR_62 = "62";
-    public static final String SR_5 = "5";
-    public static final String SR_02 = "0.2";
+    public static final String SR_VALUE_CHANGE = "Value change";
+
 
     public static final String[] SAMPLE_RATE_OPTIONS ={
 
-            SR_1,SR_2,SR_5,SR_8,SR_31,SR_62,SR_02,SR_VALUE_CHANGE
+            SR_02, SR_1, SR_2, SR_5, SR_8, SR_31, SR_62, SR_VALUE_CHANGE
+
 
     };
 

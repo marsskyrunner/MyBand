@@ -39,4 +39,8 @@
     <string name="file_label_date_pattern">date pattern</string>
     <string name="stamp_pattern_error">Date pattern error.</string>
     <string name="open_folder">Open folder</string>
+    <string name="csv_mode_option">CSV output file:</string>
+    <string name="frequency_based_csv">Frequency based</string>
+    <string name="time_based_csv">Time based</string>
+    <string name="csv_mode_key">com.mars_skyrunner.myband.CSV_KEY</string>
 </resources>
