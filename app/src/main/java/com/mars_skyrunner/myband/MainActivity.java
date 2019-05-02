@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.v(LOG_TAG, "ToggleButton stopButtonClicked()");
 
                     bandSubscriptionTaskRunning = false;
-                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
+                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
                     resetSaveDataButton();
                     clearSensorTextViews();
                     disconnectBand();
