@@ -41,6 +41,13 @@
                 android:id="@+id/time_rb"
                 android:text="@string/time_based_csv" />
 
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:id="@+id/sample_rb"
+                android:text="@string/sample_based_csv" />
+
         </RadioGroup>
 
         <TextView

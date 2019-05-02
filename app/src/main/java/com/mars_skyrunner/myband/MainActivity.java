@@ -142,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
 
         toggle.setTextOff(getResources().getString(R.string.start));
         toggle.setTextOn(getResources().getString(R.string.stop));
-
         toggle.setChecked(false);
 
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -168,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.v(LOG_TAG, "ToggleButton stopButtonClicked()");
 
                     bandSubscriptionTaskRunning = false;
-                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
+                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
                     resetSaveDataButton();
                     clearSensorTextViews();
                     disconnectBand();
@@ -1069,6 +1068,10 @@ public class MainActivity extends AppCompatActivity {
                             sortOrder2);                  //  sort order
 
 
+
+                case 2:
+
+                    Toast.makeText(MainActivity.this,"SAMPLE BASED CSV",Toast.LENGTH_SHORT).show();
             }
 
 
@@ -1519,6 +1522,10 @@ public class MainActivity extends AppCompatActivity {
                     rbID = R.id.time_rb;
                     break;
 
+                case 2:
+                    rbID = R.id.sample_rb;
+                    break;
+
             }
 
 
@@ -1547,6 +1554,13 @@ public class MainActivity extends AppCompatActivity {
                         case R.id.time_rb:
 
                             csvOutputFileMode = 1;
+                            editor.putInt(getString(R.string.csv_mode_key), csvOutputFileMode);
+
+                            break;
+
+                        case R.id.sample_rb:
+
+                            csvOutputFileMode = 2;
                             editor.putInt(getString(R.string.csv_mode_key), csvOutputFileMode);
 
                             break;
