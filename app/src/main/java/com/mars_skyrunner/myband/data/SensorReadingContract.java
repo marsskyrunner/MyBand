@@ -88,7 +88,7 @@ public  final class SensorReadingContract {
          *
          * Type: TEXT
          */
-        public final static String COLUMN_TIME = "TIME";
+        public final static String COLUMN_TIME = "time";
 
 
         /**

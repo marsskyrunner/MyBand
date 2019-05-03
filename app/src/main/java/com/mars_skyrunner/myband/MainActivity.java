@@ -853,90 +853,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-    private LoaderManager.LoaderCallbacks<Cursor> SampleBasedCSVFileLoader
-            = new LoaderManager.LoaderCallbacks<Cursor>() {
-        @Override
-        public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-
-            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onCreateLoader");
-
-            showLoadingView(true);
-
-            // Define a projection that specifies the columns from the table we care about.
-            String[] projection = {
-                    ReadingEntry._ID,
-                    ReadingEntry.COLUMN_TIME,
-                    ReadingEntry.COLUMN_SAMPLE_RATE,
-                    ReadingEntry.COLUMN_SENSOR_ID,
-                    ReadingEntry.COLUMN_SENSOR_VALUE};
-
-            String sortOrder = ReadingEntry._ID;
-
-            // This loader will execute the ContentProvider's query method on a background thread
-            //<> : Not equal to
-
-            String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " + ReadingEntry.COLUMN_TIME + ">?";
-
-            String saveTimeSelecionArg = "" + timeBasedCSVDate;
-
-            String[] selectionArgs = { bundle.getString("maxSampleRate") , saveTimeSelecionArg};
-
-            return new CursorLoader(MainActivity.this,   // Parent activity context
-                    ReadingEntry.CONTENT_URI,   // Provider content URI to query
-                    projection,             // Columns to include in the resulting Cursor
-                    selection,                   //  selection clause
-                    selectionArgs,                   //  selection arguments
-                    sortOrder);                  //  sort order
-
-        }
-
-        @Override
-        public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
-            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onLoadFinished");
-
-
-            ArrayList<Long> sampleTimeStamps = new ArrayList<>();
-
-            try {
-
-                int rowcount = c.getCount();
-
-                if (rowcount > 0) {
-
-                    c.moveToFirst();
-
-                    for (int i = 0; i < rowcount; i++) {
-
-                        c.moveToPosition(i);
-                        sampleTimeStamps.add(Long.parseLong(c.getString(1).trim())) ;
-
-                    }
-
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
-            }
-
-            showLoadingView(false);
-
-            Toast.makeText(MainActivity.this,"TIME STAMPS COLLECTED",Toast.LENGTH_SHORT).show();
-
-
-        }
-
-        @Override
-        public void onLoaderReset(Loader<Cursor> loader) {
-            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onLoaderReset");
-        }
-    };
-
-
-
-
     private LoaderManager.LoaderCallbacks<ConnectionState> bandSensorSubscriptionLoader
 
             = new LoaderManager.LoaderCallbacks<ConnectionState>() {
@@ -1070,7 +986,7 @@ public class MainActivity extends AppCompatActivity {
                     String sortOrder = ReadingEntry._ID;
 
                     // This loader will execute the ContentProvider's query method on a background thread
-                    String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " +  ReadingEntry.COLUMN_TIME + ">?";
+                    String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " + ReadingEntry.COLUMN_TIME + ">?";
 
                     Log.v(LOG_TAG, "selection: " + selection);
                     Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
@@ -1078,10 +994,10 @@ public class MainActivity extends AppCompatActivity {
 
                     String saveTimeSelecionArg = "" + timeBasedCSVDate;
 
-                    String[] selectionArgs = {Constants.SAMPLE_RATE_OPTIONS[csvFileCounter] , saveTimeSelecionArg};
+                    String[] selectionArgs = {Constants.SAMPLE_RATE_OPTIONS[csvFileCounter], saveTimeSelecionArg};
 
-                    Log.v(LOG_TAG, "selectionArgs1: " + selectionArgs[0] );
-                    Log.v(LOG_TAG, "selectionArgs2: " + selectionArgs[1] );
+                    Log.v(LOG_TAG, "selectionArgs1: " + selectionArgs[0]);
+                    Log.v(LOG_TAG, "selectionArgs2: " + selectionArgs[1]);
 
                     return new CursorLoader(MainActivity.this,   // Parent activity context
                             ReadingEntry.CONTENT_URI,   // Provider content URI to query
@@ -1089,7 +1005,6 @@ public class MainActivity extends AppCompatActivity {
                             selection,                   //  selection clause
                             selectionArgs,                   //  selection arguments
                             sortOrder);                  //  sort order
-
 
 
                 case 1:
@@ -1126,31 +1041,31 @@ public class MainActivity extends AppCompatActivity {
                             sortOrder2);                  //  sort order
 
 
-                    case 2:
+                case 2:
 
 
-                        // Define a projection that specifies the columns from the table we care about.
-                        String[] projection3 = {
-                                "MAX("+ReadingEntry.COLUMN_SAMPLE_RATE+ ")"
-                        };
+                    // Define a projection that specifies the columns from the table we care about.
+                    String[] projection3 = {
+                            "MAX(" + ReadingEntry.COLUMN_SAMPLE_RATE + ")"
+                    };
 
-                        String selection3 = ReadingEntry.COLUMN_TIME + ">?";
-                        //String selection2 = null;
+                    String selection3 = ReadingEntry.COLUMN_TIME + ">?";
+                    //String selection2 = null;
 
-                        String selectionArg3 = "" + timeBasedCSVDate;
+                    String selectionArg3 = "" + timeBasedCSVDate;
 
-                        String[] selectionArgs3 = {selectionArg3};
-                        //String[] selectionArgs2 = null;
+                    String[] selectionArgs3 = {selectionArg3};
+                    //String[] selectionArgs2 = null;
 
-                        String sortOrder3 = ReadingEntry.COLUMN_TIME;
-                        //String sortOrder2 = ReadingEntry._ID;
+                    String sortOrder3 = ReadingEntry.COLUMN_TIME;
+                    //String sortOrder2 = ReadingEntry._ID;
 
-                        return new CursorLoader(MainActivity.this,   // Parent activity context
-                                ReadingEntry.CONTENT_URI,   // Provider content URI to query
-                                projection3,             // Columns to include in the resulting Cursor
-                                selection3,                   //  selection clause
-                                selectionArgs3,                   //  selection arguments
-                                sortOrder3);                  //  sort order
+                    return new CursorLoader(MainActivity.this,   // Parent activity context
+                            ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                            projection3,             // Columns to include in the resulting Cursor
+                            selection3,                   //  selection clause
+                            selectionArgs3,                   //  selection arguments
+                            sortOrder3);                  //  sort order
 
 
             }
@@ -1400,21 +1315,17 @@ public class MainActivity extends AppCompatActivity {
                                     mySnackbar.show();
 
 
-                                }else{
+                                } else {
 
-                                    Toast.makeText(MainActivity.this,"No existen registros guardados",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "No existen registros guardados", Toast.LENGTH_SHORT).show();
 
                                 }
-
 
 
                             } catch (IOException e) {
                                 e.printStackTrace();
                                 Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
                             }
-
-
-
 
 
                             break;
@@ -1440,16 +1351,14 @@ public class MainActivity extends AppCompatActivity {
                                     String maxSampleRate = initTimeValue.trim();
 
                                     Bundle bundle = new Bundle();
-                                    bundle.putString("maxSampleRate",maxSampleRate);
+                                    bundle.putString("maxSampleRate", maxSampleRate);
 
                                     // Kick off the  loader
-                                    getLoaderManager().restartLoader(Constants.SAMPLE_BASED_LOADER, bundle, SampleBasedCSVFileLoader );
+                                    getLoaderManager().restartLoader(Constants.SAMPLE_BASED_LOADER, bundle, SampleBasedCSVFileLoader);
 
+                                } else {
 
-
-                                }else{
-
-                                    Toast.makeText(MainActivity.this,"No existen registros guardados",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "No existen registros guardados", Toast.LENGTH_SHORT).show();
 
                                 }
 
@@ -1475,6 +1384,288 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+    };
+
+
+    private LoaderManager.LoaderCallbacks<Cursor> SampleBasedCSVFileLoader
+            = new LoaderManager.LoaderCallbacks<Cursor>() {
+
+        Context mContext = MainActivity.this;
+        Activity mActivity = MainActivity.this;
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+
+            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onCreateLoader");
+            showLoadingView(true);
+
+
+            // Define a projection that specifies the columns from the table we care about.
+            String[] projection = {
+                    ReadingEntry._ID,
+                    ReadingEntry.COLUMN_TIME,
+                    ReadingEntry.COLUMN_SAMPLE_RATE,
+                    ReadingEntry.COLUMN_SENSOR_ID,
+                    ReadingEntry.COLUMN_SENSOR_VALUE};
+
+            String sortOrder = ReadingEntry._ID;
+
+            // This loader will execute the ContentProvider's query method on a background thread
+            //<> : Not equal to
+
+            String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " + ReadingEntry.COLUMN_TIME + ">?";
+
+            String saveTimeSelecionArg = "" + timeBasedCSVDate;
+
+            String[] selectionArgs = {bundle.getString("maxSampleRate"), saveTimeSelecionArg};
+
+            return new CursorLoader(mContext,   // Parent activity context
+                    ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                    projection,             // Columns to include in the resulting Cursor
+                    selection,                   //  selection clause
+                    selectionArgs,                   //  selection arguments
+                    sortOrder);                  //  sort order
+
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
+            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onLoadFinished");
+
+            ArrayList<Long> sampleTimeStamps = new ArrayList<>();
+
+            try {
+
+                int rowcount = c.getCount();
+
+                if (rowcount > 0) {
+
+                    c.moveToFirst();
+
+                    for (int i = 0; i < rowcount; i++) {
+
+                        c.moveToPosition(i);
+                        sampleTimeStamps.add(Long.parseLong(c.getString(1).trim()));
+
+                    }
+
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+            }
+
+
+//
+//        Intent resetReadingsIntent = new Intent(Constants.RESET_SENSOR_READING);
+//        resetReadingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//        mContext.sendBroadcast(resetReadingsIntent);
+
+//            for (int i = 0; i < sampleTimeStamps.size(); i++) {
+////
+////                Log.v(LOG_TAG, "" + i);
+////
+                long minTime = sampleTimeStamps.get(0);
+                long maxTime;
+////
+////                if ((i + 1) == sampleTimeStamps.size()) {
+////                    maxTime = minTime;
+////                } else {
+                    maxTime = sampleTimeStamps.get((0 + 1));
+////                }
+////
+                Bundle bundle = new Bundle();
+                bundle.putLong("minTime", minTime);
+                bundle.putLong("maxTime", maxTime);
+////
+////                // Kick off the  loader
+////                getLoaderManager().restartLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER, bundle, timeStampSensorReadingLoader);
+////
+////            }
+
+// Kick off the  loader
+                getLoaderManager().restartLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER, bundle, timeStampSensorReadingLoader);
+
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onLoaderReset");
+        }
+
+    };
+
+    private LoaderManager.LoaderCallbacks<Cursor> timeStampSensorReadingLoader
+            = new LoaderManager.LoaderCallbacks<Cursor>() {
+
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
+
+            Log.v(LOG_TAG, "timeStampSensorReadingLoader: onCreateLoader");
+            Log.v(LOG_TAG,"loader id = " + id);
+
+            long minTime = bundle.getLong("minTime");
+            long maxTime = bundle.getLong("maxTime");
+
+            if (minTime != maxTime) {
+
+                // Define a projection that specifies the columns from the table we care about.
+                String[] projection = {
+                        ReadingEntry._ID,
+                        ReadingEntry.COLUMN_TIME,
+                        ReadingEntry.COLUMN_SAMPLE_RATE,
+                        ReadingEntry.COLUMN_SENSOR_ID,
+                        ReadingEntry.COLUMN_SENSOR_VALUE};
+
+                String sortOrder = ReadingEntry._ID;
+
+                // This loader will execute the ContentProvider's query method on a background thread
+                String selection = ReadingEntry.COLUMN_TIME + ">=?  AND " + ReadingEntry.COLUMN_TIME + "<?";
+
+                String[] selectionArgs = {("" + minTime), ("" + maxTime)};
+
+                return new CursorLoader(MainActivity.this,   // Parent activity context
+                        ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                        projection,             // Columns to include in the resulting Cursor
+                        selection,                   //  selection clause
+                        selectionArgs,                   //  selection arguments
+                        sortOrder);                  //  sort order
+
+            } else {
+
+//                mActivity.getLoaderManager().destroyLoader(id);
+                Toast.makeText(MainActivity.this, "ALL SAMPLES FOUND", Toast.LENGTH_SHORT).show();
+
+                return null;
+
+            }
+
+
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
+
+            Log.v(LOG_TAG, "timeStampSensorReadingLoader: onLoadFinished ");
+
+//            getLoaderManager().destroyLoader(loader.getId());
+
+            FileWriter fw2 = null;
+
+            try {
+
+                int rowcount = c.getCount();
+                int colcount = c.getColumnCount();
+
+                Log.v(LOG_TAG, "rowcount: " + rowcount);
+                Log.v(LOG_TAG, "colcount: " + colcount);
+
+                if (rowcount > 0) {
+
+                    outputDirectory = getOutputDirectory();
+
+                    Log.v(LOG_TAG, "outputDirectory.getAbsolutePath().toString(): " + outputDirectory.getAbsolutePath().toString());
+
+                    String srLabel = "SB";
+
+                    saveFile = getCsvOutputFile(outputDirectory, srLabel);
+
+                    fw2 = new FileWriter(saveFile);
+
+                    BufferedWriter bw = new BufferedWriter(fw2);
+
+                    c.moveToFirst();
+
+                    for (int i = 0; i < rowcount; i++) {
+
+                        c.moveToPosition(i);
+
+                        for (int j = 0; j < colcount; j++) {
+
+                            String cellValue = c.getString(j);
+                            Log.w(LOG_TAG, j + " : " + i + " = " + cellValue);
+
+                            String fileValue = "";
+
+                            if (j == 1) { //Time column
+
+                                long time = Long.parseLong(cellValue.trim());
+
+                                String year = new SimpleDateFormat("yyyy").format(time);
+                                String month = new SimpleDateFormat("MM").format(time);
+                                String day = new SimpleDateFormat("dd").format(time);
+                                String hour = new SimpleDateFormat("HH").format(time);
+                                String minute = new SimpleDateFormat("mm").format(time);
+                                String sec = new SimpleDateFormat("ss").format(time);
+
+                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+                            }
+
+                            if (j != (colcount - 1)) {
+
+                                Log.w(LOG_TAG, j + " != " + (colcount - 1));
+                                fileValue = cellValue + ",";
+
+                            } else {
+                                Log.w(LOG_TAG, j + " == " + (colcount - 1));
+                                fileValue = cellValue;
+                            }
+
+                            bw.write(fileValue);
+
+                        }
+
+                        bw.newLine();
+                    }
+
+                    bw.flush();
+
+                    Log.w(LOG_TAG, "Datapoint Exported Successfully.");
+
+
+                    //If SaveDatapoint button is clicked while MSBand still connected, it saves the
+                    //newest values
+                    values.clear();
+
+
+                    //Save datapoint loader destroyed, so that if user comes back from
+                    //CSV file viewer, it does not create a new one
+//                    getLoaderManager().destroyLoader(loader.getId());
+
+
+                    showLoadingView(false);
+                    //shows "OPEN CSV" action on a snackbar
+                    Snackbar mySnackbar = Snackbar.make(mMainLayout,
+                            "Files saved at" + outputDirectory.getAbsolutePath().toString(), Snackbar.LENGTH_LONG);
+                    //mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
+                    mySnackbar.show();
+
+
+                } else {
+
+                    Toast.makeText(MainActivity.this, "No existen registros guardados", Toast.LENGTH_SHORT).show();
+
+                }
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+            }
+
+
+//            Toast.makeText(mContext,"timeStampSensorReadingLoader: onLoadFinished" , Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+            Log.v(LOG_TAG, "timeStampSensorReadingLoader: onLoaderReset");
+
+        }
     };
 
     private String getSensorSRlabel(String sensorSR) {
