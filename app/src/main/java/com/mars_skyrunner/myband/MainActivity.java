@@ -45,6 +45,8 @@ import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
 import com.microsoft.band.ConnectionState;
 
+import org.mortbay.jetty.Main;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -842,34 +844,6 @@ public class MainActivity extends AppCompatActivity {
 
     };
 
-//
-//    public class OpenCSVFileListener implements View.OnClickListener {
-//
-//
-//        @Override
-//        public void onClick(View v) {
-//
-//            Log.v(LOG_TAG, "OpenCSVFileListener onClick");
-//
-//            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension("csv");
-//            Log.v(LOG_TAG, "mimeType: " + mimeType);
-//
-//            Intent intent = new Intent(Intent.ACTION_VIEW);
-//            intent.setDataAndType(Uri.fromFile(saveFile), "application/vnd.ms-excel");
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//
-//            // Verify that the intent will resolve to an activity
-//            if (intent.resolveActivity(getPackageManager()) != null) {
-//                Log.v(LOG_TAG, "resolveActivity YES");
-//                startActivity(intent);
-//            } else {
-//                Log.v(LOG_TAG, "resolveActivity NO");
-//            }
-//
-//
-//        }
-//    }
-//
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -877,6 +851,91 @@ public class MainActivity extends AppCompatActivity {
 
         Log.v(LOG_TAG, "onActivityResult");
     }
+
+
+
+
+    private LoaderManager.LoaderCallbacks<Cursor> SampleBasedCSVFileLoader
+            = new LoaderManager.LoaderCallbacks<Cursor>() {
+        @Override
+        public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+
+            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onCreateLoader");
+
+            showLoadingView(true);
+
+            // Define a projection that specifies the columns from the table we care about.
+            String[] projection = {
+                    ReadingEntry._ID,
+                    ReadingEntry.COLUMN_TIME,
+                    ReadingEntry.COLUMN_SAMPLE_RATE,
+                    ReadingEntry.COLUMN_SENSOR_ID,
+                    ReadingEntry.COLUMN_SENSOR_VALUE};
+
+            String sortOrder = ReadingEntry._ID;
+
+            // This loader will execute the ContentProvider's query method on a background thread
+            //<> : Not equal to
+
+            String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " + ReadingEntry.COLUMN_TIME + ">?";
+
+            String saveTimeSelecionArg = "" + timeBasedCSVDate;
+
+            String[] selectionArgs = { bundle.getString("maxSampleRate") , saveTimeSelecionArg};
+
+            return new CursorLoader(MainActivity.this,   // Parent activity context
+                    ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                    projection,             // Columns to include in the resulting Cursor
+                    selection,                   //  selection clause
+                    selectionArgs,                   //  selection arguments
+                    sortOrder);                  //  sort order
+
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
+            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onLoadFinished");
+
+
+            ArrayList<Long> sampleTimeStamps = new ArrayList<>();
+
+            try {
+
+                int rowcount = c.getCount();
+
+                if (rowcount > 0) {
+
+                    c.moveToFirst();
+
+                    for (int i = 0; i < rowcount; i++) {
+
+                        c.moveToPosition(i);
+                        sampleTimeStamps.add(Long.parseLong(c.getString(1).trim())) ;
+
+                    }
+
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+            }
+
+            showLoadingView(false);
+
+            Toast.makeText(MainActivity.this,"TIME STAMPS COLLECTED",Toast.LENGTH_SHORT).show();
+
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onLoaderReset");
+        }
+    };
+
+
+
 
     private LoaderManager.LoaderCallbacks<ConnectionState> bandSensorSubscriptionLoader
 
@@ -1036,7 +1095,6 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
 
 
-
                     //Toast.makeText(MainActivity.this, "Time Base option selected: " + saveTime, Toast.LENGTH_SHORT).show();
 
                     // Define a projection that specifies the columns from the table we care about.
@@ -1068,10 +1126,33 @@ public class MainActivity extends AppCompatActivity {
                             sortOrder2);                  //  sort order
 
 
+                    case 2:
 
-                case 2:
 
-                    Toast.makeText(MainActivity.this,"SAMPLE BASED CSV",Toast.LENGTH_SHORT).show();
+                        // Define a projection that specifies the columns from the table we care about.
+                        String[] projection3 = {
+                                "MAX("+ReadingEntry.COLUMN_SAMPLE_RATE+ ")"
+                        };
+
+                        String selection3 = ReadingEntry.COLUMN_TIME + ">?";
+                        //String selection2 = null;
+
+                        String selectionArg3 = "" + timeBasedCSVDate;
+
+                        String[] selectionArgs3 = {selectionArg3};
+                        //String[] selectionArgs2 = null;
+
+                        String sortOrder3 = ReadingEntry.COLUMN_TIME;
+                        //String sortOrder2 = ReadingEntry._ID;
+
+                        return new CursorLoader(MainActivity.this,   // Parent activity context
+                                ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                                projection3,             // Columns to include in the resulting Cursor
+                                selection3,                   //  selection clause
+                                selectionArgs3,                   //  selection arguments
+                                sortOrder3);                  //  sort order
+
+
             }
 
 
@@ -1338,6 +1419,46 @@ public class MainActivity extends AppCompatActivity {
 
                             break;
 
+                        case 2:
+
+                            Log.v(LOG_TAG, "SAMPLE BASED CSV");
+
+
+                            try {
+
+                                int rowcount = c.getCount();
+                                int colcount = c.getColumnCount();
+
+                                Log.v(LOG_TAG, "rowcount: " + rowcount);
+                                Log.v(LOG_TAG, "colcount: " + colcount);
+
+                                if (rowcount > 0) {
+
+                                    c.moveToFirst();
+                                    c.moveToPosition(0);
+                                    String initTimeValue = c.getString(0);
+                                    String maxSampleRate = initTimeValue.trim();
+
+                                    Bundle bundle = new Bundle();
+                                    bundle.putString("maxSampleRate",maxSampleRate);
+
+                                    // Kick off the  loader
+                                    getLoaderManager().restartLoader(Constants.SAMPLE_BASED_LOADER, bundle, SampleBasedCSVFileLoader );
+
+
+
+                                }else{
+
+                                    Toast.makeText(MainActivity.this,"No existen registros guardados",Toast.LENGTH_SHORT).show();
+
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+                            }
+
+                            break;
 
                     }
 

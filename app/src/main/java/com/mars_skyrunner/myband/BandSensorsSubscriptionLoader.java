@@ -252,7 +252,6 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                     }
                 }
 
-
                 CheckBox ambLightSensorCheckBox = (CheckBox) mListView.getChildAt(Constants.AMBIENT_LIGHT_SENSOR_ID - 1).findViewById(R.id.sensor_checkbox);
                 Log.v(LOG_TAG, "AMBIENT_LIGHT_SENSOR: " + ambLightSensorCheckBox.isChecked());
 
@@ -712,7 +711,12 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         }
     };
 
+
+
     private BandAccelerometerEventListener mAccelerometerEventListener = new BandAccelerometerEventListener() {
+
+
+
         @Override
         public void onBandAccelerometerChanged(final BandAccelerometerEvent event) {
             if (event != null) {
