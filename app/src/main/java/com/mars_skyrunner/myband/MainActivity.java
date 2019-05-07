@@ -52,6 +52,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Array;
 import java.security.Provider;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -94,7 +95,10 @@ public class MainActivity extends AppCompatActivity {
 
     int csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
     int prevCsvMode;
-
+    private ArrayList<String> sampleDataset = new ArrayList<>();
+    private Long timeStampReference;
+    ArrayList<Long> sampleTimeStamps;
+    int sampleTimeStampsIterator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1041,7 +1045,7 @@ public class MainActivity extends AppCompatActivity {
                             sortOrder2);                  //  sort order
 
 
-                case 2:
+                case 2: // SAMPLE BASED QUERY
 
 
                     // Define a projection that specifies the columns from the table we care about.
@@ -1221,7 +1225,6 @@ public class MainActivity extends AppCompatActivity {
 
                             Log.v(LOG_TAG, "TIME BASED CSV");
 
-
                             FileWriter fw2 = null;
 
                             try {
@@ -1347,8 +1350,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     c.moveToFirst();
                                     c.moveToPosition(0);
-                                    String initTimeValue = c.getString(0);
-                                    String maxSampleRate = initTimeValue.trim();
+                                    String maxSampleRate = c.getString(0).trim();
 
                                     Bundle bundle = new Bundle();
                                     bundle.putString("maxSampleRate", maxSampleRate);
@@ -1390,8 +1392,9 @@ public class MainActivity extends AppCompatActivity {
     private LoaderManager.LoaderCallbacks<Cursor> SampleBasedCSVFileLoader
             = new LoaderManager.LoaderCallbacks<Cursor>() {
 
+        //Once the max sample rate has been selected, proceed to retrieve samples timestamps
+
         Context mContext = MainActivity.this;
-        Activity mActivity = MainActivity.this;
 
         @Override
         public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -1432,7 +1435,11 @@ public class MainActivity extends AppCompatActivity {
         public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
             Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onLoadFinished");
 
-            ArrayList<Long> sampleTimeStamps = new ArrayList<>();
+            //sampleTimeStamps stores sample time stamps that are going to be searched for all sensors,
+            // in order to concatenate
+            // each sensor reading into a single vector for each timestamp
+
+            sampleTimeStamps = new ArrayList<>();
 
             try {
 
@@ -1456,36 +1463,21 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
             }
 
+            timeStampReference = sampleTimeStamps.get(0);
 
-//
-//        Intent resetReadingsIntent = new Intent(Constants.RESET_SENSOR_READING);
-//        resetReadingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        mContext.sendBroadcast(resetReadingsIntent);
+            long minTime = sampleTimeStamps.get(0);
+            long maxTime;
 
-//            for (int i = 0; i < sampleTimeStamps.size(); i++) {
-////
-////                Log.v(LOG_TAG, "" + i);
-////
-                long minTime = sampleTimeStamps.get(0);
-                long maxTime;
-////
-////                if ((i + 1) == sampleTimeStamps.size()) {
-////                    maxTime = minTime;
-////                } else {
-                    maxTime = sampleTimeStamps.get((0 + 1));
-////                }
-////
-                Bundle bundle = new Bundle();
-                bundle.putLong("minTime", minTime);
-                bundle.putLong("maxTime", maxTime);
-////
-////                // Kick off the  loader
-////                getLoaderManager().restartLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER, bundle, timeStampSensorReadingLoader);
-////
-////            }
+            maxTime = sampleTimeStamps.get((0 + 1));
 
-// Kick off the  loader
-                getLoaderManager().restartLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER, bundle, timeStampSensorReadingLoader);
+            sampleTimeStampsIterator = 0;
+
+            Bundle bundle = new Bundle();
+            bundle.putLong("minTime", minTime);
+            bundle.putLong("maxTime", maxTime);
+
+          // Kick off the  loader
+            getLoaderManager().restartLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER, bundle, timeStampSensorReadingLoader);
 
 
         }
@@ -1539,6 +1531,13 @@ public class MainActivity extends AppCompatActivity {
 //                mActivity.getLoaderManager().destroyLoader(id);
                 Toast.makeText(MainActivity.this, "ALL SAMPLES FOUND", Toast.LENGTH_SHORT).show();
 
+                showLoadingView(false);
+
+                Intent resetReadingsIntent = new Intent(Constants.RESET_SENSOR_READING);
+                resetReadingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                sendBroadcast(resetReadingsIntent);
+
+
                 return null;
 
             }
@@ -1551,7 +1550,14 @@ public class MainActivity extends AppCompatActivity {
 
             Log.v(LOG_TAG, "timeStampSensorReadingLoader: onLoadFinished ");
 
-//            getLoaderManager().destroyLoader(loader.getId());
+            Bundle b = c.getExtras();
+
+            CursorLoader p = (CursorLoader) loader;
+            String[] selArgs = p.getSelectionArgs();
+            String timeStamp = selArgs[0];
+
+            ArrayList<Integer> selectedSensorID = getSelectedSensorID();
+            String[] sensorReadings = new String[selectedSensorID.size()];
 
             FileWriter fw2 = null;
 
@@ -1565,84 +1571,18 @@ public class MainActivity extends AppCompatActivity {
 
                 if (rowcount > 0) {
 
-                    outputDirectory = getOutputDirectory();
+                    sensorReadings = getSensorReadings(c , selectedSensorID);
+                    String values = "";
 
-                    Log.v(LOG_TAG, "outputDirectory.getAbsolutePath().toString(): " + outputDirectory.getAbsolutePath().toString());
+                    for (int i = 0 ; i < selectedSensorID.size() ; i++){
 
-                    String srLabel = "SB";
+                        values += sensorReadings[i];
 
-                    saveFile = getCsvOutputFile(outputDirectory, srLabel);
-
-                    fw2 = new FileWriter(saveFile);
-
-                    BufferedWriter bw = new BufferedWriter(fw2);
-
-                    c.moveToFirst();
-
-                    for (int i = 0; i < rowcount; i++) {
-
-                        c.moveToPosition(i);
-
-                        for (int j = 0; j < colcount; j++) {
-
-                            String cellValue = c.getString(j);
-                            Log.w(LOG_TAG, j + " : " + i + " = " + cellValue);
-
-                            String fileValue = "";
-
-                            if (j == 1) { //Time column
-
-                                long time = Long.parseLong(cellValue.trim());
-
-                                String year = new SimpleDateFormat("yyyy").format(time);
-                                String month = new SimpleDateFormat("MM").format(time);
-                                String day = new SimpleDateFormat("dd").format(time);
-                                String hour = new SimpleDateFormat("HH").format(time);
-                                String minute = new SimpleDateFormat("mm").format(time);
-                                String sec = new SimpleDateFormat("ss").format(time);
-
-                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
-                            }
-
-                            if (j != (colcount - 1)) {
-
-                                Log.w(LOG_TAG, j + " != " + (colcount - 1));
-                                fileValue = cellValue + ",";
-
-                            } else {
-                                Log.w(LOG_TAG, j + " == " + (colcount - 1));
-                                fileValue = cellValue;
-                            }
-
-                            bw.write(fileValue);
-
-                        }
-
-                        bw.newLine();
                     }
 
-                    bw.flush();
+                    String sample = (Long.parseLong(timeStamp.trim()) - timeStampReference) + "," + values;
 
-                    Log.w(LOG_TAG, "Datapoint Exported Successfully.");
-
-
-                    //If SaveDatapoint button is clicked while MSBand still connected, it saves the
-                    //newest values
-                    values.clear();
-
-
-                    //Save datapoint loader destroyed, so that if user comes back from
-                    //CSV file viewer, it does not create a new one
-//                    getLoaderManager().destroyLoader(loader.getId());
-
-
-                    showLoadingView(false);
-                    //shows "OPEN CSV" action on a snackbar
-                    Snackbar mySnackbar = Snackbar.make(mMainLayout,
-                            "Files saved at" + outputDirectory.getAbsolutePath().toString(), Snackbar.LENGTH_LONG);
-                    //mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
-                    mySnackbar.show();
-
+                    sampleDataset.add(sample);
 
                 } else {
 
@@ -1651,13 +1591,38 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
             }
 
+            sampleTimeStampsIterator++;
 
-//            Toast.makeText(mContext,"timeStampSensorReadingLoader: onLoadFinished" , Toast.LENGTH_SHORT).show();
+            if(sampleTimeStampsIterator == (sampleTimeStamps.size() - 1)){
+
+                sampleTimeStampsIterator = 0;
+                createSampleBasedCSV();
+
+         }else{
+
+                long minTime = sampleTimeStamps.get(sampleTimeStampsIterator);
+                long maxTime;
+
+                maxTime = sampleTimeStamps.get((sampleTimeStampsIterator + 1));
+
+                Bundle bundle = new Bundle();
+                bundle.putLong("minTime", minTime);
+                bundle.putLong("maxTime", maxTime);
+
+                // Kick off the  loader
+                getLoaderManager().restartLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER, bundle, timeStampSensorReadingLoader);
+
+
+            }
+
+
+
+
         }
 
         @Override
@@ -1667,6 +1632,210 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
+
+    private void createSampleBasedCSV() {
+
+
+        outputDirectory = getOutputDirectory();
+
+        Log.v(LOG_TAG, "outputDirectory.getAbsolutePath().toString(): " + outputDirectory.getAbsolutePath().toString());
+
+        String srLabel = "SB";
+
+        saveFile = getCsvOutputFile(outputDirectory, srLabel);
+
+        try {
+            FileWriter fw = new FileWriter(saveFile);
+            BufferedWriter bw = new BufferedWriter(fw);
+
+            for (int i = 0; i < sampleDataset.size(); i++) {
+
+                bw.write(sampleDataset.get(i));
+                bw.newLine();
+            }
+
+
+            bw.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+        }
+
+        Log.w(LOG_TAG, "Datapoint Exported Successfully.");
+
+        //If SaveDatapoint button is clicked while MSBand still connected, it saves the
+        //newest values
+        sampleDataset.clear();
+
+        showLoadingView(false);
+
+        //shows "OPEN CSV" action on a snackbar
+        Snackbar mySnackbar = Snackbar.make(mMainLayout,
+                "Files saved at" + outputDirectory.getAbsolutePath().toString(), Snackbar.LENGTH_LONG);
+        //mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
+        mySnackbar.show();
+
+    }
+
+    private String[] getSensorReadings(Cursor c, ArrayList<Integer> selectedSensorID) {
+
+        String[] answer = new String[selectedSensorID.size()];
+
+        for(int i = 0 ; i < selectedSensorID.size(); i++){
+
+            answer[i] = getReading(c, selectedSensorID.get(i));
+
+        }
+
+        return answer;
+    }
+
+    private String getReading(Cursor c, Integer sensorID) {
+
+        /*QUERY
+        *                 String[] projection = {
+                        ReadingEntry._ID,
+                        ReadingEntry.COLUMN_TIME,
+                        ReadingEntry.COLUMN_SAMPLE_RATE,
+                        ReadingEntry.COLUMN_SENSOR_ID,
+                        ReadingEntry.COLUMN_SENSOR_VALUE};
+
+        * */
+
+        int rowcount = c.getCount();
+        int colcount = c.getColumnCount();
+
+        c.moveToFirst();
+
+        String reading = "null";
+
+        for (int i = 0 ; i < rowcount; i++){
+
+            String currentID = c.getString(3);
+
+            if(currentID.equals("" + sensorID)){
+
+                reading = c.getString(4);
+
+            }
+
+        }
+
+        return reading;
+    }
+
+
+    private ArrayList<Integer> getSelectedSensorID() {
+
+
+        ArrayList<Integer> result = new ArrayList<>();
+
+        for (int i = 0; i < sensorReadings.size(); i++) {
+
+            SensorReadingView sensorView = (SensorReadingView) mListView.getChildAt(i);
+            boolean check = sensorView.getSensorCheckBox().isChecked();
+
+            if(check){
+
+                int sensorID = 0;
+
+                switch (sensorView.getId()) {
+
+                    case R.id.heart_rate_sensorview:
+
+                        sensorID =  Constants.HEART_RATE_SENSOR_ID;
+
+                        break;
+
+                    case R.id.rr_interval_sensorview:
+
+                        sensorID = Constants.RR_INTERVAL_SENSOR_ID;
+
+                        break;
+
+                    case R.id.accelerometer_sensorview:
+
+                        sensorID =  Constants.ACCELEROMETER_SENSOR_ID;
+
+                        break;
+
+                    case R.id.altimeter_sensorview:
+
+                        sensorID =  Constants.ALTIMETER_SENSOR_ID;
+
+                        break;
+
+                    case R.id.ambient_light_sensorview:
+
+                        sensorID =  Constants.AMBIENT_LIGHT_SENSOR_ID;
+
+                        break;
+
+                    case R.id.barometer_sensorview:
+
+                        sensorID =  Constants.BAROMETER_SENSOR_ID;
+
+                        break;
+
+                    case R.id.gsr_sensorview:
+
+                        sensorID =  Constants.GSR_SENSOR_ID;
+
+                        break;
+
+                    case R.id.calories_sensorview:
+
+                        sensorID =  Constants.CALORIES_SENSOR_ID;
+
+                        break;
+
+                    case R.id.distance_sensorview:
+
+                        sensorID =  Constants.DISTANCE_SENSOR_ID;
+
+                        break;
+
+                    case R.id.band_contact_sensorview:
+
+                        sensorID =  Constants.BAND_CONTACT_SENSOR_ID;
+
+                        break;
+
+                    case R.id.gyroscope_sensorview:
+
+                        sensorID =  Constants.GYROSCOPE_SENSOR_ID;
+
+                        break;
+
+                    case R.id.pedometer_sensorview:
+
+                        sensorID =  Constants.PEDOMETER_SENSOR_ID;
+
+                        break;
+
+                    case R.id.skin_temperature_sensorview:
+
+                        sensorID =  Constants.SKIN_TEMPERATURE_SENSOR_ID;
+                        break;
+
+                    case R.id.uv_sensorview:
+
+                        sensorID =  Constants.UV_LEVEL_SENSOR_ID;
+
+                        break;
+
+                }
+
+                result.add(sensorID);
+
+            }
+
+        }
+
+        return  result;
+
+    }
 
     private String getSensorSRlabel(String sensorSR) {
 
