@@ -55,6 +55,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -78,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     boolean saveClicked = false;
     FrameLayout holder, saveButtonHolder;
     ToggleButton toggle;
-
+    TextView clock;
     ImageButton settingsButton;
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
@@ -117,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
 
+        clock = toolbar.findViewById(R.id.minutes);
 
         date = new Date();
         displayDate = new SimpleDateFormat("yyMMdd_HHmmSS").format(date);
@@ -245,6 +249,10 @@ public class MainActivity extends AppCompatActivity {
         //Register broadcast receiver to create csv file from BandConnectionService
         //in case that MS band has been disconnected while recording data
         registerReceiver(createCSVReceiver, new IntentFilter(Constants.CREATE_CSV_RECEIVER));
+
+        //Register broadcast receiver to reset activity if any checkbox is selected
+        registerReceiver(timeReceiver, new IntentFilter(getClass().getPackage() + ".BROADCAST"));
+
 
 
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
@@ -801,6 +809,18 @@ public class MainActivity extends AppCompatActivity {
             getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
 
         }
+
+    };
+
+    private BroadcastReceiver timeReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            clock.setText("" + intent.getExtras().getLong(getClass().getPackage() + ".TIME"));
+
+        }
+
 
     };
 
@@ -1422,6 +1442,13 @@ public class MainActivity extends AppCompatActivity {
             if (b) {
 
                 timeBasedCSVDate = System.currentTimeMillis();
+                Log.v(LOG_TAG,"timeFab setOnClickListener");
+                FutureTask task = new FutureTask(new CounterCallable(MainActivity.this,BEGIN, END,1));
+
+                ExecutorService pool = Executors.newSingleThreadExecutor();
+                pool.submit(task);
+                pool.shutdown();
+
 
             } else {
 
