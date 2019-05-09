@@ -10,7 +10,7 @@
 
     <style name="AppTheme.Launcher" parent="AppTheme.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="android:windowBackground">@drawable/uabc_logo</item>
+        <item name="android:windowBackground">@drawable/myband_launcher</item>
 
     </style>
 

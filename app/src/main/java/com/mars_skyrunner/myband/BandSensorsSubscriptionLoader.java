@@ -748,7 +748,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 String sensorValue = new StringBuilder()
                         //.append(String.format("%d,", event.getTotalGain()))
                         //.append(String.format("%d,", event.getTotalLoss()))
-                        .append(String.format("%d,", (event.getTotalGain() - event.getTotalLoss())))
+                        .append(String.format("%d", (event.getTotalGain() - event.getTotalLoss())))
 //                        .append(String.format("%d,", event.getSteppingGain()))
 //                        .append(String.format("%d,", event.getSteppingLoss()))
 //                        .append(String.format("%d,", event.getStepsAscended()))

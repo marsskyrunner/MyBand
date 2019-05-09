@@ -969,15 +969,15 @@ public class MainActivity extends AppCompatActivity {
 
             Log.v(LOG_TAG, "saveDataCursorLoader: onCreateLoader");
 
-
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
             int csvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
-
             switch (csvMode) {
 
                 case 0:
+
+                    Log.v(LOG_TAG,"FREQUENCY BASED CSV");
 
                     // Define a projection that specifies the columns from the table we care about.
                     String[] projection = {
@@ -1014,7 +1014,7 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
 
 
-                    //Toast.makeText(MainActivity.this, "Time Base option selected: " + saveTime, Toast.LENGTH_SHORT).show();
+                    Log.v(LOG_TAG,"TIME BASED CSV");
 
                     // Define a projection that specifies the columns from the table we care about.
                     String[] projection2 = {
@@ -1045,8 +1045,9 @@ public class MainActivity extends AppCompatActivity {
                             sortOrder2);                  //  sort order
 
 
-                case 2: // SAMPLE BASED QUERY
+                case 2:
 
+                    Log.v(LOG_TAG,"SAMPLE BASED CSV");
 
                     // Define a projection that specifies the columns from the table we care about.
                     String[] projection3 = {
@@ -1149,16 +1150,21 @@ public class MainActivity extends AppCompatActivity {
 
                                             if (j == 1) { //Time column
 
-                                                long time = Long.parseLong(cellValue.trim());
+                                                //TODO: TEST CODE
 
-                                                String year = new SimpleDateFormat("yyyy").format(time);
-                                                String month = new SimpleDateFormat("MM").format(time);
-                                                String day = new SimpleDateFormat("dd").format(time);
-                                                String hour = new SimpleDateFormat("HH").format(time);
-                                                String minute = new SimpleDateFormat("mm").format(time);
-                                                String sec = new SimpleDateFormat("ss").format(time);
+                                                cellValue = "" + (Long.parseLong(cellValue.trim()) - timeBasedCSVDate);
 
-                                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+//                                                long time = Long.parseLong(cellValue.trim());
+//
+//                                                String year = new SimpleDateFormat("yyyy").format(time);
+//                                                String month = new SimpleDateFormat("MM").format(time);
+//                                                String day = new SimpleDateFormat("dd").format(time);
+//                                                String hour = new SimpleDateFormat("HH").format(time);
+//                                                String minute = new SimpleDateFormat("mm").format(time);
+//                                                String sec = new SimpleDateFormat("ss").format(time);
+//
+//                                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+//
                                             }
 
                                             if (j != (colcount - 1)) {
@@ -1265,17 +1271,19 @@ public class MainActivity extends AppCompatActivity {
                                             String fileValue = "";
 
                                             if (j == 1) { //Time column
+                                                cellValue = "" + (Long.parseLong(cellValue.trim()) - timeBasedCSVDate);
 
-                                                long time = Long.parseLong(cellValue.trim());
-
-                                                String year = new SimpleDateFormat("yyyy").format(time);
-                                                String month = new SimpleDateFormat("MM").format(time);
-                                                String day = new SimpleDateFormat("dd").format(time);
-                                                String hour = new SimpleDateFormat("HH").format(time);
-                                                String minute = new SimpleDateFormat("mm").format(time);
-                                                String sec = new SimpleDateFormat("ss").format(time);
-
-                                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+//                                                long time = Long.parseLong(cellValue.trim());
+//
+//                                                String year = new SimpleDateFormat("yyyy").format(time);
+//                                                String month = new SimpleDateFormat("MM").format(time);
+//                                                String day = new SimpleDateFormat("dd").format(time);
+//                                                String hour = new SimpleDateFormat("HH").format(time);
+//                                                String minute = new SimpleDateFormat("mm").format(time);
+//                                                String sec = new SimpleDateFormat("ss").format(time);
+//
+//                                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+//
                                             }
 
                                             if (j != (colcount - 1)) {
@@ -1318,10 +1326,13 @@ public class MainActivity extends AppCompatActivity {
                                     mySnackbar.show();
 
 
-                                } else {
+                                }
 
-                                    Toast.makeText(MainActivity.this, "No existen registros guardados", Toast.LENGTH_SHORT).show();
-
+                                else{
+                                    //Save datapoint loader destroyed, so that if user comes back from
+                                    //CSV file viewer, it does not create a new one
+                                    getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
+                                    Toast.makeText(MainActivity.this,"No records to export CSV",Toast.LENGTH_SHORT).show();
                                 }
 
 
@@ -1358,10 +1369,15 @@ public class MainActivity extends AppCompatActivity {
                                     // Kick off the  loader
                                     getLoaderManager().restartLoader(Constants.SAMPLE_BASED_LOADER, bundle, SampleBasedCSVFileLoader);
 
-                                } else {
+    //                                    //Save datapoint loader destroyed, so that if user comes back from
+    //                                    //CSV file viewer, it does not create a new one
+    //                                    getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
 
-                                    Toast.makeText(MainActivity.this, "No existen registros guardados", Toast.LENGTH_SHORT).show();
-
+                                } else{
+                                    //Save datapoint loader destroyed, so that if user comes back from
+                                    //CSV file viewer, it does not create a new one
+                                    getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
+                                    Toast.makeText(MainActivity.this,"No records to export CSV",Toast.LENGTH_SHORT).show();
                                 }
 
                             } catch (Exception e) {
@@ -1515,6 +1531,7 @@ public class MainActivity extends AppCompatActivity {
                 String sortOrder = ReadingEntry._ID;
 
                 // This loader will execute the ContentProvider's query method on a background thread
+
                 String selection = ReadingEntry.COLUMN_TIME + ">=?  AND " + ReadingEntry.COLUMN_TIME + "<?";
 
                 String[] selectionArgs = {("" + minTime), ("" + maxTime)};
@@ -1526,21 +1543,9 @@ public class MainActivity extends AppCompatActivity {
                         selectionArgs,                   //  selection arguments
                         sortOrder);                  //  sort order
 
-            } else {
-
-//                mActivity.getLoaderManager().destroyLoader(id);
-                Toast.makeText(MainActivity.this, "ALL SAMPLES FOUND", Toast.LENGTH_SHORT).show();
-
-                showLoadingView(false);
-
-                Intent resetReadingsIntent = new Intent(Constants.RESET_SENSOR_READING);
-                resetReadingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                sendBroadcast(resetReadingsIntent);
-
-
-                return null;
-
             }
+
+            return  null;
 
 
         }
@@ -1576,11 +1581,14 @@ public class MainActivity extends AppCompatActivity {
 
                     for (int i = 0 ; i < selectedSensorID.size() ; i++){
 
-                        values += sensorReadings[i];
+                        values += sensorReadings[i] + ",";
+//                        values += sensorReadings[i];
 
                     }
 
                     String sample = (Long.parseLong(timeStamp.trim()) - timeStampReference) + "," + values;
+
+                    Log.v(LOG_TAG,"sample "  + sampleTimeStampsIterator );
 
                     sampleDataset.add(sample);
 
@@ -1602,6 +1610,7 @@ public class MainActivity extends AppCompatActivity {
 
                 sampleTimeStampsIterator = 0;
                 createSampleBasedCSV();
+
 
          }else{
 
@@ -1633,6 +1642,21 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private void createTimeBasedCSV() {
+
+        timeBasedCSVDate = timeStampReference;
+
+        final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(getString(R.string.csv_mode_key), 1);
+        editor.commit();
+
+
+        // Kick off saveDataCursorLoader
+        getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
+
+    }
+
     private void createSampleBasedCSV() {
 
 
@@ -1648,12 +1672,12 @@ public class MainActivity extends AppCompatActivity {
             FileWriter fw = new FileWriter(saveFile);
             BufferedWriter bw = new BufferedWriter(fw);
 
+
             for (int i = 0; i < sampleDataset.size(); i++) {
 
                 bw.write(sampleDataset.get(i));
                 bw.newLine();
             }
-
 
             bw.flush();
 
@@ -1668,6 +1692,8 @@ public class MainActivity extends AppCompatActivity {
         //newest values
         sampleDataset.clear();
 
+        createTimeBasedCSV(); // TODO: TESTING CODE
+
         showLoadingView(false);
 
         //shows "OPEN CSV" action on a snackbar
@@ -1675,6 +1701,8 @@ public class MainActivity extends AppCompatActivity {
                 "Files saved at" + outputDirectory.getAbsolutePath().toString(), Snackbar.LENGTH_LONG);
         //mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
         mySnackbar.show();
+
+        getLoaderManager().destroyLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER);
 
     }
 
@@ -1704,17 +1732,18 @@ public class MainActivity extends AppCompatActivity {
         * */
 
         int rowcount = c.getCount();
-        int colcount = c.getColumnCount();
-
         c.moveToFirst();
 
         String reading = "null";
 
         for (int i = 0 ; i < rowcount; i++){
 
-            String currentID = c.getString(3);
+            c.moveToPosition(i);
 
-            if(currentID.equals("" + sensorID)){
+            String currentID = c.getString(3);
+            String interestID = "" + sensorID;
+
+            if(currentID.equals(interestID)){
 
                 reading = c.getString(4);
 
@@ -1895,9 +1924,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void setChecked(boolean b) {
-            isChecked = b;
-            //Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
 
+            isChecked = b;
 
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
