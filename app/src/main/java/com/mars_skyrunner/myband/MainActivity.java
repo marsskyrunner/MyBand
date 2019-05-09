@@ -45,11 +45,14 @@ import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
 import com.microsoft.band.ConnectionState;
 
+import org.mortbay.jetty.Main;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Array;
 import java.security.Provider;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -92,7 +95,10 @@ public class MainActivity extends AppCompatActivity {
 
     int csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
     int prevCsvMode;
-
+    private ArrayList<String> sampleDataset = new ArrayList<>();
+    private Long timeStampReference;
+    ArrayList<Long> sampleTimeStamps;
+    int sampleTimeStampsIterator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
 
         toggle.setTextOff(getResources().getString(R.string.start));
         toggle.setTextOn(getResources().getString(R.string.stop));
-
         toggle.setChecked(false);
 
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -168,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.v(LOG_TAG, "ToggleButton stopButtonClicked()");
 
                     bandSubscriptionTaskRunning = false;
-                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_off_background));
+                    holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
                     resetSaveDataButton();
                     clearSensorTextViews();
                     disconnectBand();
@@ -843,34 +848,6 @@ public class MainActivity extends AppCompatActivity {
 
     };
 
-//
-//    public class OpenCSVFileListener implements View.OnClickListener {
-//
-//
-//        @Override
-//        public void onClick(View v) {
-//
-//            Log.v(LOG_TAG, "OpenCSVFileListener onClick");
-//
-//            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension("csv");
-//            Log.v(LOG_TAG, "mimeType: " + mimeType);
-//
-//            Intent intent = new Intent(Intent.ACTION_VIEW);
-//            intent.setDataAndType(Uri.fromFile(saveFile), "application/vnd.ms-excel");
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//
-//            // Verify that the intent will resolve to an activity
-//            if (intent.resolveActivity(getPackageManager()) != null) {
-//                Log.v(LOG_TAG, "resolveActivity YES");
-//                startActivity(intent);
-//            } else {
-//                Log.v(LOG_TAG, "resolveActivity NO");
-//            }
-//
-//
-//        }
-//    }
-//
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -878,6 +855,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.v(LOG_TAG, "onActivityResult");
     }
+
 
     private LoaderManager.LoaderCallbacks<ConnectionState> bandSensorSubscriptionLoader
 
@@ -991,15 +969,15 @@ public class MainActivity extends AppCompatActivity {
 
             Log.v(LOG_TAG, "saveDataCursorLoader: onCreateLoader");
 
-
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
             int csvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
-
             switch (csvMode) {
 
                 case 0:
+
+                    Log.v(LOG_TAG,"FREQUENCY BASED CSV");
 
                     // Define a projection that specifies the columns from the table we care about.
                     String[] projection = {
@@ -1012,7 +990,7 @@ public class MainActivity extends AppCompatActivity {
                     String sortOrder = ReadingEntry._ID;
 
                     // This loader will execute the ContentProvider's query method on a background thread
-                    String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " +  ReadingEntry.COLUMN_TIME + ">?";
+                    String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " + ReadingEntry.COLUMN_TIME + ">?";
 
                     Log.v(LOG_TAG, "selection: " + selection);
                     Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
@@ -1020,10 +998,10 @@ public class MainActivity extends AppCompatActivity {
 
                     String saveTimeSelecionArg = "" + timeBasedCSVDate;
 
-                    String[] selectionArgs = {Constants.SAMPLE_RATE_OPTIONS[csvFileCounter] , saveTimeSelecionArg};
+                    String[] selectionArgs = {Constants.SAMPLE_RATE_OPTIONS[csvFileCounter], saveTimeSelecionArg};
 
-                    Log.v(LOG_TAG, "selectionArgs1: " + selectionArgs[0] );
-                    Log.v(LOG_TAG, "selectionArgs2: " + selectionArgs[1] );
+                    Log.v(LOG_TAG, "selectionArgs1: " + selectionArgs[0]);
+                    Log.v(LOG_TAG, "selectionArgs2: " + selectionArgs[1]);
 
                     return new CursorLoader(MainActivity.this,   // Parent activity context
                             ReadingEntry.CONTENT_URI,   // Provider content URI to query
@@ -1033,12 +1011,10 @@ public class MainActivity extends AppCompatActivity {
                             sortOrder);                  //  sort order
 
 
-
                 case 1:
 
 
-
-                    //Toast.makeText(MainActivity.this, "Time Base option selected: " + saveTime, Toast.LENGTH_SHORT).show();
+                    Log.v(LOG_TAG,"TIME BASED CSV");
 
                     // Define a projection that specifies the columns from the table we care about.
                     String[] projection2 = {
@@ -1067,6 +1043,34 @@ public class MainActivity extends AppCompatActivity {
                             selection2,                   //  selection clause
                             selectionArgs2,                   //  selection arguments
                             sortOrder2);                  //  sort order
+
+
+                case 2:
+
+                    Log.v(LOG_TAG,"SAMPLE BASED CSV");
+
+                    // Define a projection that specifies the columns from the table we care about.
+                    String[] projection3 = {
+                            "MAX(" + ReadingEntry.COLUMN_SAMPLE_RATE + ")"
+                    };
+
+                    String selection3 = ReadingEntry.COLUMN_TIME + ">?";
+                    //String selection2 = null;
+
+                    String selectionArg3 = "" + timeBasedCSVDate;
+
+                    String[] selectionArgs3 = {selectionArg3};
+                    //String[] selectionArgs2 = null;
+
+                    String sortOrder3 = ReadingEntry.COLUMN_TIME;
+                    //String sortOrder2 = ReadingEntry._ID;
+
+                    return new CursorLoader(MainActivity.this,   // Parent activity context
+                            ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                            projection3,             // Columns to include in the resulting Cursor
+                            selection3,                   //  selection clause
+                            selectionArgs3,                   //  selection arguments
+                            sortOrder3);                  //  sort order
 
 
             }
@@ -1146,16 +1150,21 @@ public class MainActivity extends AppCompatActivity {
 
                                             if (j == 1) { //Time column
 
-                                                long time = Long.parseLong(cellValue.trim());
+                                                //TODO: TEST CODE
 
-                                                String year = new SimpleDateFormat("yyyy").format(time);
-                                                String month = new SimpleDateFormat("MM").format(time);
-                                                String day = new SimpleDateFormat("dd").format(time);
-                                                String hour = new SimpleDateFormat("HH").format(time);
-                                                String minute = new SimpleDateFormat("mm").format(time);
-                                                String sec = new SimpleDateFormat("ss").format(time);
+                                                cellValue = "" + (Long.parseLong(cellValue.trim()) - timeBasedCSVDate);
 
-                                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+//                                                long time = Long.parseLong(cellValue.trim());
+//
+//                                                String year = new SimpleDateFormat("yyyy").format(time);
+//                                                String month = new SimpleDateFormat("MM").format(time);
+//                                                String day = new SimpleDateFormat("dd").format(time);
+//                                                String hour = new SimpleDateFormat("HH").format(time);
+//                                                String minute = new SimpleDateFormat("mm").format(time);
+//                                                String sec = new SimpleDateFormat("ss").format(time);
+//
+//                                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+//
                                             }
 
                                             if (j != (colcount - 1)) {
@@ -1222,7 +1231,6 @@ public class MainActivity extends AppCompatActivity {
 
                             Log.v(LOG_TAG, "TIME BASED CSV");
 
-
                             FileWriter fw2 = null;
 
                             try {
@@ -1263,17 +1271,19 @@ public class MainActivity extends AppCompatActivity {
                                             String fileValue = "";
 
                                             if (j == 1) { //Time column
+                                                cellValue = "" + (Long.parseLong(cellValue.trim()) - timeBasedCSVDate);
 
-                                                long time = Long.parseLong(cellValue.trim());
-
-                                                String year = new SimpleDateFormat("yyyy").format(time);
-                                                String month = new SimpleDateFormat("MM").format(time);
-                                                String day = new SimpleDateFormat("dd").format(time);
-                                                String hour = new SimpleDateFormat("HH").format(time);
-                                                String minute = new SimpleDateFormat("mm").format(time);
-                                                String sec = new SimpleDateFormat("ss").format(time);
-
-                                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+//                                                long time = Long.parseLong(cellValue.trim());
+//
+//                                                String year = new SimpleDateFormat("yyyy").format(time);
+//                                                String month = new SimpleDateFormat("MM").format(time);
+//                                                String day = new SimpleDateFormat("dd").format(time);
+//                                                String hour = new SimpleDateFormat("HH").format(time);
+//                                                String minute = new SimpleDateFormat("mm").format(time);
+//                                                String sec = new SimpleDateFormat("ss").format(time);
+//
+//                                                cellValue = year + "," + month + "," + day + "," + hour + "," + minute + "," + sec;
+//
                                             }
 
                                             if (j != (colcount - 1)) {
@@ -1316,12 +1326,14 @@ public class MainActivity extends AppCompatActivity {
                                     mySnackbar.show();
 
 
-                                }else{
-
-                                    Toast.makeText(MainActivity.this,"No existen registros guardados",Toast.LENGTH_SHORT).show();
-
                                 }
 
+                                else{
+                                    //Save datapoint loader destroyed, so that if user comes back from
+                                    //CSV file viewer, it does not create a new one
+                                    getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
+                                    Toast.makeText(MainActivity.this,"No records to export CSV",Toast.LENGTH_SHORT).show();
+                                }
 
 
                             } catch (IOException e) {
@@ -1330,11 +1342,50 @@ public class MainActivity extends AppCompatActivity {
                             }
 
 
-
-
-
                             break;
 
+                        case 2:
+
+                            Log.v(LOG_TAG, "SAMPLE BASED CSV");
+
+
+                            try {
+
+                                int rowcount = c.getCount();
+                                int colcount = c.getColumnCount();
+
+                                Log.v(LOG_TAG, "rowcount: " + rowcount);
+                                Log.v(LOG_TAG, "colcount: " + colcount);
+
+                                if (rowcount > 0) {
+
+                                    c.moveToFirst();
+                                    c.moveToPosition(0);
+                                    String maxSampleRate = c.getString(0).trim();
+
+                                    Bundle bundle = new Bundle();
+                                    bundle.putString("maxSampleRate", maxSampleRate);
+
+                                    // Kick off the  loader
+                                    getLoaderManager().restartLoader(Constants.SAMPLE_BASED_LOADER, bundle, SampleBasedCSVFileLoader);
+
+    //                                    //Save datapoint loader destroyed, so that if user comes back from
+    //                                    //CSV file viewer, it does not create a new one
+    //                                    getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
+
+                                } else{
+                                    //Save datapoint loader destroyed, so that if user comes back from
+                                    //CSV file viewer, it does not create a new one
+                                    getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
+                                    Toast.makeText(MainActivity.this,"No records to export CSV",Toast.LENGTH_SHORT).show();
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+                            }
+
+                            break;
 
                     }
 
@@ -1352,6 +1403,468 @@ public class MainActivity extends AppCompatActivity {
         }
 
     };
+
+
+    private LoaderManager.LoaderCallbacks<Cursor> SampleBasedCSVFileLoader
+            = new LoaderManager.LoaderCallbacks<Cursor>() {
+
+        //Once the max sample rate has been selected, proceed to retrieve samples timestamps
+
+        Context mContext = MainActivity.this;
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+
+            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onCreateLoader");
+            showLoadingView(true);
+
+
+            // Define a projection that specifies the columns from the table we care about.
+            String[] projection = {
+                    ReadingEntry._ID,
+                    ReadingEntry.COLUMN_TIME,
+                    ReadingEntry.COLUMN_SAMPLE_RATE,
+                    ReadingEntry.COLUMN_SENSOR_ID,
+                    ReadingEntry.COLUMN_SENSOR_VALUE};
+
+            String sortOrder = ReadingEntry._ID;
+
+            // This loader will execute the ContentProvider's query method on a background thread
+            //<> : Not equal to
+
+            String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " + ReadingEntry.COLUMN_TIME + ">?";
+
+            String saveTimeSelecionArg = "" + timeBasedCSVDate;
+
+            String[] selectionArgs = {bundle.getString("maxSampleRate"), saveTimeSelecionArg};
+
+            return new CursorLoader(mContext,   // Parent activity context
+                    ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                    projection,             // Columns to include in the resulting Cursor
+                    selection,                   //  selection clause
+                    selectionArgs,                   //  selection arguments
+                    sortOrder);                  //  sort order
+
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
+            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onLoadFinished");
+
+            //sampleTimeStamps stores sample time stamps that are going to be searched for all sensors,
+            // in order to concatenate
+            // each sensor reading into a single vector for each timestamp
+
+            sampleTimeStamps = new ArrayList<>();
+
+            try {
+
+                int rowcount = c.getCount();
+
+                if (rowcount > 0) {
+
+                    c.moveToFirst();
+
+                    for (int i = 0; i < rowcount; i++) {
+
+                        c.moveToPosition(i);
+                        sampleTimeStamps.add(Long.parseLong(c.getString(1).trim()));
+
+                    }
+
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+            }
+
+            timeStampReference = sampleTimeStamps.get(0);
+
+            long minTime = sampleTimeStamps.get(0);
+            long maxTime;
+
+            maxTime = sampleTimeStamps.get((0 + 1));
+
+            sampleTimeStampsIterator = 0;
+
+            Bundle bundle = new Bundle();
+            bundle.putLong("minTime", minTime);
+            bundle.putLong("maxTime", maxTime);
+
+          // Kick off the  loader
+            getLoaderManager().restartLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER, bundle, timeStampSensorReadingLoader);
+
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            Log.v(LOG_TAG, "SampleBasedCSVFileLoader: onLoaderReset");
+        }
+
+    };
+
+    private LoaderManager.LoaderCallbacks<Cursor> timeStampSensorReadingLoader
+            = new LoaderManager.LoaderCallbacks<Cursor>() {
+
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
+
+            Log.v(LOG_TAG, "timeStampSensorReadingLoader: onCreateLoader");
+            Log.v(LOG_TAG,"loader id = " + id);
+
+            long minTime = bundle.getLong("minTime");
+            long maxTime = bundle.getLong("maxTime");
+
+            if (minTime != maxTime) {
+
+                // Define a projection that specifies the columns from the table we care about.
+                String[] projection = {
+                        ReadingEntry._ID,
+                        ReadingEntry.COLUMN_TIME,
+                        ReadingEntry.COLUMN_SAMPLE_RATE,
+                        ReadingEntry.COLUMN_SENSOR_ID,
+                        ReadingEntry.COLUMN_SENSOR_VALUE};
+
+                String sortOrder = ReadingEntry._ID;
+
+                // This loader will execute the ContentProvider's query method on a background thread
+
+                String selection = ReadingEntry.COLUMN_TIME + ">=?  AND " + ReadingEntry.COLUMN_TIME + "<?";
+
+                String[] selectionArgs = {("" + minTime), ("" + maxTime)};
+
+                return new CursorLoader(MainActivity.this,   // Parent activity context
+                        ReadingEntry.CONTENT_URI,   // Provider content URI to query
+                        projection,             // Columns to include in the resulting Cursor
+                        selection,                   //  selection clause
+                        selectionArgs,                   //  selection arguments
+                        sortOrder);                  //  sort order
+
+            }
+
+            return  null;
+
+
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
+
+            Log.v(LOG_TAG, "timeStampSensorReadingLoader: onLoadFinished ");
+
+            Bundle b = c.getExtras();
+
+            CursorLoader p = (CursorLoader) loader;
+            String[] selArgs = p.getSelectionArgs();
+            String timeStamp = selArgs[0];
+
+            ArrayList<Integer> selectedSensorID = getSelectedSensorID();
+            String[] sensorReadings = new String[selectedSensorID.size()];
+
+            FileWriter fw2 = null;
+
+            try {
+
+                int rowcount = c.getCount();
+                int colcount = c.getColumnCount();
+
+                Log.v(LOG_TAG, "rowcount: " + rowcount);
+                Log.v(LOG_TAG, "colcount: " + colcount);
+
+                if (rowcount > 0) {
+
+                    sensorReadings = getSensorReadings(c , selectedSensorID);
+                    String values = "";
+
+                    for (int i = 0 ; i < selectedSensorID.size() ; i++){
+
+                        values += sensorReadings[i] + ",";
+//                        values += sensorReadings[i];
+
+                    }
+
+                    String sample = (Long.parseLong(timeStamp.trim()) - timeStampReference) + "," + values;
+
+                    Log.v(LOG_TAG,"sample "  + sampleTimeStampsIterator );
+
+                    sampleDataset.add(sample);
+
+                } else {
+
+                    Toast.makeText(MainActivity.this, "No existen registros guardados", Toast.LENGTH_SHORT).show();
+
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+            }
+
+            sampleTimeStampsIterator++;
+
+            if(sampleTimeStampsIterator == (sampleTimeStamps.size() - 1)){
+
+                sampleTimeStampsIterator = 0;
+                createSampleBasedCSV();
+
+
+         }else{
+
+                long minTime = sampleTimeStamps.get(sampleTimeStampsIterator);
+                long maxTime;
+
+                maxTime = sampleTimeStamps.get((sampleTimeStampsIterator + 1));
+
+                Bundle bundle = new Bundle();
+                bundle.putLong("minTime", minTime);
+                bundle.putLong("maxTime", maxTime);
+
+                // Kick off the  loader
+                getLoaderManager().restartLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER, bundle, timeStampSensorReadingLoader);
+
+
+            }
+
+
+
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+            Log.v(LOG_TAG, "timeStampSensorReadingLoader: onLoaderReset");
+
+        }
+    };
+
+    private void createTimeBasedCSV() {
+
+        timeBasedCSVDate = timeStampReference;
+
+        final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(getString(R.string.csv_mode_key), 1);
+        editor.commit();
+
+
+        // Kick off saveDataCursorLoader
+        getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, null, saveDataCursorLoader);
+
+    }
+
+    private void createSampleBasedCSV() {
+
+
+        outputDirectory = getOutputDirectory();
+
+        Log.v(LOG_TAG, "outputDirectory.getAbsolutePath().toString(): " + outputDirectory.getAbsolutePath().toString());
+
+        String srLabel = "SB";
+
+        saveFile = getCsvOutputFile(outputDirectory, srLabel);
+
+        try {
+            FileWriter fw = new FileWriter(saveFile);
+            BufferedWriter bw = new BufferedWriter(fw);
+
+
+            for (int i = 0; i < sampleDataset.size(); i++) {
+
+                bw.write(sampleDataset.get(i));
+                bw.newLine();
+            }
+
+            bw.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "FileWriter IOException: " + e.toString());
+        }
+
+        Log.w(LOG_TAG, "Datapoint Exported Successfully.");
+
+        //If SaveDatapoint button is clicked while MSBand still connected, it saves the
+        //newest values
+        sampleDataset.clear();
+
+        createTimeBasedCSV(); // TODO: TESTING CODE
+
+        showLoadingView(false);
+
+        //shows "OPEN CSV" action on a snackbar
+        Snackbar mySnackbar = Snackbar.make(mMainLayout,
+                "Files saved at" + outputDirectory.getAbsolutePath().toString(), Snackbar.LENGTH_LONG);
+        //mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
+        mySnackbar.show();
+
+        getLoaderManager().destroyLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER);
+
+    }
+
+    private String[] getSensorReadings(Cursor c, ArrayList<Integer> selectedSensorID) {
+
+        String[] answer = new String[selectedSensorID.size()];
+
+        for(int i = 0 ; i < selectedSensorID.size(); i++){
+
+            answer[i] = getReading(c, selectedSensorID.get(i));
+
+        }
+
+        return answer;
+    }
+
+    private String getReading(Cursor c, Integer sensorID) {
+
+        /*QUERY
+        *                 String[] projection = {
+                        ReadingEntry._ID,
+                        ReadingEntry.COLUMN_TIME,
+                        ReadingEntry.COLUMN_SAMPLE_RATE,
+                        ReadingEntry.COLUMN_SENSOR_ID,
+                        ReadingEntry.COLUMN_SENSOR_VALUE};
+
+        * */
+
+        int rowcount = c.getCount();
+        c.moveToFirst();
+
+        String reading = "null";
+
+        for (int i = 0 ; i < rowcount; i++){
+
+            c.moveToPosition(i);
+
+            String currentID = c.getString(3);
+            String interestID = "" + sensorID;
+
+            if(currentID.equals(interestID)){
+
+                reading = c.getString(4);
+
+            }
+
+        }
+
+        return reading;
+    }
+
+
+    private ArrayList<Integer> getSelectedSensorID() {
+
+
+        ArrayList<Integer> result = new ArrayList<>();
+
+        for (int i = 0; i < sensorReadings.size(); i++) {
+
+            SensorReadingView sensorView = (SensorReadingView) mListView.getChildAt(i);
+            boolean check = sensorView.getSensorCheckBox().isChecked();
+
+            if(check){
+
+                int sensorID = 0;
+
+                switch (sensorView.getId()) {
+
+                    case R.id.heart_rate_sensorview:
+
+                        sensorID =  Constants.HEART_RATE_SENSOR_ID;
+
+                        break;
+
+                    case R.id.rr_interval_sensorview:
+
+                        sensorID = Constants.RR_INTERVAL_SENSOR_ID;
+
+                        break;
+
+                    case R.id.accelerometer_sensorview:
+
+                        sensorID =  Constants.ACCELEROMETER_SENSOR_ID;
+
+                        break;
+
+                    case R.id.altimeter_sensorview:
+
+                        sensorID =  Constants.ALTIMETER_SENSOR_ID;
+
+                        break;
+
+                    case R.id.ambient_light_sensorview:
+
+                        sensorID =  Constants.AMBIENT_LIGHT_SENSOR_ID;
+
+                        break;
+
+                    case R.id.barometer_sensorview:
+
+                        sensorID =  Constants.BAROMETER_SENSOR_ID;
+
+                        break;
+
+                    case R.id.gsr_sensorview:
+
+                        sensorID =  Constants.GSR_SENSOR_ID;
+
+                        break;
+
+                    case R.id.calories_sensorview:
+
+                        sensorID =  Constants.CALORIES_SENSOR_ID;
+
+                        break;
+
+                    case R.id.distance_sensorview:
+
+                        sensorID =  Constants.DISTANCE_SENSOR_ID;
+
+                        break;
+
+                    case R.id.band_contact_sensorview:
+
+                        sensorID =  Constants.BAND_CONTACT_SENSOR_ID;
+
+                        break;
+
+                    case R.id.gyroscope_sensorview:
+
+                        sensorID =  Constants.GYROSCOPE_SENSOR_ID;
+
+                        break;
+
+                    case R.id.pedometer_sensorview:
+
+                        sensorID =  Constants.PEDOMETER_SENSOR_ID;
+
+                        break;
+
+                    case R.id.skin_temperature_sensorview:
+
+                        sensorID =  Constants.SKIN_TEMPERATURE_SENSOR_ID;
+                        break;
+
+                    case R.id.uv_sensorview:
+
+                        sensorID =  Constants.UV_LEVEL_SENSOR_ID;
+
+                        break;
+
+                }
+
+                result.add(sensorID);
+
+            }
+
+        }
+
+        return  result;
+
+    }
 
     private String getSensorSRlabel(String sensorSR) {
 
@@ -1411,9 +1924,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void setChecked(boolean b) {
-            isChecked = b;
-            //Log.v(LOG_TAG,"SaveButton: setChecked: " + isChecked);
 
+            isChecked = b;
 
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
@@ -1519,6 +2031,10 @@ public class MainActivity extends AppCompatActivity {
                     rbID = R.id.time_rb;
                     break;
 
+                case 2:
+                    rbID = R.id.sample_rb;
+                    break;
+
             }
 
 
@@ -1547,6 +2063,13 @@ public class MainActivity extends AppCompatActivity {
                         case R.id.time_rb:
 
                             csvOutputFileMode = 1;
+                            editor.putInt(getString(R.string.csv_mode_key), csvOutputFileMode);
+
+                            break;
+
+                        case R.id.sample_rb:
+
+                            csvOutputFileMode = 2;
                             editor.putInt(getString(R.string.csv_mode_key), csvOutputFileMode);
 
                             break;

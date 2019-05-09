@@ -6,9 +6,12 @@ public class Constants {
 
 
     private static final String packageName = "com.mars_skyrunner.myband";
+
     public static final int SAVE_DATAPOINT_LOADER = 100;
     public static final int BAND_SUSCRIPTION_LOADER = 200;
     public static final int CREATE_CSV_LOADER = 300;
+    public static final int SAMPLE_BASED_LOADER = 400;
+    public static final int TIME_STAMP_SENSOR_READING_LOADER = 500;
 
     public static final String RESET_SENSOR_READING = "com.mars_skyrunner.myband.RESET_SENSOR_READING";
     public static final String SHOW_CONSENT_DIALOG = "com.mars_skyrunner.myband.SHOW_CONSENT_DIALOG";
@@ -43,7 +46,6 @@ public class Constants {
     public static final int GSR_SENSOR_ID = 7;
     public static final int CALORIES_SENSOR_ID  = 8;
     public static final int DISTANCE_SENSOR_ID = 9;
-
     public static final int GYROSCOPE_SENSOR_ID = 10;
     public static final int PEDOMETER_SENSOR_ID = 11;
     public static final int SKIN_TEMPERATURE_SENSOR_ID = 12;

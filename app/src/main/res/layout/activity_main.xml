@@ -40,6 +40,16 @@
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/minutes"
+                    android:text=""
+                    android:textColor="@color/colorToggleOffDark"
+                    android:layout_margin="10dp"
+                    android:layout_gravity="center"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
 
                 <FrameLayout
                     android:id="@+id/save_button_holder"
@@ -61,7 +71,7 @@
                         android:src="@drawable/ic_settings_white"
                         android:layout_gravity="center"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                        android:layout_height="match_parent" />togglebutton
 
 
                 </FrameLayout>
@@ -102,7 +112,7 @@
 
         <FrameLayout
             android:id="@+id/toggle_button_holder"
-            android:background="@drawable/toggle_button_off_background"
+            android:background="@drawable/toggle_button_on_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
