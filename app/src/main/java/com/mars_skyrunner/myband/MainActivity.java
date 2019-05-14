@@ -58,6 +58,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -75,9 +78,9 @@ public class MainActivity extends AppCompatActivity {
     Date date;
     long timeBasedCSVDate = 0;
     public static boolean bandSubscriptionTaskRunning = false;
-
+    TextView clock ;
     public static SaveButton saveDataButton;
-
+    FutureTask task;
     boolean saveClicked = false;
     FrameLayout holder, saveButtonHolder;
     ToggleButton toggle;
@@ -99,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
     private Long timeStampReference;
     ArrayList<Long> sampleTimeStamps;
     int sampleTimeStampsIterator;
+    public static long TIMER_DURATION = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
+        clock = findViewById(R.id.minutes);
 
 
         date = new Date();
@@ -174,6 +179,8 @@ public class MainActivity extends AppCompatActivity {
 
                     bandSubscriptionTaskRunning = false;
                     holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
+                    task.cancel(true);
+                    resetTimer();
                     resetSaveDataButton();
                     clearSensorTextViews();
                     disconnectBand();
@@ -250,6 +257,11 @@ public class MainActivity extends AppCompatActivity {
         //Register broadcast receiver to create csv file from BandConnectionService
         //in case that MS band has been disconnected while recording data
         registerReceiver(createCSVReceiver, new IntentFilter(Constants.CREATE_CSV_RECEIVER));
+
+
+
+        //Register broadcast receiver to reset activity if any checkbox is selected
+        registerReceiver(timeReceiver, new IntentFilter(getClass().getPackage() + ".BROADCAST"));
 
 
         bandStatusTxt = (TextView) toolbar.findViewById(R.id.band_status);
@@ -553,6 +565,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resetSaveDataButton() {
+        saveDataButton.setEnabled(true);
         saveDataButton.setChecked(false);
         saveButtonHolder.setBackground(getResources().getDrawable(R.drawable.save_button_off));
     }
@@ -790,6 +803,56 @@ public class MainActivity extends AppCompatActivity {
 
     };
 
+
+
+    private BroadcastReceiver timeReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            long seconds = intent.getExtras().getLong(getClass().getPackage() + ".TIME");
+            clock.setText("" + (TIMER_DURATION - seconds));
+
+
+            Log.v(LOG_TAG, " timeReceiver seconds: " + seconds);
+
+            if(seconds == 10){
+
+
+                csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
+
+                Log.v(LOG_TAG, " timeReceiver csvFileCounter: " + csvFileCounter);
+
+                Log.v(LOG_TAG, " timeReceiver bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
+
+                if (bandSubscriptionTaskRunning) {
+
+                    // Kick off saveDataCursorLoader
+
+
+                    resetToggleButton();
+                    resetTimer();
+
+                    Bundle extraBundle = new Bundle();
+                    extraBundle.putLong(Constants.SENSOR_TIME, timeBasedCSVDate);
+
+
+                    getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, extraBundle, saveDataCursorLoader);
+
+                }
+
+            }
+
+        }
+
+
+    };
+
+    private void resetTimer() {
+
+        clock.setText("");
+
+    }
 
     private BroadcastReceiver createCSVReceiver = new BroadcastReceiver() {
 
@@ -1692,7 +1755,7 @@ public class MainActivity extends AppCompatActivity {
         //newest values
         sampleDataset.clear();
 
-        createTimeBasedCSV(); // TODO: TESTING CODE
+        //createTimeBasedCSV(); // TODO: TESTING CODE
 
         showLoadingView(false);
 
@@ -1933,26 +1996,18 @@ public class MainActivity extends AppCompatActivity {
 
             if (b) {
 
+                SaveButton.this.setEnabled(false);
+
+                Log.v(LOG_TAG,"timeFab setOnClickListener");
+                clock.setText("" + TIMER_DURATION);
+                task = new FutureTask(new CounterCallable(MainActivity.this,0, TIMER_DURATION,1));
+
+
+                ExecutorService pool = Executors.newSingleThreadExecutor();
+                pool.submit(task);
+                pool.shutdown();
+
                 timeBasedCSVDate = System.currentTimeMillis();
-
-            } else {
-
-
-                csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
-
-                Log.v(LOG_TAG, "csvFileCounter: " + csvFileCounter);
-
-                if (bandSubscriptionTaskRunning) {
-
-                    // Kick off saveDataCursorLoader
-
-                    Bundle extraBundle = new Bundle();
-                    extraBundle.putLong(Constants.SENSOR_TIME, timeBasedCSVDate);
-
-
-                    getLoaderManager().restartLoader(Constants.CREATE_CSV_LOADER, extraBundle, saveDataCursorLoader);
-
-                }
 
             }
         }
