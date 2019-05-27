@@ -62,6 +62,8 @@ import com.microsoft.band.sensors.HeartRateQuality;
 import com.microsoft.band.sensors.SampleRate;
 import com.microsoft.band.sensors.UVIndexLevel;
 
+import org.mortbay.jetty.Main;
+
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -93,6 +95,10 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
     String gsrSampleRateSelection;
     String accSampleRateSelection;
 
+    Long totalGain = null;
+    Long totalLoss = null;
+    long totalGainRef = 0;
+    long totalLossRef = 0;
     /**
      * Constructs a new {@link BandSensorsSubscriptionLoader}.
      *
@@ -563,14 +569,17 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
     private BandGyroscopeEventListener mGyroscopeEventListener = new BandGyroscopeEventListener() {
         @Override
-        public void onBandGyroscopeChanged(BandGyroscopeEvent bandGyroscopeEvent) {
-            if (bandGyroscopeEvent != null) {
+        public void onBandGyroscopeChanged(BandGyroscopeEvent event) {
+            if (event != null) {
 
 
-                String sensorValue = new StringBuilder()
-                        .append(String.format("%f,", bandGyroscopeEvent.getAngularVelocityX()))
-                        .append(String.format("%f,", bandGyroscopeEvent.getAngularVelocityY()))
-                        .append(String.format("%f", bandGyroscopeEvent.getAngularVelocityZ())).toString();
+                Log.v(LOG_TAG,"mGyroscopeEventListener: ");
+                Log.v(LOG_TAG," event.getAngularVelocityX(): " +   event.getAngularVelocityX());
+                Log.v(LOG_TAG," event.getAngularVelocityY(): " +   event.getAngularVelocityY());
+                Log.v(LOG_TAG," event.getAngularVelocityZ(): " +   event.getAngularVelocityZ());
+
+                String sensorValue = event.getAngularVelocityX() + "," + event.getAngularVelocityY() + "," + event.getAngularVelocityZ();
+
 
                 //1.ωX = in  °/s
                 //2.ωY = in  °/s
@@ -579,7 +588,6 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 appendToUI(sensorValue, Constants.GYROSCOPE);
 
                 if (saveDataButton.isChecked()) {
-
                     createSensorReadingObject(Constants.GYROSCOPE_SENSOR_ID, sensorValue, getSensorSamplingRate(Constants.GYROSCOPE_SENSOR_ID));
                 }
 
@@ -721,8 +729,12 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         public void onBandAccelerometerChanged(final BandAccelerometerEvent event) {
             if (event != null) {
 
-                String sensorValue = String.format("%.3f, %.3f,  %.3f ", event.getAccelerationX(),
-                        event.getAccelerationY(), event.getAccelerationZ());
+                String sensorValue = event.getAccelerationX() + "," + event.getAccelerationY() + "," + event.getAccelerationZ();
+
+                        Log.v(LOG_TAG,"mAccelerometerEventListener: ");
+                Log.v(LOG_TAG," event.getAccelerationX(): " +   event.getAccelerationX());
+                Log.v(LOG_TAG," event.getAccelerationY(): " +   event.getAccelerationY());
+                Log.v(LOG_TAG," event.getAccelerationZ(): " +   event.getAccelerationZ());
 
                 //1. X in g's
                 //2. Y in g's
@@ -735,20 +747,52 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                     createSensorReadingObject(Constants.ACCELEROMETER_SENSOR_ID, sensorValue, getSensorSamplingRate(Constants.ACCELEROMETER_SENSOR_ID));
                 }
 
-
             }
         }
     };
 
     private BandAltimeterEventListener mAltimeterEventListener = new BandAltimeterEventListener() {
+
         @Override
         public void onBandAltimeterChanged(final BandAltimeterEvent event) {
             if (event != null) {
 
+                long eventGain = event.getTotalGain();
+                long eventLoss = event.getTotalLoss();
+
+                Log.v(LOG_TAG,"mAltimeterEventListener");
+                Log.v(LOG_TAG," event.getTotalGain(): " + eventGain );
+                Log.v(LOG_TAG,"event.getTotalLoss() : " + eventLoss );
+                Log.v(LOG_TAG,"event.getRate() : " +event.getRate());
+
+
+                if(totalGain == null){
+                    totalGainRef =  eventGain;
+                }
+
+                if(totalLoss == null){
+                    totalLossRef =  eventLoss;
+                }
+                Log.v(LOG_TAG,"totalGainRef: " +totalGainRef);
+                Log.v(LOG_TAG,"totalLossRef: " +totalLossRef);
+
+                totalGain =  eventGain - totalGainRef;
+                totalLoss =  eventLoss - totalLossRef;
+
+                Log.v(LOG_TAG,"totalGain: " + totalGain);
+                Log.v(LOG_TAG,"totalLoss: " + totalLoss);
+                Log.v(LOG_TAG,"(totalGain - totalLoss) : " + (totalGain - totalLoss));
+
+
+
                 String sensorValue = new StringBuilder()
-                        //.append(String.format("%d,", event.getTotalGain()))
-                        //.append(String.format("%d,", event.getTotalLoss()))
-                        .append(String.format("%d", (event.getTotalGain() - event.getTotalLoss())))
+                        .append(String.format("%d,", totalGain))
+                        .append(String.format("%d,", totalLoss))
+                        .append(String.format("%d,", (totalGain - totalLoss)))
+
+//                        .append(String.format("%d,", event.getTotalGain()))
+//                        .append(String.format("%d,", event.getTotalLoss()))
+//                        .append(String.format("%d", (event.getTotalGain() - event.getTotalLoss())))
 //                        .append(String.format("%d,", event.getSteppingGain()))
 //                        .append(String.format("%d,", event.getSteppingLoss()))
 //                        .append(String.format("%d,", event.getStepsAscended()))
@@ -778,6 +822,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
             }
         }
+
     };
 
 
@@ -807,6 +852,10 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
         @Override
         public void onBandBarometerChanged(final BandBarometerEvent event) {
             if (event != null) {
+
+                Log.v(LOG_TAG,"mBarometerEventListener");
+                Log.v(LOG_TAG," event.getAirPressure(): " + event.getAirPressure());
+                Log.v(LOG_TAG,"event.getTemperature() : " + event.getTemperature()   );
 
                 String sensorValue =
                         String.format("%.3f, %.2f", event.getAirPressure(), event.getTemperature());

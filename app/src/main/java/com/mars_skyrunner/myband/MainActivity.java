@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialog;
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     public static boolean bandSubscriptionTaskRunning = false;
     TextView clock ;
     public static SaveButton saveDataButton;
-    FutureTask task;
+    FutureTask task = null;
     boolean saveClicked = false;
     FrameLayout holder, saveButtonHolder;
     ToggleButton toggle;
@@ -89,9 +90,9 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
 
     String timeStampPattern = "ddMMyyyy";
-    String fileNameExtension = ".csv";
+    String  fileNameExtension = ".csv";
     String displayDate;
-    String labelPrefix = "";
+    public static String labelPrefix = "";
     String filename;
 
     File outputDirectory = null;
@@ -102,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
     private Long timeStampReference;
     ArrayList<Long> sampleTimeStamps;
     int sampleTimeStampsIterator;
-    public static long TIMER_DURATION = 10;
+    public static long TIMER_DURATION = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,7 +180,14 @@ public class MainActivity extends AppCompatActivity {
 
                     bandSubscriptionTaskRunning = false;
                     holder.setBackground(getResources().getDrawable(R.drawable.toggle_button_on_background));
-                    task.cancel(true);
+
+                    if(task != null ){
+
+                        task.cancel(true);
+
+                    }
+
+
                     resetTimer();
                     resetSaveDataButton();
                     clearSensorTextViews();
@@ -816,7 +824,7 @@ public class MainActivity extends AppCompatActivity {
 
             Log.v(LOG_TAG, " timeReceiver seconds: " + seconds);
 
-            if(seconds == 10){
+            if(seconds == TIMER_DURATION){
 
 
                 csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
@@ -828,7 +836,6 @@ public class MainActivity extends AppCompatActivity {
                 if (bandSubscriptionTaskRunning) {
 
                     // Kick off saveDataCursorLoader
-
 
                     resetToggleButton();
                     resetTimer();
@@ -904,7 +911,8 @@ public class MainActivity extends AppCompatActivity {
             Log.v(LOG_TAG, "displayVaueReceiver: sensor: " + sensor);
             Log.v(LOG_TAG, "displayVaueReceiver: value: " + value);
 
-            appendToUI(value, sensor);
+            //TODO: TEST COMMENTED
+           // appendToUI(value, sensor);
 
         }
 
@@ -1114,7 +1122,8 @@ public class MainActivity extends AppCompatActivity {
 
                     // Define a projection that specifies the columns from the table we care about.
                     String[] projection3 = {
-                            "MAX(" + ReadingEntry.COLUMN_SAMPLE_RATE + ")"
+                            "MAX(" + ReadingEntry.COLUMN_SAMPLE_RATE + ")",
+                            ReadingEntry.COLUMN_SENSOR_ID
                     };
 
                     String selection3 = ReadingEntry.COLUMN_TIME + ">?";
@@ -1425,16 +1434,21 @@ public class MainActivity extends AppCompatActivity {
                                     c.moveToFirst();
                                     c.moveToPosition(0);
                                     String maxSampleRate = c.getString(0).trim();
+                                    String maxSampleRateSensorID = c.getString(1).trim();
+
+                                    Log.v(LOG_TAG,"Max Sample Rate Sensor ID : " + maxSampleRateSensorID);
 
                                     Bundle bundle = new Bundle();
                                     bundle.putString("maxSampleRate", maxSampleRate);
+                                    bundle.putString("maxSampleRateSensorID", maxSampleRateSensorID);
 
                                     // Kick off the  loader
                                     getLoaderManager().restartLoader(Constants.SAMPLE_BASED_LOADER, bundle, SampleBasedCSVFileLoader);
 
-    //                                    //Save datapoint loader destroyed, so that if user comes back from
-    //                                    //CSV file viewer, it does not create a new one
-    //                                    getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
+
+                                    //Save datapoint loader destroyed, so that if user comes back from
+                                    //CSV file viewer, it does not create a new one
+                                    getLoaderManager().destroyLoader(Constants.CREATE_CSV_LOADER);
 
                                 } else{
                                     //Save datapoint loader destroyed, so that if user comes back from
@@ -1495,11 +1509,11 @@ public class MainActivity extends AppCompatActivity {
             // This loader will execute the ContentProvider's query method on a background thread
             //<> : Not equal to
 
-            String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " + ReadingEntry.COLUMN_TIME + ">?";
+            String selection = ReadingEntry.COLUMN_SAMPLE_RATE + "=? AND " + ReadingEntry.COLUMN_TIME + ">? AND " + ReadingEntry.COLUMN_SENSOR_ID + "=?";
 
             String saveTimeSelecionArg = "" + timeBasedCSVDate;
 
-            String[] selectionArgs = {bundle.getString("maxSampleRate"), saveTimeSelecionArg};
+            String[] selectionArgs = {bundle.getString("maxSampleRate"), saveTimeSelecionArg, bundle.getString("maxSampleRateSensorID")};
 
             return new CursorLoader(mContext,   // Parent activity context
                     ReadingEntry.CONTENT_URI,   // Provider content URI to query
@@ -1531,7 +1545,9 @@ public class MainActivity extends AppCompatActivity {
                     for (int i = 0; i < rowcount; i++) {
 
                         c.moveToPosition(i);
-                        sampleTimeStamps.add(Long.parseLong(c.getString(1).trim()));
+
+                        long timeStamp = Long.parseLong(c.getString(1).trim());
+                        sampleTimeStamps.add(timeStamp);
 
                     }
 
@@ -1544,6 +1560,10 @@ public class MainActivity extends AppCompatActivity {
 
             timeStampReference = sampleTimeStamps.get(0);
 
+            for (int i= 0; i< sampleTimeStamps.size();i++){
+                Log.v(LOG_TAG,"CSV TIME STAMP: " + (sampleTimeStamps.get(i) - timeStampReference));
+            }
+
             long minTime = sampleTimeStamps.get(0);
             long maxTime;
 
@@ -1555,9 +1575,15 @@ public class MainActivity extends AppCompatActivity {
             bundle.putLong("minTime", minTime);
             bundle.putLong("maxTime", maxTime);
 
+
+
+
           // Kick off the  loader
             getLoaderManager().restartLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER, bundle, timeStampSensorReadingLoader);
 
+            //Save datapoint loader destroyed, so that if user comes back from
+            //CSV file viewer, it does not create a new one
+            getLoaderManager().destroyLoader(Constants.SAMPLE_BASED_LOADER);
 
         }
 
@@ -1576,10 +1602,12 @@ public class MainActivity extends AppCompatActivity {
         public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
 
             Log.v(LOG_TAG, "timeStampSensorReadingLoader: onCreateLoader");
-            Log.v(LOG_TAG,"loader id = " + id);
 
             long minTime = bundle.getLong("minTime");
             long maxTime = bundle.getLong("maxTime");
+
+            Log.v(LOG_TAG,"timeStampSensorReadingLoader: minTime: " + minTime);
+            Log.v(LOG_TAG,"timeStampSensorReadingLoader: maxTime: " + maxTime);
 
             if (minTime != maxTime) {
 
@@ -1649,9 +1677,24 @@ public class MainActivity extends AppCompatActivity {
 
                     }
 
-                    String sample = (Long.parseLong(timeStamp.trim()) - timeStampReference) + "," + values;
+                    int classLabel = 100 ;
 
-                    Log.v(LOG_TAG,"sample "  + sampleTimeStampsIterator );
+                    switch (MainActivity.labelPrefix){
+
+                        case "up_":
+                            classLabel = 0;
+                            break;
+
+                        case "dwn_":
+                            classLabel = 1;
+                            break;
+
+                    }
+
+                    String sample = classLabel + "," + (Long.parseLong(timeStamp.trim()) - timeStampReference) + "," + values;
+
+                    Log.v(LOG_TAG,"timeStampSensorReadingLoader sample:  "  + sampleTimeStampsIterator );
+                    Log.v(LOG_TAG,"sample:  "  + sample );
 
                     sampleDataset.add(sample);
 
@@ -1673,7 +1716,9 @@ public class MainActivity extends AppCompatActivity {
 
                 sampleTimeStampsIterator = 0;
                 createSampleBasedCSV();
-
+                //Save datapoint loader destroyed, so that if user comes back from
+                //CSV file viewer, it does not create a new one
+                getLoaderManager().destroyLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER);
 
          }else{
 
@@ -1797,7 +1842,19 @@ public class MainActivity extends AppCompatActivity {
         int rowcount = c.getCount();
         c.moveToFirst();
 
-        String reading = "null";
+        String reading;
+
+        Log.v(LOG_TAG,"getReading sensorID: "  + sensorID);
+
+        if(sensorID == Constants.ACCELEROMETER_SENSOR_ID || sensorID == Constants.GYROSCOPE_SENSOR_ID ){
+
+            reading= "NaN,NaN,NaN";
+
+        }else{
+
+            reading= "NaN";
+
+        }
 
         for (int i = 0 ; i < rowcount; i++){
 
@@ -1978,11 +2035,8 @@ public class MainActivity extends AppCompatActivity {
 
         boolean isChecked = false;
 
-
         public SaveButton(Context context) {
             super(context);
-
-
         }
 
         @Override
