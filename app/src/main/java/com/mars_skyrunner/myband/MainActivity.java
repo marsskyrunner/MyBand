@@ -830,7 +830,6 @@ public class MainActivity extends AppCompatActivity {
                 csvFileCounter = Constants.SAMPLE_RATE_OPTIONS.length - 1;
 
                 Log.v(LOG_TAG, " timeReceiver csvFileCounter: " + csvFileCounter);
-
                 Log.v(LOG_TAG, " timeReceiver bandSubscriptionTaskRunning: " + bandSubscriptionTaskRunning);
 
                 if (bandSubscriptionTaskRunning) {
