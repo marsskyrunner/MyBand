@@ -1684,8 +1684,17 @@ public class MainActivity extends AppCompatActivity {
                             classLabel = 0;
                             break;
 
-                        case "dwn_":
+                        case "dw_":
                             classLabel = 1;
+                            break;
+
+
+                        case "si_":
+                            classLabel = 2;
+                            break;
+
+                        case "st_":
+                            classLabel = 3;
                             break;
 
                     }

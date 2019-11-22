@@ -48,7 +48,7 @@
                     android:layout_gravity="center"
                     android:textAppearance="@style/TextAppearance.AppCompat.Title"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />minutes
+                    android:layout_height="wrap_content" />
 
 
                 <FrameLayout
