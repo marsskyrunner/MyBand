@@ -605,10 +605,13 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
                 try {
 
-                    sensorValue = bandDistanceEvent.getMotionType().toString() + "," + bandDistanceEvent.getDistanceToday() + "," +  bandDistanceEvent.getPace() + "," +  bandDistanceEvent.getSpeed();
+                    //sensorValue = bandDistanceEvent.getMotionType().toString() + "," + bandDistanceEvent.getDistanceToday() + "," +  bandDistanceEvent.getPace() + "," +  bandDistanceEvent.getSpeed();
+                    sensorValue = bandDistanceEvent.getDistanceToday() + "," +  bandDistanceEvent.getPace() + "," +  bandDistanceEvent.getSpeed();
+
+
 
                     Log.v(LOG_TAG,"mDistanceEventListener: ");
-                    Log.v(LOG_TAG," bandDistanceEvent.getMotionType().toString(): " +  bandDistanceEvent.getMotionType().toString());
+                    //Log.v(LOG_TAG," bandDistanceEvent.getMotionType().toString(): " +  bandDistanceEvent.getMotionType().toString());
                     Log.v(LOG_TAG," bandDistanceEvent.getDistanceToday(): " +   bandDistanceEvent.getDistanceToday());
                     Log.v(LOG_TAG,"bandDistanceEvent.getPace(): " +   bandDistanceEvent.getPace());
                     Log.v(LOG_TAG," bandDistanceEvent.getSpeed(): " +   bandDistanceEvent.getSpeed());
@@ -1000,15 +1003,15 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 break;
 
             case Constants.CALORIES_SENSOR_ID:
-                sampleRate = "Value change";
+                sampleRate = "0"; // Value change
                 break;
 
             case Constants.DISTANCE_SENSOR_ID:
-                sampleRate = "Value change";
+                sampleRate = "0";//Value change
                 break;
 
             case Constants.BAND_CONTACT_SENSOR_ID:
-                sampleRate = "Value change";
+                sampleRate = "0";//Value change
                 break;
 
             case Constants.GYROSCOPE_SENSOR_ID:
@@ -1016,7 +1019,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 break;
 
             case Constants.PEDOMETER_SENSOR_ID:
-                sampleRate = "Value change";
+                sampleRate = "0"; // Value change
                 break;
 
             case Constants.SKIN_TEMPERATURE_SENSOR_ID:

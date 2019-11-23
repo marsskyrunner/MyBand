@@ -1816,7 +1816,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case Constants.DISTANCE_SENSOR_ID:
-                result = Constants.DISTANCE_SENSOR_LABEL + "_motion," + Constants.DISTANCE_SENSOR_LABEL + "_today," + Constants.DISTANCE_SENSOR_LABEL + "_pace, " +Constants.DISTANCE_SENSOR_LABEL + "_speed";
+                //result = Constants.DISTANCE_SENSOR_LABEL + "_motion," + Constants.DISTANCE_SENSOR_LABEL + "_today," + Constants.DISTANCE_SENSOR_LABEL + "_pace, " +Constants.DISTANCE_SENSOR_LABEL + "_speed";
+                result = Constants.DISTANCE_SENSOR_LABEL + "_today," + Constants.DISTANCE_SENSOR_LABEL + "_pace, " +Constants.DISTANCE_SENSOR_LABEL + "_speed";
                 break;
 
             case Constants.BAND_CONTACT_SENSOR_ID:
@@ -1865,6 +1866,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void createSampleBasedCSV(String header) {
 
+        Log.v(LOG_TAG,"createSampleBasedCSV");
 
         outputDirectory = getOutputDirectory();
 
@@ -1880,6 +1882,8 @@ public class MainActivity extends AppCompatActivity {
 
             bw.write(header);
             bw.newLine();
+
+            Log.v(LOG_TAG,"sampleDataset.size() :"  + sampleDataset.size());
 
             for (int i = 0; i < sampleDataset.size(); i++) {
 
