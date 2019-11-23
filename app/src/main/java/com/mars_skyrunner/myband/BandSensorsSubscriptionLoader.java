@@ -608,7 +608,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                             .append( bandDistanceEvent.getMotionType().toString() + ",")
                             .append(String.format("%d,", bandDistanceEvent.getDistanceToday()))
                             .append(String.format("%f,", bandDistanceEvent.getPace()))
-                            .append(String.format("%f", bandDistanceEvent.getPace())).toString();
+                            .append(String.format("%f", bandDistanceEvent.getSpeed())).toString();
 
                     //1.Band MotionType
                     //2.Total Distance Today in cm
@@ -788,7 +788,7 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 String sensorValue = new StringBuilder()
                         .append(String.format("%d,", totalGain))
                         .append(String.format("%d,", totalLoss))
-                        .append(String.format("%d,", (totalGain - totalLoss)))
+                        .append(String.format("%d", (totalGain - totalLoss)))
 
 //                        .append(String.format("%d,", event.getTotalGain()))
 //                        .append(String.format("%d,", event.getTotalLoss()))
@@ -846,6 +846,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
             }
         }
     };
+
+
 
 
     private BandBarometerEventListener mBarometerEventListener = new BandBarometerEventListener() {

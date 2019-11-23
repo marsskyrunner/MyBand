@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -30,14 +31,14 @@ public class SensorReadingView extends LinearLayout {
     Context mContext;
     SensorCheckBox checkBox;
     String sampleRate = "";
-    SensorReading  mSensorReading ;
+    SensorReading mSensorReading;
     int spinnerSelection;
 
 
     public TextView getUnitsTextView() {
 
         TextView unitsTextView = new TextView(mContext);
-        RelativeLayout.LayoutParams textParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams textParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         textParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         textParams.addRule(RelativeLayout.CENTER_VERTICAL);
         textParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -51,12 +52,12 @@ public class SensorReadingView extends LinearLayout {
 
     }
 
-    public class SensorCheckBox extends android.support.v7.widget.AppCompatCheckBox{
+    public class SensorCheckBox extends android.support.v7.widget.AppCompatCheckBox {
 
         public SensorCheckBox(Context context) {
             super(context);
 
-            RelativeLayout.LayoutParams checkBoxParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+            RelativeLayout.LayoutParams checkBoxParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             checkBoxParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
             checkBoxParams.addRule(RelativeLayout.CENTER_VERTICAL);
             checkBoxParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -79,18 +80,18 @@ public class SensorReadingView extends LinearLayout {
     }
 
 
-    public class PrimaryTextView extends android.support.v7.widget.AppCompatTextView{
+    public class PrimaryTextView extends android.support.v7.widget.AppCompatTextView {
 
         public PrimaryTextView(Context context) {
             super(context);
 
-            RelativeLayout.LayoutParams textViewParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-            textViewParams.addRule(RelativeLayout.RIGHT_OF,R.id.sensor_checkbox);
+            RelativeLayout.LayoutParams textViewParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            textViewParams.addRule(RelativeLayout.RIGHT_OF, R.id.sensor_checkbox);
             textViewParams.addRule(RelativeLayout.CENTER_VERTICAL);
             textViewParams.leftMargin = convertDipToPixels(16);
             setLayoutParams(textViewParams);
 
-            setTextAppearance(mContext,R.style.PrimaryTextStyle);
+            setTextAppearance(mContext, R.style.PrimaryTextStyle);
             setAllCaps(true);
             setId(R.id.sensor_name);
 
@@ -99,12 +100,12 @@ public class SensorReadingView extends LinearLayout {
 
     }
 
-    public class SecondaryTextView extends android.support.v7.widget.AppCompatTextView{
+    public class SecondaryTextView extends android.support.v7.widget.AppCompatTextView {
 
         public SecondaryTextView(Context context) {
             super(context);
 
-            RelativeLayout.LayoutParams textViewParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+            RelativeLayout.LayoutParams textViewParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             textViewParams.addRule(RelativeLayout.CENTER_VERTICAL);
             textViewParams.leftMargin = convertDipToPixels(16);
             setLayoutParams(textViewParams);
@@ -117,32 +118,29 @@ public class SensorReadingView extends LinearLayout {
     }
 
 
-    public int convertDipToPixels(double dips)
-    {
+    public int convertDipToPixels(double dips) {
         return (int) (dips * mContext.getResources().getDisplayMetrics().density + 0.5f);
     }
 
 
-    public SensorReadingView(Context context , SensorReading sensorReading) {
+    public SensorReadingView(Context context, SensorReading sensorReading) {
 
-        super(context,null);
+        super(context, null);
 
         mContext = context;
         mSensorReading = sensorReading;
 
-        setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT);
-
-        int pxTopPadding =  convertDipToPixels(8);
-        int pxLRPadding =  convertDipToPixels(16);
-        setPadding(pxLRPadding,pxTopPadding,pxLRPadding,0);
+        int pxTopPadding = convertDipToPixels(8);
+        int pxLRPadding = convertDipToPixels(16);
+        setPadding(pxLRPadding, pxTopPadding, pxLRPadding, 0);
 
         setLayoutParams(layoutParams);
 
         checkBox = new SensorCheckBox(mContext);
 
-        RelativeLayout.LayoutParams rlParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams rlParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         RelativeLayout relativeLayoutHolder = new RelativeLayout(mContext);
         relativeLayoutHolder.setLayoutParams(rlParams);
 
@@ -159,14 +157,23 @@ public class SensorReadingView extends LinearLayout {
         sampleRateDisplay.setId(R.id.sample_rate_display);
         relativeLayoutHolder.addView(sampleRateDisplay);
 
-        addView(relativeLayoutHolder);
+        CardView cardView = new CardView(context);
+
+        cardView.setLayoutParams(rlParams);
+
+        pxTopPadding = convertDipToPixels(32);
+        cardView.setPadding(pxLRPadding, pxLRPadding, pxLRPadding, pxLRPadding);
+        relativeLayoutHolder.setPadding(pxLRPadding, pxLRPadding, pxLRPadding, pxLRPadding);
+
+        cardView.addView(relativeLayoutHolder);
+        addView(cardView);
         addView(sensorValueTextView);
     }
 
     private RelativeLayout getSampleRateDisplay(String sensorName) {
 
         RelativeLayout displayLayout = new RelativeLayout(mContext);
-        RelativeLayout.LayoutParams rlParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams rlParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         rlParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         rlParams.addRule(RelativeLayout.CENTER_VERTICAL);
         rlParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -174,9 +181,9 @@ public class SensorReadingView extends LinearLayout {
 
 
         //if the sensor is Accelerometer, Gyrometer or GSR, sample rate can be set
-        if(sensorName.equals(Constants.ACCELEROMETER_SENSOR_LABEL)
+        if (sensorName.equals(Constants.ACCELEROMETER_SENSOR_LABEL)
                 || sensorName.equals(Constants.GYROSCOPE_SENSOR_LABEL)
-                || sensorName.equals(Constants.GSR_SENSOR_LABEL)){
+                || sensorName.equals(Constants.GSR_SENSOR_LABEL)) {
 
             TextView unitsTextView = getUnitsTextView();
             Spinner sampleRateSettingView = getSampleRateSettingSpinner(sensorName);
@@ -184,26 +191,26 @@ public class SensorReadingView extends LinearLayout {
             displayLayout.addView(unitsTextView);
             displayLayout.addView(sampleRateSettingView);
 
-        }else{
+        } else {
 
             //if the sensor is Heart Rate, Skin Temp.,UV,Barometer or Altimeter, sample rate is 1hz
 
             TextView sampleRateTextView = new TextView(mContext);
             sampleRateTextView.setId(R.id.sample_rate_textview);
 
-            RelativeLayout.LayoutParams textParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+            RelativeLayout.LayoutParams textParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             textParams.addRule(RelativeLayout.CENTER_VERTICAL);
             textParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-            textParams.addRule(RelativeLayout.LEFT_OF,R.id.units_textview);
+            textParams.addRule(RelativeLayout.LEFT_OF, R.id.units_textview);
             sampleRateTextView.setLayoutParams(textParams);
 
             TextView unitsTextView = getUnitsTextView();
 
-            if(sensorName.equals(Constants.HEART_RATE_SENSOR_LABEL)
+            if (sensorName.equals(Constants.HEART_RATE_SENSOR_LABEL)
                     || sensorName.equals(Constants.SKIN_TEMPERATURE_SENSOR_LABEL)
                     || sensorName.equals(Constants.BAROMETER_SENSOR_LABEL)
                     || sensorName.equals(Constants.ALTIMETER_SENSOR_LABEL)
-                    || sensorName.equals(Constants.UV_LEVEL_SENSOR_LABEL)){
+                    || sensorName.equals(Constants.UV_LEVEL_SENSOR_LABEL)) {
 
                 sampleRate = "1 hz";
 
@@ -212,11 +219,11 @@ public class SensorReadingView extends LinearLayout {
                 displayLayout.addView(sampleRateTextView);
                 displayLayout.addView(unitsTextView);
 
-            }else{
+            } else {
 
                 //if the sensor is Ambient Light, sample rate is 2hz
 
-                if(sensorName.equals(Constants.AMBIENT_LIGHT_SENSOR_LABEL)){
+                if (sensorName.equals(Constants.AMBIENT_LIGHT_SENSOR_LABEL)) {
 
                     sampleRate = "2 hz";
 
@@ -225,7 +232,7 @@ public class SensorReadingView extends LinearLayout {
                     displayLayout.addView(sampleRateTextView);
                     displayLayout.addView(unitsTextView);
 
-                }else{
+                } else {
 
                     //Sample Rate change when event happens
 
@@ -243,12 +250,12 @@ public class SensorReadingView extends LinearLayout {
         return displayLayout;
     }
 
-    private Spinner getSampleRateSettingSpinner (String sensorName) {
+    private Spinner getSampleRateSettingSpinner(String sensorName) {
 
         Spinner spinner = new Spinner(mContext);
 
-        RelativeLayout.LayoutParams spinnerParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-        spinnerParams.addRule(RelativeLayout.LEFT_OF,R.id.units_textview);
+        RelativeLayout.LayoutParams spinnerParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        spinnerParams.addRule(RelativeLayout.LEFT_OF, R.id.units_textview);
         spinnerParams.addRule(RelativeLayout.CENTER_VERTICAL);
         spinnerParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
 
@@ -257,7 +264,7 @@ public class SensorReadingView extends LinearLayout {
 
         ArrayList<String> options = new ArrayList<>();
 
-        switch (sensorName){
+        switch (sensorName) {
 
             case Constants.ACCELEROMETER_SENSOR_LABEL:
             case Constants.GYROSCOPE_SENSOR_LABEL:
@@ -277,9 +284,9 @@ public class SensorReadingView extends LinearLayout {
 
         final Spinner mSpinner = spinner;
 
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(mContext,R.layout.sample_rate_option_textview,options);
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(mContext, R.layout.sample_rate_option_textview, options);
 
-        spinnerSelection = 0 ;
+        spinnerSelection = 0;
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
@@ -289,13 +296,13 @@ public class SensorReadingView extends LinearLayout {
 
                 Log.v(LOG_TAG, "spinner: onItemSelected: arg2:   " + arg2);
 
-                String  optionSelected = mSpinner.getSelectedItem().toString();
+                String optionSelected = mSpinner.getSelectedItem().toString();
 
                 sampleRate = optionSelected + " hz";
 
                 //If spinner selection changes , stopButtonClicked() Method is called on MainActivity class
 
-                if(arg2 != spinnerSelection){
+                if (arg2 != spinnerSelection) {
                     spinnerSelection = arg2;
 
                     Log.v(LOG_TAG, "spinner:  sampleRate Changed");
@@ -322,13 +329,12 @@ public class SensorReadingView extends LinearLayout {
 
     }
 
-    public CheckBox getSensorCheckBox(){
+    public CheckBox getSensorCheckBox() {
         return checkBox;
     }
 
 
-
-    public String getSampleRate(){
+    public String getSampleRate() {
         return sampleRate;
     }
 

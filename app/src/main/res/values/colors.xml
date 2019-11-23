@@ -6,4 +6,8 @@
     <color name="colorToggleOfLight">#9c6161</color>
     <color name="colorAccent">#f0a830</color>
     <color name="colorAccentLight">#f4c26e</color>
+    <color name="colorAccentSuperLight">#FFEDCB</color>
+
+
+
 </resources>

@@ -45,6 +45,7 @@ import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
 import com.microsoft.band.ConnectionState;
+import com.microsoft.band.sensors.HeartRateQuality;
 
 import org.mortbay.jetty.Main;
 
@@ -1652,6 +1653,9 @@ public class MainActivity extends AppCompatActivity {
             String timeStamp = selArgs[0];
 
             ArrayList<Integer> selectedSensorID = getSelectedSensorID();
+            String header = "class,time," + getColumnsLabelsHeader(selectedSensorID);
+            sampleDataset.add(header);
+
             String[] sensorReadings = new String[selectedSensorID.size()];
 
             FileWriter fw2 = null;
@@ -1758,6 +1762,93 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private String getColumnsLabelsHeader(ArrayList<Integer> selectedSensorID) {
+        
+        String result = ""; 
+        
+        for(Integer sensorID : selectedSensorID){
+            
+            result += getSensorHeader(sensorID) ;
+            result += ",";
+            
+        }
+
+        result = result.substring(0,(selectedSensorID.size() - 1 )); // takes the last comma off
+        
+        return result;
+    }
+
+    private String getSensorHeader(Integer sensorID) {
+
+        String result = "";
+
+        switch (sensorID) {
+
+            case Constants.HEART_RATE_SENSOR_ID:
+                result = Constants.HEART_RATE_SENSOR_LABEL + "_bpm," + Constants.HEART_RATE_SENSOR_LABEL + "_q" ;
+                break;
+
+            case Constants.RR_INTERVAL_SENSOR_ID:
+                result = Constants.RR_INTERVAL_SENSOR_LABEL;
+                break;
+
+            case Constants.ACCELEROMETER_SENSOR_ID:
+                result = Constants.ACCELEROMETER_SENSOR_LABEL + "_x," + Constants.ACCELEROMETER_SENSOR_LABEL + "_y," + Constants.ACCELEROMETER_SENSOR_LABEL + "_z";
+                break;
+
+            case Constants.ALTIMETER_SENSOR_ID:
+                result = Constants.ALTIMETER_SENSOR_LABEL + "_gain," + Constants.ALTIMETER_SENSOR_LABEL + "_loss," + Constants.ALTIMETER_SENSOR_LABEL + "_diff";
+                break;
+
+            case Constants.BAROMETER_SENSOR_ID:
+                result = Constants.BAROMETER_SENSOR_LABEL + "_pressure," + Constants.BAROMETER_SENSOR_LABEL + "_temp" ;
+                break;
+
+            case Constants.AMBIENT_LIGHT_SENSOR_ID:
+                result = Constants.AMBIENT_LIGHT_SENSOR_LABEL;
+                break;
+
+            case Constants.GSR_SENSOR_ID:
+                result = Constants.GSR_SENSOR_LABEL;
+                break;
+
+            case Constants.CALORIES_SENSOR_ID:
+                result = Constants.CALORIES_SENSOR_LABEL;
+                break;
+
+            case Constants.DISTANCE_SENSOR_ID:
+                result = Constants.DISTANCE_SENSOR_LABEL + "_motion," + Constants.DISTANCE_SENSOR_LABEL + "_today," + Constants.DISTANCE_SENSOR_LABEL + "_pace, " +Constants.DISTANCE_SENSOR_LABEL + "_speed";
+                break;
+
+            case Constants.BAND_CONTACT_SENSOR_ID:
+                result = Constants.BAND_CONTACT_SENSOR_LABEL;
+                break;
+
+            case Constants.GYROSCOPE_SENSOR_ID:
+                result = Constants.GYROSCOPE_SENSOR_LABEL + "_x," + Constants.GYROSCOPE_SENSOR_LABEL + "_y," + Constants.GYROSCOPE_SENSOR_LABEL + "_z";
+                break;
+
+            case Constants.PEDOMETER_SENSOR_ID:
+                result = Constants.PEDOMETER_SENSOR_LABEL;
+                break;
+
+            case Constants.SKIN_TEMPERATURE_SENSOR_ID:
+                result = Constants.SKIN_TEMPERATURE_SENSOR_LABEL;
+                break;
+
+            case Constants.UV_LEVEL_SENSOR_ID:
+                result = Constants.UV_LEVEL_SENSOR_LABEL;
+                break;
+
+            case Constants.BAND_STATUS_SENSOR_ID:
+                result = Constants.BAND_STATUS_SENSOR_LABEL;
+                break;
+
+        }
+
+        return result;
+    }
+
     private void createTimeBasedCSV() {
 
         timeBasedCSVDate = timeStampReference;
@@ -1854,13 +1945,22 @@ public class MainActivity extends AppCompatActivity {
 
         Log.v(LOG_TAG,"getReading sensorID: "  + sensorID);
 
-        if(sensorID == Constants.ACCELEROMETER_SENSOR_ID || sensorID == Constants.GYROSCOPE_SENSOR_ID ){
+        if(sensorID == Constants.ACCELEROMETER_SENSOR_ID || sensorID == Constants.GYROSCOPE_SENSOR_ID || sensorID == Constants.DISTANCE_SENSOR_ID){
 
             reading= "NaN,NaN,NaN";
 
         }else{
 
-            reading= "NaN";
+            if(sensorID == Constants.HEART_RATE_SENSOR_ID  ){
+
+                reading= "NaN,NaN";
+
+            }else{
+
+                reading= "NaN";
+
+            }
+
 
         }
 
@@ -2032,6 +2132,76 @@ public class MainActivity extends AppCompatActivity {
                 label = "SRVC";
                 break;
 
+
+        }
+
+        return label;
+    }
+
+    private String getSensorLabel(Integer sensorID) {
+
+        String label = "";
+
+        switch (sensorID) {
+            
+            case Constants.HEART_RATE_SENSOR_ID:
+                label = Constants.HEART_RATE_SENSOR_LABEL;
+                break;
+
+            case Constants.RR_INTERVAL_SENSOR_ID:
+                label = Constants.RR_INTERVAL_SENSOR_LABEL;
+                break;
+
+            case Constants.ACCELEROMETER_SENSOR_ID:
+                label = Constants.ACCELEROMETER_SENSOR_LABEL;
+                break;
+
+            case Constants.ALTIMETER_SENSOR_ID:
+                label = Constants.ALTIMETER_SENSOR_LABEL;
+                break;
+
+            case Constants.BAROMETER_SENSOR_ID:
+                label = Constants.BAROMETER_SENSOR_LABEL;
+                break;
+
+            case Constants.AMBIENT_LIGHT_SENSOR_ID:
+                label = Constants.AMBIENT_LIGHT_SENSOR_LABEL;
+                break;
+
+            case Constants.GSR_SENSOR_ID:
+                label = Constants.GSR_SENSOR_LABEL;
+                break;
+
+            case Constants.CALORIES_SENSOR_ID:
+                label = Constants.CALORIES_SENSOR_LABEL;
+                break;
+
+            case Constants.DISTANCE_SENSOR_ID:
+                label = Constants.DISTANCE_SENSOR_LABEL;
+                break;
+            case Constants.BAND_CONTACT_SENSOR_ID:
+                label = Constants.BAND_CONTACT_SENSOR_LABEL;
+                break;
+
+            case Constants.GYROSCOPE_SENSOR_ID:
+                label = Constants.GYROSCOPE_SENSOR_LABEL;
+                break;
+                
+            case Constants.PEDOMETER_SENSOR_ID:
+                label = Constants.PEDOMETER_SENSOR_LABEL;
+                break;
+
+            case Constants.SKIN_TEMPERATURE_SENSOR_ID:
+                label = Constants.SKIN_TEMPERATURE_SENSOR_LABEL;
+                break;
+
+            case Constants.UV_LEVEL_SENSOR_ID:
+                label = Constants.UV_LEVEL_SENSOR_LABEL;
+                break;
+                
+            case Constants.BAND_STATUS_SENSOR_ID:
+                label = Constants.BAND_STATUS_SENSOR_LABEL;
+                break;
 
         }
 
