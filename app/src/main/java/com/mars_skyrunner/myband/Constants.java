@@ -58,11 +58,11 @@ public class Constants {
     public static final int BAND_STATUS_SENSOR_ID = 15;
 
 
-    public static final String HEART_RATE_SENSOR_LABEL =  "heart rate";
-    public static final String RR_INTERVAL_SENSOR_LABEL = "rr interval";
+    public static final String HEART_RATE_SENSOR_LABEL =  "heart_rate";
+    public static final String RR_INTERVAL_SENSOR_LABEL = "rr_interval";
     public static final String ACCELEROMETER_SENSOR_LABEL = "accelerometer";
     public static final String ALTIMETER_SENSOR_LABEL = "altimeter";
-    public static final String AMBIENT_LIGHT_SENSOR_LABEL = "ambient light";
+    public static final String AMBIENT_LIGHT_SENSOR_LABEL = "ambient_light";
     public static final String BAROMETER_SENSOR_LABEL = "barometer";
     public static final String GSR_SENSOR_LABEL = "gsr";
     public static final String CALORIES_SENSOR_LABEL  = "calories";
@@ -70,7 +70,7 @@ public class Constants {
     public static final String BAND_CONTACT_SENSOR_LABEL = "contact";
     public static final String GYROSCOPE_SENSOR_LABEL = "gyroscope";
     public static final String PEDOMETER_SENSOR_LABEL = "pedometer";
-    public static final String SKIN_TEMPERATURE_SENSOR_LABEL = "skin temperature";
+    public static final String SKIN_TEMPERATURE_SENSOR_LABEL = "skin_temperature";
     public static final String UV_LEVEL_SENSOR_LABEL = "uv";
     public static final String BAND_STATUS_SENSOR_LABEL = "status";
 

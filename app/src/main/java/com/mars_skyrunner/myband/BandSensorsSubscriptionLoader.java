@@ -604,11 +604,14 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 String sensorValue = null;
 
                 try {
-                    sensorValue = new StringBuilder()
-                            .append( bandDistanceEvent.getMotionType().toString() + ",")
-                            .append(String.format("%d,", bandDistanceEvent.getDistanceToday()))
-                            .append(String.format("%f,", bandDistanceEvent.getPace()))
-                            .append(String.format("%f", bandDistanceEvent.getSpeed())).toString();
+
+                    sensorValue = bandDistanceEvent.getMotionType().toString() + "," + bandDistanceEvent.getDistanceToday() + "," +  bandDistanceEvent.getPace() + "," +  bandDistanceEvent.getSpeed();
+
+                    Log.v(LOG_TAG,"mDistanceEventListener: ");
+                    Log.v(LOG_TAG," bandDistanceEvent.getMotionType().toString(): " +  bandDistanceEvent.getMotionType().toString());
+                    Log.v(LOG_TAG," bandDistanceEvent.getDistanceToday(): " +   bandDistanceEvent.getDistanceToday());
+                    Log.v(LOG_TAG,"bandDistanceEvent.getPace(): " +   bandDistanceEvent.getPace());
+                    Log.v(LOG_TAG," bandDistanceEvent.getSpeed(): " +   bandDistanceEvent.getSpeed());
 
                     //1.Band MotionType
                     //2.Total Distance Today in cm
@@ -619,6 +622,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                     sensorValue = e.toString();
 
                 }
+
+                Log.v(LOG_TAG,"onBandDistanceChanged: " + sensorValue);
 
                 appendToUI(sensorValue, Constants.DISTANCE);
 

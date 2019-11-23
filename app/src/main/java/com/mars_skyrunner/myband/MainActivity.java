@@ -1654,7 +1654,6 @@ public class MainActivity extends AppCompatActivity {
 
             ArrayList<Integer> selectedSensorID = getSelectedSensorID();
             String header = "class,time," + getColumnsLabelsHeader(selectedSensorID);
-            sampleDataset.add(header);
 
             String[] sensorReadings = new String[selectedSensorID.size()];
 
@@ -1727,7 +1726,7 @@ public class MainActivity extends AppCompatActivity {
             if(sampleTimeStampsIterator == (sampleTimeStamps.size() - 1)){
 
                 sampleTimeStampsIterator = 0;
-                createSampleBasedCSV();
+                createSampleBasedCSV(header);
                 //Save datapoint loader destroyed, so that if user comes back from
                 //CSV file viewer, it does not create a new one
                 getLoaderManager().destroyLoader(Constants.TIME_STAMP_SENSOR_READING_LOADER);
@@ -1773,7 +1772,7 @@ public class MainActivity extends AppCompatActivity {
             
         }
 
-        result = result.substring(0,(selectedSensorID.size() - 1 )); // takes the last comma off
+        result = result.substring(0,(result.length() - 1 )); // takes the last comma off
         
         return result;
     }
@@ -1864,7 +1863,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void createSampleBasedCSV() {
+    private void createSampleBasedCSV(String header) {
 
 
         outputDirectory = getOutputDirectory();
@@ -1879,6 +1878,8 @@ public class MainActivity extends AppCompatActivity {
             FileWriter fw = new FileWriter(saveFile);
             BufferedWriter bw = new BufferedWriter(fw);
 
+            bw.write(header);
+            bw.newLine();
 
             for (int i = 0; i < sampleDataset.size(); i++) {
 
@@ -1945,7 +1946,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.v(LOG_TAG,"getReading sensorID: "  + sensorID);
 
-        if(sensorID == Constants.ACCELEROMETER_SENSOR_ID || sensorID == Constants.GYROSCOPE_SENSOR_ID || sensorID == Constants.DISTANCE_SENSOR_ID){
+        if(sensorID == Constants.ALTIMETER_SENSOR_ID || sensorID == Constants.ACCELEROMETER_SENSOR_ID || sensorID == Constants.GYROSCOPE_SENSOR_ID || sensorID == Constants.DISTANCE_SENSOR_ID){
 
             reading= "NaN,NaN,NaN";
 
