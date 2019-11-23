@@ -97,8 +97,8 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
 
     Long totalGain = null;
     Long totalLoss = null;
-    long totalGainRef = 0;
-    long totalLossRef = 0;
+    Long totalGainRef = null;
+    Long totalLossRef = null;
     /**
      * Constructs a new {@link BandSensorsSubscriptionLoader}.
      *
@@ -771,16 +771,20 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 Log.v(LOG_TAG,"mAltimeterEventListener");
                 Log.v(LOG_TAG," event.getTotalGain(): " + eventGain );
                 Log.v(LOG_TAG,"event.getTotalLoss() : " + eventLoss );
-                Log.v(LOG_TAG,"event.getRate() : " +event.getRate());
 
+                Log.v(LOG_TAG,"totalGainRef: " +totalGainRef);
+                Log.v(LOG_TAG,"totalLossRef: " +totalLossRef);
 
-                if(totalGain == null){
+                if(totalGainRef == null){
+                    Log.v(LOG_TAG,"totalGainRef == null");
                     totalGainRef =  eventGain;
                 }
 
-                if(totalLoss == null){
+                if(totalLossRef == null){
+                    Log.v(LOG_TAG,"totalLossRef == null");
                     totalLossRef =  eventLoss;
                 }
+
                 Log.v(LOG_TAG,"totalGainRef: " +totalGainRef);
                 Log.v(LOG_TAG,"totalLossRef: " +totalLossRef);
 
@@ -790,8 +794,6 @@ public class BandSensorsSubscriptionLoader extends android.content.AsyncTaskLoad
                 Log.v(LOG_TAG,"totalGain: " + totalGain);
                 Log.v(LOG_TAG,"totalLoss: " + totalLoss);
                 Log.v(LOG_TAG,"(totalGain - totalLoss) : " + (totalGain - totalLoss));
-
-
 
                 String sensorValue = new StringBuilder()
                         .append(String.format("%d,", totalGain))
