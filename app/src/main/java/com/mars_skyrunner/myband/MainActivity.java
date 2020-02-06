@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> sampleDataset = new ArrayList<>();
     private Long timeStampReference;
     ArrayList<Long> sampleTimeStamps;
-    int sampleTimeStampsIterator;
+    int sampleTimeStampsIterator , mLabelSpinnerSelection = 0;
     public static long TIMER_DURATION = 4;
 
     @Override
@@ -2310,6 +2310,10 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, R.id.text1, options);
 
+        Log.v(LOG_TAG, "mLabelPrefixSpinner: mLabelSpinnerSelection:   " + mLabelSpinnerSelection);
+
+        mLabelPrefixSpinner.setAdapter(dataAdapter);
+        mLabelPrefixSpinner.setSelection(mLabelSpinnerSelection);
         mLabelPrefixSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -2317,6 +2321,7 @@ public class MainActivity extends AppCompatActivity {
                                        int arg2, long arg3) {
 
                 Log.v(LOG_TAG, "mLabelPrefixSpinner: onItemSelected:   " + mLabelPrefixSpinner.getSelectedItem().toString());
+
 
             }
 
@@ -2326,7 +2331,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mLabelPrefixSpinner.setAdapter(dataAdapter);
+
 
     }
 
@@ -2444,6 +2449,7 @@ public class MainActivity extends AppCompatActivity {
                        // }
 
                         labelPrefix = mLabelPrefixSpinner.getSelectedItem().toString();
+                        mLabelSpinnerSelection = mLabelPrefixSpinner.getSelectedItemPosition();
 
                         Toast.makeText(MainActivity.this, "Changes saved.", Toast.LENGTH_SHORT).show();
 
