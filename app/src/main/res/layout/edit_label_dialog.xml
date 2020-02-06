@@ -77,7 +77,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
 
+                <Spinner
+                    android:id="@+id/prefix_label_spinner"
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"></Spinner>
+
                 <EditText
+                    android:visibility="gone"
                     android:gravity="center"
                     android:id="@+id/date_pattern"
                     android:inputType="text"

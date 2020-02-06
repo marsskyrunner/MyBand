@@ -44,4 +44,10 @@
     <string name="time_based_csv">Time based</string>
     <string name="csv_mode_key">com.mars_skyrunner.myband.CSV_KEY</string>
     <string name="sample_based_csv">Sample based</string>
+
+    <string name="label_prefix_1">up_</string>
+    <string name="label_prefix_2">dwn_</string>
+    <string name="label_prefix_3">sit_</string>
+    <string name="label_prefix_4">std_</string>
+
 </resources>
