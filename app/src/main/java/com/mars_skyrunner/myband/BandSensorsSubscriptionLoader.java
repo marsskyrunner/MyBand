@@ -2,20 +2,14 @@ package com.mars_skyrunner.myband;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.support.v4.content.AsyncTaskLoader;
 import android.content.Context;
 import android.support.v7.app.AppCompatDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 
 import com.microsoft.band.BandClient;

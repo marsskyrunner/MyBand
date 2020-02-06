@@ -1392,7 +1392,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     showLoadingView(false);
                                     //shows "OPEN CSV" action on a snackbar
-                                    Snackbar mySnackbar = Snackbar.make(mMainLayout,
+                                        Snackbar mySnackbar = Snackbar.make(mMainLayout,
                                             "Files saved at" + outputDirectory.getAbsolutePath().toString(), Snackbar.LENGTH_LONG);
                                     //mySnackbar.setAction(R.string.open, new OpenCSVFileListener());
                                     mySnackbar.show();
