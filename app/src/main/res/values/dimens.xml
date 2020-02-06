@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="sensor_layout_padding">8dp</dimen>
+
+    <dimen name="primary_text_size">16sp</dimen>
 </resources>

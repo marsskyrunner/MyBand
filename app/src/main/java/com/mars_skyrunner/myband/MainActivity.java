@@ -26,6 +26,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Checkable;
@@ -35,6 +37,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -86,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     boolean saveClicked = false;
     FrameLayout holder, saveButtonHolder;
     ToggleButton toggle;
+    public Spinner mLabelPrefixSpinner;
 
     ImageButton settingsButton;
     ArrayList<SensorReading> values = new ArrayList<SensorReading>();
@@ -125,6 +129,8 @@ public class MainActivity extends AppCompatActivity {
 
         mListView = (LinearLayout) findViewById(R.id.sensor_list);
         initSensorListView();
+
+
 
         mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
@@ -1681,22 +1687,23 @@ public class MainActivity extends AppCompatActivity {
 
                     int classLabel = 100 ;
 
+
                     switch (MainActivity.labelPrefix){
 
                         case "up_":
                             classLabel = 0;
                             break;
 
-                        case "dw_":
+                        case "dwn_":
                             classLabel = 1;
                             break;
 
 
-                        case "si_":
+                        case "sit_":
                             classLabel = 2;
                             break;
 
-                        case "st_":
+                        case "std_":
                             classLabel = 3;
                             break;
 
@@ -2293,6 +2300,37 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void initLabelPrefixSpinner() {
+
+        ArrayList<String> options = new ArrayList<>();
+        options.add(getResources().getString(R.string.label_prefix_1));
+        options.add(getResources().getString(R.string.label_prefix_2));
+        options.add(getResources().getString(R.string.label_prefix_3));
+        options.add(getResources().getString(R.string.label_prefix_4));
+
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, R.id.text1, options);
+
+        mLabelPrefixSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                                       int arg2, long arg3) {
+
+                Log.v(LOG_TAG, "mLabelPrefixSpinner: onItemSelected:   " + mLabelPrefixSpinner.getSelectedItem().toString());
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+
+            }
+        });
+
+        mLabelPrefixSpinner.setAdapter(dataAdapter);
+
+    }
+
+
     private class SettingsDialog extends AppCompatDialog {
 
         public SettingsDialog(Context context) {
@@ -2301,8 +2339,11 @@ public class MainActivity extends AppCompatActivity {
 
             setContentView(R.layout.edit_label_dialog);
 
-            final EditText datePatternEditText = (EditText) findViewById(R.id.date_pattern);
-            datePatternEditText.setHint(labelPrefix);
+            mLabelPrefixSpinner = (Spinner) findViewById(R.id.prefix_label_spinner);
+            initLabelPrefixSpinner();
+
+            //inal EditText datePatternEditText = (EditText) findViewById(R.id.date_pattern);
+            //datePatternEditText.setHint(labelPrefix);
 
             TextView dateTextView = (TextView) findViewById(R.id.date_text_view);
             dateTextView.setText(displayDate);
@@ -2380,14 +2421,15 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 
-                    String newPrefix = datePatternEditText.getText().toString();
+                    //String newPrefix = datePatternEditText.getText().toString();
 
                     SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
                     int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
                     int newCsvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
 
 
-                    if (TextUtils.isEmpty(newPrefix) && (prevCsvMode == newCsvMode)) {
+                    //if (TextUtils.isEmpty(newPrefix) && (prevCsvMode == newCsvMode)) {
+                    if (labelPrefix.equals( mLabelPrefixSpinner.getSelectedItem().toString()) && (prevCsvMode == newCsvMode)) {
 
                         Toast.makeText(MainActivity.this, "No changes made.", Toast.LENGTH_SHORT).show();
 
@@ -2397,9 +2439,11 @@ public class MainActivity extends AppCompatActivity {
                             prevCsvMode = newCsvMode;
                         }
 
-                        if (!TextUtils.isEmpty(newPrefix)) {
-                            labelPrefix = newPrefix;
-                        }
+                        //if (!TextUtils.isEmpty(newPrefix)) {
+                         //   labelPrefix = newPrefix;
+                       // }
+
+                        labelPrefix = mLabelPrefixSpinner.getSelectedItem().toString();
 
                         Toast.makeText(MainActivity.this, "Changes saved.", Toast.LENGTH_SHORT).show();
 
