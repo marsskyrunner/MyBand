@@ -37,6 +37,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -77,13 +78,14 @@ public class MainActivity extends AppCompatActivity {
     private TextView bandStatusTxt;
     Toolbar toolbar;
     public static LinearLayout mListView;
-    LinearLayout mLoadingView, mMainLayout;
+    LinearLayout mLoadingView;
+    RelativeLayout mMainLayout;
     ArrayList<SensorReading> sensorReadings;
     File saveFile;
     Date date;
     long timeBasedCSVDate = 0;
     public static boolean bandSubscriptionTaskRunning = false;
-    TextView clock ;
+    TextView clock , labelCounter;
     public static SaveButton saveDataButton;
     FutureTask task = null;
     boolean saveClicked = false;
@@ -120,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         int defaultValue = getResources().getInteger(R.integer.csv_mode_key_default_value);
         prevCsvMode = sharedPref.getInt(getString(R.string.csv_mode_key), defaultValue);
@@ -130,11 +133,10 @@ public class MainActivity extends AppCompatActivity {
         mListView = (LinearLayout) findViewById(R.id.sensor_list);
         initSensorListView();
 
-
-
-        mMainLayout = (LinearLayout) findViewById(R.id.main_layout);
+        mMainLayout = (RelativeLayout) findViewById(R.id.main_layout);
         mLoadingView = (LinearLayout) findViewById(R.id.loading_layout);
         clock = findViewById(R.id.minutes);
+        labelCounter = (TextView) findViewById(R.id.label_counter);
 
 
         date = new Date();
@@ -273,7 +275,8 @@ public class MainActivity extends AppCompatActivity {
         //in case that MS band has been disconnected while recording data
         registerReceiver(createCSVReceiver, new IntentFilter(Constants.CREATE_CSV_RECEIVER));
 
-
+        //Register broadcast receiver to print values on screen from LabelCounterService
+        registerReceiver(displayLabelVaueReceiver, new IntentFilter(Constants.DISPLAY_LABEL_COUNTER_VALUE));
 
         //Register broadcast receiver to reset activity if any checkbox is selected
         registerReceiver(timeReceiver, new IntentFilter(getClass().getPackage() + ".BROADCAST"));
@@ -312,7 +315,15 @@ public class MainActivity extends AppCompatActivity {
             saveDataButton.setVisibility(View.VISIBLE);
             settingsButton.setVisibility(View.VISIBLE);
             findViewById(R.id.loading_layout).setVisibility(View.GONE);
+
+            //Kicks off LabelCounterService
+            Intent sendObjectIntent = new Intent(this, LabelCounterService.class);
+            startService(sendObjectIntent);
+
+
         }
+
+
 
     }
 
@@ -765,6 +776,7 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(displayVaueReceiver);
         unregisterReceiver(sensorReadingObjectReceiver);
         unregisterReceiver(createCSVReceiver);
+        unregisterReceiver(displayLabelVaueReceiver);
 
         try {
             unregisterSensorListeners();
@@ -866,6 +878,36 @@ public class MainActivity extends AppCompatActivity {
         clock.setText("");
 
     }
+
+
+
+    private BroadcastReceiver displayLabelVaueReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Log.v(LOG_TAG, "displayLabelVaueReceiver onReceive");
+
+
+            int[] value = intent.getIntArrayExtra(Constants.VALUE);
+            Log.v(LOG_TAG, "displayLabelVaueReceiver: value[0]: " + value[0]); //"up"
+            Log.v(LOG_TAG, "displayLabelVaueReceiver: value[1]: " + value[1]);//"dw"
+            Log.v(LOG_TAG, "displayLabelVaueReceiver: value[2]: " + value[2]);//"si"
+            Log.v(LOG_TAG, "displayLabelVaueReceiver: value[3]: " + value[3]);//"st"
+
+            Log.v(LOG_TAG, "DONE");
+
+            String text = "UP : " + value[0] + "\n";
+            text += "DOWN : " + value[1] + "\n";
+            text += "SIT : " + value[2] + "\n";
+            text += "STAND : " + value[3];
+
+            labelCounter.setText(text);
+            //fillLabelCounterTextView(value);
+
+        }
+
+    };
 
     private BroadcastReceiver createCSVReceiver = new BroadcastReceiver() {
 
@@ -1472,7 +1514,6 @@ public class MainActivity extends AppCompatActivity {
 
                     }
 
-
             }
 
 
@@ -1694,16 +1735,16 @@ public class MainActivity extends AppCompatActivity {
                             classLabel = 0;
                             break;
 
-                        case "dwn_":
+                        case "dw_":
                             classLabel = 1;
                             break;
 
 
-                        case "sit_":
+                        case "si_":
                             classLabel = 2;
                             break;
 
-                        case "std_":
+                        case "st_":
                             classLabel = 3;
                             break;
 

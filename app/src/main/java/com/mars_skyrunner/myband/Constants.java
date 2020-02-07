@@ -91,6 +91,9 @@ public class Constants {
 
     public static final String INSERT_SENSOR_READING = packageName + ".INSERT_SENSOR_READING";
     public static final String CREATE_CSV_RECEIVER = packageName + ".CREATE_CSV_RECEIVER";
+    public static final String DISPLAY_LABEL_COUNTER_VALUE = packageName + ".DISPLAY_LABEL_COUNTER_VALUE";
+
+
 
     public static final String SR_02 = "0.2";
     public static final String SR_1 = "1";
@@ -109,6 +112,16 @@ public class Constants {
 
     };
 
+
+    // array of supported extensions (use a List if you prefer)
+    static final String[] EXTENSIONS = new String[]{
+            "csv"// and other formats you need
+    };
+
+    // array of supported prefix (use a List if you prefer)
+    static final String[] PREFIX = new String[]{
+            "dw","up","si","st"// and other formats you need
+    };
 
 
 
