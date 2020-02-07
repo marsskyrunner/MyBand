@@ -46,8 +46,8 @@
     <string name="sample_based_csv">Sample based</string>
 
     <string name="label_prefix_1">up_</string>
-    <string name="label_prefix_2">dwn_</string>
-    <string name="label_prefix_3">sit_</string>
-    <string name="label_prefix_4">std_</string>
+    <string name="label_prefix_2">dw_</string>
+    <string name="label_prefix_3">si_</string>
+    <string name="label_prefix_4">st_</string>
 
 </resources>

@@ -83,13 +83,12 @@
 
 
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/main_layout"
         android:visibility="visible"
         android:background="@color/colorAccentSuperLight"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
 
         <ScrollView
@@ -110,8 +109,21 @@
 
         </ScrollView>
 
+        <TextView
+            android:id="@+id/label_counter"
+            android:text="HELLO MARS"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_centerVertical="true"
+            android:padding="@dimen/primary_text_size"
+            android:layout_margin="@dimen/primary_text_size"
+            android:background="@color/colorAccent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
         <FrameLayout
             android:id="@+id/toggle_button_holder"
+            android:layout_centerInParent="true"
             android:background="@drawable/toggle_button_on_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,6 +131,8 @@
             android:layout_marginRight="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
+            android:paddingLeft="@dimen/primary_text_size"
+            android:paddingRight="@dimen/primary_text_size"
             android:layout_alignParentBottom="true"
 
             >
@@ -127,13 +141,15 @@
                 android:id="@+id/togglebutton"
                 android:background="?android:attr/selectableItemBackground"
                 android:textColor="@android:color/white"
+                android:paddingLeft="@dimen/primary_text_size"
+                android:paddingRight="@dimen/primary_text_size"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
         </FrameLayout>
 
 
-    </LinearLayout>
+    </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/loading_layout"

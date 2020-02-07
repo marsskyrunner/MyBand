@@ -29,6 +29,8 @@
 
         <service android:name=".DbInsertionService" />
         <service android:name=".BandConnectionService" />
+        <service android:name=".LabelCounterService" />
+
     </application>
 
     <uses-permission android:name="android.permission.BLUETOOTH"/>
