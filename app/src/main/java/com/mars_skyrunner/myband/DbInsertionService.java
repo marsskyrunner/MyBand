@@ -14,6 +14,8 @@ public class DbInsertionService extends IntentService {
 
 
 
+    //TEST ANDROID STUDIO COMMIT
+
     private final String LOG_TAG = DbInsertionService.class.getSimpleName();
     SensorReading sensorReading;
     Context mContext = DbInsertionService.this;
